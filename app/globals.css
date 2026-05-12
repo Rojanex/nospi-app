@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .screen-root {
+    @apply flex-1 bg-primary-300;
+  }
+
+  .screen-safe {
+    @apply flex-1 bg-transparent;
+  }
+
+  .auth-back-bar {
+    @apply pt-4 px-5 pb-2;
+  }
+
+  .auth-content {
+    @apply flex-1 justify-end px-7 pb-12;
+  }
+
+  .auth-title {
+    @apply font-extrabold text-black-100 text-[38px] leading-[44px];
+  }
+
+  .auth-subtitle {
+    @apply text-black-400 text-[15px] leading-[22px];
+  }
+
+  .form-error-text {
+    @apply text-form-error text-[13px] text-center mb-2;
+  }
+
+  .btn-primary {
+    @apply bg-buttons-orange h-14 rounded-[28px] items-center justify-center;
+  }
+
+  .btn-primary--disabled {
+    @apply opacity-50;
+  }
+
+  .btn-primary-text {
+    @apply text-white font-bold text-[15px];
+  }
+
+  .btn-secondary {
+    @apply bg-buttons-brown h-14 rounded-[28px] items-center justify-center;
+  }
+}
