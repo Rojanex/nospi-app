@@ -1,8 +1,8 @@
 import { supabase } from '@/lib/supabase'
 import { strings } from '@/constants/strings'
 import { Colors } from '@/assets/constants/Colors'
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'                                                   
-import { useCallback, useState } from 'react' 
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import { useCallback, useState } from 'react'
 import {
   ActivityIndicator,
   Keyboard,
@@ -25,16 +25,17 @@ export default function SignIn() {
   const [callingCode, setCallingCode] = useState('57')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resetKey, setResetKey] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const nationalDigits = phoneNumber.replace(/\D/g, '')
-  const hasEnoughDigits = nationalDigits.length >= SIGN_IN_PHONE_MIN_DIGITS
+  const hasEnoughDigits = phoneNumber.length >= SIGN_IN_PHONE_MIN_DIGITS
 
   useFocusEffect(
     useCallback(() => {
       setLoading(false)
       setPhoneNumber('')
       setError(null)
+      setResetKey(k => k + 1)
     }, [])
   )
 
@@ -47,7 +48,7 @@ export default function SignIn() {
     setLoading(true)
     setError(null)
 
-    const fullPhone = `+${callingCode}${nationalDigits}`
+    const fullPhone = `+${callingCode}${phoneNumber}`
     const { error } = await supabase.auth.signInWithOtp({ phone: fullPhone })
 
     if (error) {
@@ -102,14 +103,15 @@ export default function SignIn() {
                 keyboardType="phone-pad"
                 textAlignVertical="center"
                 value={phoneNumber}
-                onChangeText={setPhoneNumber}
+                onChangeText={(text) => setPhoneNumber(text.replace(/\D/g, ''))}
               />
             </View>
 
             <TouchableOpacity
+              key={resetKey}
               className={`btn-primary mb-4 ${!hasEnoughDigits || loading ? 'btn-primary--disabled' : ''}`}
               onPress={handleSendOTP}
-              disabled={loading}
+              disabled={loading || !hasEnoughDigits}
             >
               {loading ? (
                 <ActivityIndicator color="#ffffff" />
