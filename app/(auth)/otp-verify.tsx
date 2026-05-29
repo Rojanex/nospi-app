@@ -22,8 +22,8 @@ function formatCountdown(totalSeconds: number) {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-export default function Verify() {
-  const { phone, mode } = useLocalSearchParams<{ phone: string; mode: string }>()
+export default function OtpVerify() {
+  const { phone} = useLocalSearchParams<{ phone: string }>()
   const [otp, setOtp] = useState<string[]>(() => Array(OTP_LENGTH).fill(''))
   const [loading, setLoading] = useState(false)
   const [resendLoading, setResendLoading] = useState(false)
@@ -96,7 +96,7 @@ export default function Verify() {
     setLoading(false)
     if (!error && data.user) {
       const isNewUser = data.user.created_at === data.user.last_sign_in_at
-      if (mode === 'signup' && isNewUser) {
+      if (isNewUser) {
         router.replace('/(onboarding)/name')
       } else {
         router.replace('/')
