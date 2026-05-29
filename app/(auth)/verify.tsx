@@ -85,7 +85,7 @@ export default function Verify() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
+    const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
 
     if (error) {
       setError(error.message)
@@ -94,19 +94,22 @@ export default function Verify() {
     }
 
     setLoading(false)
-    if (mode === 'signup') {
-      router.replace('/(onboarding)/name')
-    } else {
-      router.replace('/')
+    if (!error && data.user) {
+      const isNewUser = data.user.created_at === data.user.last_sign_in_at
+      if (mode === 'signup' && isNewUser) {
+        router.replace('/(onboarding)/name')
+      } else {
+        router.replace('/')
+      }
     }
   }
 
   const renderBox = (digit: string, i: number) => (
     <TouchableOpacity key={i} onPress={() => handleBoxPress(i)}>
       <View
-        className={`h-14 w-[46px] items-center justify-center rounded-[14px] bg-white ${
-          i === activeBox ? 'border-2 border-primary-100' : ''
-        }`}
+        className={`h-14 w-[46px] items-center justify-center 
+          rounded-[14px] bg-white ${i === activeBox ? 'border-2 border-primary-100' : ''
+          }`}
       >
         <Text className="font-extrabold text-2xl text-black-100">{digit}</Text>
       </View>
