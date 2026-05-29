@@ -95,7 +95,7 @@ export default function Verify() {
 
     setLoading(false)
     if (mode === 'signup') {
-      router.push('/(onboarding)/name')
+      router.replace('/(onboarding)/name')
     } else {
       router.replace('/')
     }
@@ -119,7 +119,7 @@ export default function Verify() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <SafeAreaView className="screen-safe">
-        <View className="auth-back-bar">
+        <View className="back-bar">
           <TouchableOpacity onPress={router.back}>
             <Ionicons name="chevron-back" size={24} color={Colors.black[400]} />
           </TouchableOpacity>

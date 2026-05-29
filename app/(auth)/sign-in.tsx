@@ -68,7 +68,7 @@ export default function SignIn() {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView className="screen-safe">
-          <View className="auth-back-bar">
+          <View className="back-bar">
             <TouchableOpacity onPress={router.back}>
               <Ionicons name="chevron-back" size={24} color={Colors.neutral.hint} />
             </TouchableOpacity>

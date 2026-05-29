@@ -14,8 +14,16 @@ export default function RootLayout() {
   const segments = useSegments()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) {
+        const { error } = await supabase.auth.getUser()
+        if (error) {
+          await supabase.auth.signOut()
+          setSession(null)
+        } else {
+          setSession(session)
+        }
+      }
       setLoading(false)
     })
 
@@ -27,16 +35,14 @@ export default function RootLayout() {
   }, [])
 
   useEffect(() => {
-    if (loading) return
+    if (loading || showSplash) return
 
     const inAuthGroup = segments[0] === '(auth)'
 
     if (!session && !inAuthGroup) {
-      router.replace('/(auth)/welcome')
-    } else if (session && inAuthGroup) {
-      router.replace('/')
+      router.replace('/(auth)/welcome') //TODO - DEV only ('/(onboarding)/name')
     }
-  }, [session, loading, segments])
+  }, [session, loading, showSplash, segments])
 
   if (showSplash) {
     return <SplashAnimation onFinish={() => setShowSplash(false)} />
