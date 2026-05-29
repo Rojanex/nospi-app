@@ -22,8 +22,8 @@ function formatCountdown(totalSeconds: number) {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-export default function Verify() {
-  const { phone, mode } = useLocalSearchParams<{ phone: string; mode: string }>()
+export default function OtpVerify() {
+  const { phone} = useLocalSearchParams<{ phone: string }>()
   const [otp, setOtp] = useState<string[]>(() => Array(OTP_LENGTH).fill(''))
   const [loading, setLoading] = useState(false)
   const [resendLoading, setResendLoading] = useState(false)
@@ -85,7 +85,7 @@ export default function Verify() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
+    const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
 
     if (error) {
       setError(error.message)
@@ -94,19 +94,22 @@ export default function Verify() {
     }
 
     setLoading(false)
-    if (mode === 'signup') {
-      router.push('/(onboarding)/name')
-    } else {
-      router.replace('/')
+    if (!error && data.user) {
+      const isNewUser = data.user.created_at === data.user.last_sign_in_at
+      if (isNewUser) {
+        router.replace('/(onboarding)/name')
+      } else {
+        router.replace('/')
+      }
     }
   }
 
   const renderBox = (digit: string, i: number) => (
     <TouchableOpacity key={i} onPress={() => handleBoxPress(i)}>
       <View
-        className={`h-14 w-[46px] items-center justify-center rounded-[14px] bg-white ${
-          i === activeBox ? 'border-2 border-primary-100' : ''
-        }`}
+        className={`h-14 w-[46px] items-center justify-center 
+          rounded-[14px] bg-white ${i === activeBox ? 'border-2 border-primary-100' : ''
+          }`}
       >
         <Text className="font-extrabold text-2xl text-black-100">{digit}</Text>
       </View>
@@ -119,7 +122,7 @@ export default function Verify() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <SafeAreaView className="screen-safe">
-        <View className="auth-back-bar">
+        <View className="back-bar">
           <TouchableOpacity onPress={router.back}>
             <Ionicons name="chevron-back" size={24} color={Colors.black[400]} />
           </TouchableOpacity>
