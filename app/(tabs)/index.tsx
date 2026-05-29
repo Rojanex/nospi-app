@@ -1,7 +1,15 @@
-import { View, Text } from 'react-native'
+import { useRouter } from 'expo-router'
+import { View, Text, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+
 export default function Home() {
+  const router = useRouter()
+
+  const handleSubmit = async () => {
+    router.push('/(onboarding)/dni-verify')
+  }
+
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-primary-300">
       <View className="px-4 pt-6 flex-1">
@@ -9,6 +17,11 @@ export default function Home() {
 
         {/* TODO: main content */}
       </View>
+      <TouchableOpacity
+      onPress={handleSubmit}>
+      <Text>let go back to onboarding</Text>
+      </TouchableOpacity>
+      
     </SafeAreaView>
   )
 }

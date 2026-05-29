@@ -23,24 +23,12 @@ export const strings = {
     verifyResendIn: 'Reenviar en',
 
     // name screen
-    nameSubtitle: 'El nombre que ven los demás cuando te apuntas a un plan.',
-    nameTitle: '¿cómo te llaman?',
-    namePlaceholder: 'tu nombre o apodo',
+    nameTitle: '¿Cómo\nte llaman?',
+    nameSubtitle: 'Este es el nombre que verán los demás. Lo puedes cambiar después.',
+    namePlaceholder: 'Tu nombre o apodo',
     nameButton: 'Continuar',
     nameButtonLoading: 'Guardando...',
-    nameError: 'Por favor, ingresa al menos 2 caracteres.',
-
-    // gps screen
-    gpsTitle: '¿Dónde estás?',
-    gpsSubtitle: 'Para que encuentres los planes más cercanos a ti.',
-    gpsAllow: 'Permitir',
-    gpsError: 'Por favor, habilita la ubicación para continuar.',
-
-    // DNI ask verification screen (esto se puede volar)
-    verifyIdTitle: 'Unete como local verificado',
-    verifyIdSubtitle: 'Verifica tu cedula y accede a todos los planes',
-    verifyIdButton: 'Verificar ahora',
-    verifyIdSkip: 'Ingresa como visitante',
+    nameError: 'Algo salió mal.',
 
 
     // dni input screen
@@ -49,13 +37,16 @@ export const strings = {
     dniPlaceholder: 'Número de documento',
     dniContinue: 'Continuar',
     dniSkip: 'Hacer esto despues',
-
-    // dni type selector
+      // dni type selector
     dniTypeColombian: 'Cédula colombiana (CC)',
     dniTypeInternational: 'Documento internacional',
+    dniPillCC: 'Cédula (CC)',
+    dniPillInternational: 'Documento extranjero',
+      // dni errors
+    dniErrorAlreadyRegistered: 'Este documento ya está registrado',
 
     // liveness screen  
-    livenessTitle: 'una selfie rápida',
+    livenessTitle: 'Una selfie\nrápida',
     livenessSubtitle: 'Solo para confirmar que eres tú. No guardamos tu foto.',
     livenessButton: 'Tomar selfie',
     livenessSkip: 'Hacer esto después',

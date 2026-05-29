@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { strings } from '@/constants/strings'
 import { Colors } from '@/assets/constants/Colors'
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import { useCallback, useState } from 'react'
 import {
   ActivityIndicator,
@@ -20,7 +20,6 @@ import CountryPicker, { CountryCode } from 'react-native-country-picker-modal'
 import { SIGN_IN_PHONE_MIN_DIGITS } from '@/lib/env_reader'
 
 export default function SignIn() {
-  const { mode } = useLocalSearchParams<{ mode: string }>()
   const [countryCode, setCountryCode] = useState<CountryCode>('CO')
   const [callingCode, setCallingCode] = useState('57')
   const [phoneNumber, setPhoneNumber] = useState('')
@@ -58,7 +57,7 @@ export default function SignIn() {
     }
 
     setLoading(false)
-    router.push({ pathname: '/(auth)/verify', params: { phone: fullPhone, mode } })
+    router.push({ pathname: '/(auth)/otp-verify', params: { phone: fullPhone } })
   }
 
   return (
@@ -68,7 +67,7 @@ export default function SignIn() {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView className="screen-safe">
-          <View className="auth-back-bar">
+          <View className="back-bar">
             <TouchableOpacity onPress={router.back}>
               <Ionicons name="chevron-back" size={24} color={Colors.neutral.hint} />
             </TouchableOpacity>

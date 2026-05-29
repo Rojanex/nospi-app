@@ -31,13 +31,13 @@ export default function Welcome() {
         <View className="gap-3 px-6 pb-12">
           <TouchableOpacity
             className="btn-primary mb-6"
-            onPress={() => router.push({ pathname: '/(auth)/sign-in', params: { mode: 'signup' } })}
+            onPress={() => router.push({ pathname: '/(auth)/sign-in' })}
           >
             <Text className="btn-primary-text">{strings.onboarding.welcomeSignUp}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             className="btn-secondary"
-            onPress={() => router.push({ pathname: '/(auth)/sign-in', params: { mode: 'signin' } })}
+            onPress={() => router.push({ pathname: '/(auth)/sign-in' })}
           >
             <Text className="btn-primary-text">{strings.onboarding.welcomeSignIn}</Text>
           </TouchableOpacity>
