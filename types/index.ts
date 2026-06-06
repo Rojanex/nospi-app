@@ -20,3 +20,20 @@ export interface ApiResponse<T> {
   data: T | null
   error: string | null
 }
+
+export interface Plan {
+  id: string
+  title: string
+  activity_type: string
+  location_name: string
+  date_time: string
+  spots_left: number
+  is_plan_del_dia: boolean
+  attendees: string[]
+  extra_attendees: number
+  host_name: string
+  host_initials: string
+  host_type: 'local' | 'turista'
+  posted_ago: string
+  user_joined: boolean
+}

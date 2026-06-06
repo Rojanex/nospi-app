@@ -53,4 +53,24 @@ export const strings = {
 
 
   },
+  planes: {
+    nextPlanLabel: 'PRÓXIMO PLAN',
+    noNextPlan: '¿a qué plan te apuntas hoy?',
+    noNextPlanCta: 'ver planes →',
+    feedHeader: '¿nos pillamos hoy?',
+    planCount: (n: number) => `${n} planes`,
+    filterAll: 'Todos',
+    filterToday: 'Hoy',
+    filterNearby: 'Cerca',
+    filterFree: 'Gratis',
+    joinCta: 'me apunto →',
+    joinedCta: '¡ya voy! ✓',
+    fullCta: 'lleno',
+    planDelDia: (spots: number) => `🔥 plan del día · ${spots} cupos`,
+    soloSpots: (spots: number) => `¡solo ${spots} cupos!`,
+    spotsInfo: (going: number, spots: number) => `${going} van · ${spots} cupos`,
+    hostLocal: 'local verificada',
+    hostTurista: 'turista',
+    hostPrefix: 'por',
+  },
 }

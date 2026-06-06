@@ -1,7 +1,7 @@
 import React from 'react'
-import {Tabs} from "expo-router";
-import {Icon} from "@/assets/icons";
-import {Colors} from "@/assets/constants/Colors";
+import { Tabs } from "expo-router";
+import { Icon } from "@/assets/icons";
+import { Colors } from "@/assets/constants/Colors";
 
 const _Layout = () => {
     return (
@@ -18,30 +18,30 @@ const _Layout = () => {
             <Tabs.Screen
                 name={"index"}
                 options={{
-                    title: "Home",
+                    title: "Planes",
                     headerShown: false,
-                    tabBarIcon: ({color, size}) => (
+                    tabBarIcon: ({ color, size }) => (
                         <Icon name="home" size={size} color={color} />
                     )
-                }}/>
+                }} />
             <Tabs.Screen
                 name={"discover"}
                 options={{
                     title: "Discover",
                     headerShown: false,
-                    tabBarIcon: ({color, size}) => (
+                    tabBarIcon: ({ color, size }) => (
                         <Icon name="explore" size={size} color={color} />
                     )
-                }}/>
+                }} />
             <Tabs.Screen
                 name={"profile"}
                 options={{
                     title: "Profile",
                     headerShown: false,
-                    tabBarIcon: ({color, size}) => (
+                    tabBarIcon: ({ color, size }) => (
                         <Icon name="profile" size={size} color={color} />
                     )
-                }}/>
+                }} />
         </Tabs>
     )
 }
