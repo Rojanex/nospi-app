@@ -36,7 +36,7 @@ export default function IndexScreen() {
   async function fetchPlansPage(pageNum: number, currentUserId: string) {
     const { data, error } = await supabase
       .from('plans')
-      .select('*, plan_members(user_id, profiles(display_name, avatar_url)), profiles!created_by(display_name, role)')
+      .select('*, plan_members(user_id, profiles(display_name, avatar_url)), profiles!created_by(display_name, avatar_url, role)')
       .order('date_time', { ascending: true })
       .range(pageNum * PAGE_SIZE, pageNum * PAGE_SIZE + PAGE_SIZE - 1)
 
@@ -55,7 +55,7 @@ export default function IndexScreen() {
 
     const { data: comingPlan, error: comingPlanError } = await supabase
       .from('plans')
-      .select('*, plan_members!inner(user_id, profiles(display_name, avatar_url)), profiles!created_by(display_name, role)')
+      .select('*, plan_members!inner(user_id, profiles(display_name, avatar_url)), profiles!created_by(display_name, avatar_url, role)')
       .eq('plan_members.user_id', currentUserId)
       .gt('date_time', new Date().toISOString())
       .order('date_time', { ascending: true })

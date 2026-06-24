@@ -1,33 +1,30 @@
-import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import { Image } from 'expo-image'
-import { Plan } from '@/types'
-import { strings } from '@/constants/strings'
 import { Colors } from '@/assets/constants/Colors'
+import { strings } from '@/constants/strings'
+import { Plan } from '@/types'
+import { Image } from 'expo-image'
+import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
-type ActivityColors = { tag: string; bg: string; accent: string }
 
-const ACTIVITY_COLORS: Record<string, ActivityColors> = {
-  playa:         { tag: '#E8642A', bg: '#FFF0E8', accent: '#E8642A' },
-  'al aire libre': { tag: '#E8642A', bg: '#FFF0E8', accent: '#E8642A' },
-  social:        { tag: '#0F6E56', bg: '#E1F5EE', accent: '#0F6E56' },
-  parque:        { tag: '#0F6E56', bg: '#E1F5EE', accent: '#0F6E56' },
-  rumba:         { tag: '#993556', bg: '#FBEAF0', accent: '#993556' },
-  salsa:         { tag: '#993556', bg: '#FBEAF0', accent: '#993556' },
-  deporte:       { tag: '#185FA5', bg: '#E6F1FB', accent: '#185FA5' },
-  comida:        { tag: '#BA7517', bg: '#FAEEDA', accent: '#BA7517' },
+//TODO - Activity type in a future might be a smple string, image to the plan as group chat
+export type ActivityType =
+  | 'social' | 'playa' | 'rumba' | 'deporte'
+  | 'comida' | 'cultura' | 'naturaleza' | 'otro'
+
+type ActivityMeta = { emoji: string; label: string; tag: string; bg: string; accent: string }
+
+export const ACTIVITY_META: Record<ActivityType, ActivityMeta> = {
+  social:     { emoji: '🥥', label: 'social',     tag: '#0F6E56', bg: '#E1F5EE', accent: '#0F6E56' },
+  playa:      { emoji: '🏖️', label: 'playa',      tag: '#E8642A', bg: '#FFF0E8', accent: '#E8642A' },
+  rumba:      { emoji: '🎵', label: 'rumba',       tag: '#993556', bg: '#FBEAF0', accent: '#993556' },
+  deporte:    { emoji: '⚽', label: 'deporte',    tag: '#185FA5', bg: '#E6F1FB', accent: '#185FA5' },
+  comida:     { emoji: '🍽️', label: 'comida',     tag: '#BA7517', bg: '#FAEEDA', accent: '#BA7517' },
+  cultura:    { emoji: '🎭', label: 'cultura',    tag: '#534AB7', bg: '#EEEDFE', accent: '#534AB7' },
+  naturaleza: { emoji: '🌿', label: 'naturaleza', tag: '#3B6D11', bg: '#EAF3DE', accent: '#3B6D11' },
+  otro:       { emoji: '✨', label: 'otro',        tag: '#5F5E5A', bg: '#F1EFE8', accent: '#5F5E5A' },
 }
 
-const DEFAULT_COLORS: ActivityColors = { tag: '#5F5E5A', bg: '#F1EFE8', accent: '#5F5E5A' }
-
-const ACTIVITY_EMOJI: Record<string, string> = {
-  playa:   '🏖️',
-  social:  '🥥',
-  rumba:   '🎵',
-  salsa:   '🎵',
-  deporte: '⚽',
-  comida:  '🍽️',
-}
+const DEFAULT_META: ActivityMeta = { emoji: '✨', label: 'otro', tag: '#5F5E5A', bg: '#F1EFE8', accent: '#5F5E5A' }
 
 const PASTEL_COLORS = ['#FFD6D6', '#D6F5D6', '#D6E8FF', '#FFF3D6', '#F5D6FF', '#D6F5F5']
 
@@ -35,12 +32,8 @@ function getPastelColor(initial: string): string {
   return PASTEL_COLORS[initial.charCodeAt(0) % PASTEL_COLORS.length]
 }
 
-function getActivityColors(type: string): ActivityColors {
-  return ACTIVITY_COLORS[type.toLowerCase()] ?? DEFAULT_COLORS
-}
-
-function getEmoji(type: string): string {
-  return ACTIVITY_EMOJI[type.toLowerCase()] ?? '✨'
+function getActivityMeta(type: string): ActivityMeta {
+  return ACTIVITY_META[type.toLowerCase() as ActivityType] ?? DEFAULT_META
 }
 
 interface Props {
@@ -50,8 +43,7 @@ interface Props {
 
 export function PlanCard({ plan, onJoin }: Props) {
   const primaryType = plan.activity_type.split('|')[0].trim().toLowerCase()
-  const colors = getActivityColors(primaryType)
-  const emoji = getEmoji(primaryType)
+  const meta = getActivityMeta(primaryType)
   const tags = plan.activity_type.split('|').map(t => t.trim().toUpperCase()).join(' · ')
 
   const statusLine = plan.spots_left <= 2
@@ -76,17 +68,17 @@ export function PlanCard({ plan, onJoin }: Props) {
 
   return (
     <View style={styles.card}>
-      <View style={[styles.accentBar, { backgroundColor: colors.accent }]} />
+      <View style={[styles.accentBar, { backgroundColor: meta.accent }]} />
 
       <View style={styles.cardContent}>
         {/* TOP SECTION */}
         <View style={styles.topSection}>
           <View style={styles.topRow}>
-            <View style={[styles.emojiSquare, { backgroundColor: colors.bg }]}>
-              <Text style={styles.emojiText}>{emoji}</Text>
+            <View style={[styles.emojiSquare, { backgroundColor: meta.bg }]}>
+              <Text style={styles.emojiText}>{meta.emoji}</Text>
             </View>
             <View style={styles.topRight}>
-              <Text style={[styles.tagText, { color: colors.tag }]}>{tags}</Text>
+              <Text style={[styles.tagText, { color: meta.tag }]}>{tags}</Text>
               <Text style={styles.planTitle}>{plan.title}</Text>
               <Text style={styles.location}>📍 {plan.location_name}</Text>
             </View>
@@ -148,9 +140,18 @@ export function PlanCard({ plan, onJoin }: Props) {
 
         {/* HOST ROW */}
         <View style={styles.hostRow}>
-          <View style={[styles.hostAvatar, { backgroundColor: getPastelColor(plan.host_initials) }]}>
-            <Text style={styles.hostInitialsText}>{plan.host_initials}</Text>
-          </View>
+          {plan.host_avatar_url ? (
+            <Image
+              source={{ uri: plan.host_avatar_url }}
+              style={styles.hostAvatar}
+              cachePolicy="memory-disk"
+              contentFit="cover"
+            />
+          ) : (
+            <View style={[styles.hostAvatar, { backgroundColor: getPastelColor(plan.host_initials) }]}>
+              <Text style={styles.hostInitialsText}>{plan.host_initials}</Text>
+            </View>
+          )}
           <View style={[
             styles.dotBadge,
             { backgroundColor: plan.host_type === 'local' ? Colors.buttons.orange : Colors.primary[100] },

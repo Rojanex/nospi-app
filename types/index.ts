@@ -41,7 +41,7 @@ export interface PlanRow {
     user_id: string
     profiles: { display_name: string | null; avatar_url: string | null } | null
   }[]
-  profiles: { display_name: string | null; role: string } | null
+  profiles: { display_name: string | null; avatar_url: string | null; role: string } | null
 }
 
 export interface Plan {
@@ -55,6 +55,7 @@ export interface Plan {
   attendees: { initials: string; avatar_url: string | null; user_id: string }[]
   host_name: string
   host_initials: string
+  host_avatar_url: string | null
   host_type: 'local' | 'turista'
   posted_ago: string
   user_joined: boolean

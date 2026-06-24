@@ -49,7 +49,7 @@ function formatDateTime(dateTime: string): string {
 export function mapRowToPlan(
   row: PlanRow,
   currentUserId: string,
-  hostProfile?: { display_name: string | null; role: string },
+  hostProfile?: { display_name: string | null; avatar_url: string | null; role: string },
 ): Plan {
   const memberCount = row.plan_members.length
   const hostName = hostProfile?.display_name ?? 'Host'
@@ -70,6 +70,7 @@ export function mapRowToPlan(
     attendees,
     host_name: hostName,
     host_initials: deriveInitials(hostName),
+    host_avatar_url: hostProfile?.avatar_url ?? null,
     host_type: hostProfile?.role === 'local' ? 'local' : 'turista',
     posted_ago: formatPostedAgo(row.created_at),
     user_joined: row.plan_members.some(m => m.user_id === currentUserId),

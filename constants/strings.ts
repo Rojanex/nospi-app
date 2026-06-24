@@ -76,4 +76,14 @@ export const strings = {
     hostTurista: 'turista',
     hostPrefix: 'por',
   },
+  newPlan: {
+    newPlanTitle: 'Nuevo Plan',
+    newPlanSubtitle: 'Crea un plan y reúne a tu gente',
+
+  },
+
+  losMios: {
+    losMiosTitle: 'Los míos',
+    losMiosSubtitle: 'Tus planes y parches',
+  },
 }
