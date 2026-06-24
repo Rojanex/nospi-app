@@ -54,7 +54,7 @@ export const strings = {
 
   },
   planes: {
-    nextPlanLabel: 'PRÓXIMO PLAN',
+    nextPlanLabel: 'PRÓXIMO PARCHE:',
     noNextPlan: '¿a qué plan te apuntas?',
     noNextPlanCta: 'tus parches →',
     feedHeader: '¿nos pillamos hoy?',

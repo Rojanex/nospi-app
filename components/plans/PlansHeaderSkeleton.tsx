@@ -1,14 +1,11 @@
 import { TabIndexHeader } from '@/components/tabs/TabIndexHeader'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export function PlansHeaderSkeleton() {
-  const insets = useSafeAreaInsets()
-
   return (
     <View>
-      <View style={{ paddingTop: insets.top + 12 }}>
+      <View style={{ paddingTop: 12 }}>
         <TabIndexHeader />
       </View>
 

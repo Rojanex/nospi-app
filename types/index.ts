@@ -41,7 +41,7 @@ export interface PlanRow {
     user_id: string
     profiles: { display_name: string | null; avatar_url: string | null } | null
   }[]
-  profiles: { display_name: string | null; avatar_url: string | null; role: string } | null
+  host: { display_name: string | null; avatar_url: string | null; role: string } | null
 }
 
 export interface Plan {

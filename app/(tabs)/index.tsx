@@ -1,29 +1,23 @@
-import { Colors } from '@/assets/constants/Colors'
-import { PlansHeader } from '@/components/plans/PlansHeader'
-import { PlansHeaderSkeleton } from '@/components/plans/PlansHeaderSkeleton'
 import { TabScreen } from '@/components/layout/TabScreen'
 import { PlanCard } from '@/components/plans/PlanCard'
 import { PlanCardSkeleton } from '@/components/plans/PlanCardSkeleton'
+import { PlansHeader } from '@/components/plans/PlansHeader'
+import { PlansHeaderSkeleton } from '@/components/plans/PlansHeaderSkeleton'
 import { strings } from '@/constants/strings'
 import { mapRowToPlan } from '@/lib/plans/mapRowToPlan'
 import { supabase } from '@/lib/supabase'
 import { Plan, PlanRow } from '@/types'
 import React, { useCallback, useEffect, useState } from 'react'
 import {
-  ActivityIndicator,
   FlatList,
   ListRenderItemInfo,
   RefreshControl,
-  StyleSheet,
   Text,
   View,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
 const PAGE_SIZE = 20
 
 export default function IndexScreen() {
-  const insets = useSafeAreaInsets()
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -33,10 +27,10 @@ export default function IndexScreen() {
   const [activeFilter, setActiveFilter] = useState(strings.planes.filterAll)
   const [nextPlan, setNextPlan] = useState<Plan | null>(null)
 
-  async function fetchPlansPage(pageNum: number, currentUserId: string) {
+  async function fetchPlansPage(pageNum: number) {
     const { data, error } = await supabase
       .from('plans')
-      .select('*, plan_members(user_id, profiles(display_name, avatar_url)), profiles!created_by(display_name, avatar_url, role)')
+      .select('*, plan_members(user_id, profiles(display_name, avatar_url)), host:profiles!created_by(display_name, avatar_url, role)')
       .order('date_time', { ascending: true })
       .range(pageNum * PAGE_SIZE, pageNum * PAGE_SIZE + PAGE_SIZE - 1)
 
@@ -50,12 +44,12 @@ export default function IndexScreen() {
     return { rows, more }
   }
 
-  const fetchData = useCallback(async () => {
+  const fetchInitialData = useCallback(async () => {
     const currentUserId = (await supabase.auth.getUser()).data.user?.id ?? ''
 
     const { data: comingPlan, error: comingPlanError } = await supabase
       .from('plans')
-      .select('*, plan_members!inner(user_id, profiles(display_name, avatar_url)), profiles!created_by(display_name, avatar_url, role)')
+      .select('*, plan_members!inner(user_id, profiles(display_name, avatar_url)), host:profiles!created_by(display_name, avatar_url, role)')
       .eq('plan_members.user_id', currentUserId)
       .gt('date_time', new Date().toISOString())
       .order('date_time', { ascending: true })
@@ -66,15 +60,15 @@ export default function IndexScreen() {
       setNextPlan(null)
     } else if (comingPlan?.[0]) {
       const row = comingPlan[0] as PlanRow
-      setNextPlan(mapRowToPlan(row, currentUserId, row.profiles ?? undefined))
+      setNextPlan(mapRowToPlan(row, currentUserId, row.host ?? undefined))
     } else {
       setNextPlan(null)
     }
 
-    const { rows, more } = await fetchPlansPage(0, currentUserId)
+    const { rows, more } = await fetchPlansPage(0)
     setPlans(
       rows.map(row =>
-        mapRowToPlan(row, currentUserId, row.profiles ?? undefined)
+        mapRowToPlan(row, currentUserId, row.host ?? undefined)
       )
     )
     setPage(0)
@@ -82,15 +76,15 @@ export default function IndexScreen() {
   }, [])
 
   useEffect(() => {
-    fetchData().finally(() => setLoading(false))
-  }, [fetchData])
+    fetchInitialData().finally(() => setLoading(false))
+  }, [fetchInitialData])
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true)
     const minDelay = new Promise(resolve => setTimeout(resolve, 600))
-    await Promise.all([fetchData(), minDelay])
+    await Promise.all([fetchInitialData(), minDelay])
     setRefreshing(false)
-  }, [fetchData])
+  }, [fetchInitialData])
 
   async function handleLoadMore() {
     if (loadingMore || !hasMore || loading || refreshing) return
@@ -98,10 +92,10 @@ export default function IndexScreen() {
 
     const currentUserId = (await supabase.auth.getUser()).data.user?.id ?? ''
     const nextPage = page + 1
-    const { rows, more } = await fetchPlansPage(nextPage, currentUserId)
+    const { rows, more } = await fetchPlansPage(nextPage)
 
     const newPlans = rows.map(row =>
-      mapRowToPlan(row, currentUserId, row.profiles ?? undefined)
+      mapRowToPlan(row, currentUserId, row.host ?? undefined)
     )
 
     setPlans(prev => [...prev, ...newPlans])
@@ -125,11 +119,7 @@ export default function IndexScreen() {
   const renderListHeader = useCallback(
     () => (
       <View>
-        {refreshing && (
-          <View className="items-center py-3">
-            <ActivityIndicator color={Colors.buttons.orange} />
-          </View>
-        )}
+
         {loading ? (
           <PlansHeaderSkeleton />
         ) : (
@@ -141,7 +131,7 @@ export default function IndexScreen() {
         )}
       </View>
     ),
-    [loading, nextPlan, activeFilter, refreshing]
+    [loading, nextPlan, activeFilter]
   )
 
   const renderItem = useCallback(
@@ -184,7 +174,7 @@ export default function IndexScreen() {
   }, [loadingMore, hasMore, plans.length])
 
   return (
-    <TabScreen contentInsetTop={false}>
+    <TabScreen>
       <FlatList
         data={listData}
         keyExtractor={keyExtractor}
@@ -199,16 +189,13 @@ export default function IndexScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={Colors.buttons.orange}
-              colors={[Colors.buttons.orange]}
-              progressViewOffset={insets.top}
             />
           ) : undefined
         }
         extraData={loading ? 'loading' : `${activeFilter}-${refreshing}`}
         showsVerticalScrollIndicator={false}
-        style={{flex: 1}}
-        contentContainerStyle={{paddingBottom: 100}}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
       />
     </TabScreen>
   )

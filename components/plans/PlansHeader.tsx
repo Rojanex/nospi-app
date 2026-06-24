@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const FILTERS = [
   strings.planes.filterAll,
@@ -39,42 +38,41 @@ export function PlansHeader({
   activeFilter,
   onFilterChange,
 }: PlansHeaderProps) {
-  const insets = useSafeAreaInsets()
-
   return (
     <View>
-      <View style={{ paddingTop: insets.top + 12 }}>
+      <View className="pt-3">
         <TabIndexHeader />
       </View>
 
       {nextPlan ? (
         <TouchableOpacity
-          className="mx-4 mb-5"
-          style={styles.nextPlanCard}
+          className="mx-4 mb-5 rounded-[18px] bg-black-100 p-4"
           activeOpacity={0.85}
         >
           <View className="flex-row items-center gap-3">
-            <View style={styles.nextPlanEmoji}>
+            <View className="h-11 w-11 items-center justify-center rounded-xl bg-white/[0.12]">
               <Text className="text-[22px]">
                 {getPlanEmoji(nextPlan.activity_type)}
               </Text>
             </View>
             <View className="flex-1 gap-0.5">
-              <Text style={styles.nextPlanLabel}>{strings.planes.nextPlanLabel}</Text>
-              <Text style={styles.nextPlanTitle}>{nextPlan.title}</Text>
-              <Text style={styles.nextPlanSub}>
+              <Text className="text-[10px] font-bold tracking-[1px] text-buttons-orange">
+                {strings.planes.nextPlanLabel}
+              </Text>
+              <Text className="text-[15px] font-bold text-white">
+                {nextPlan.title}
+              </Text>
+              <Text className="text-xs text-white/55">
                 {nextPlan.date_time} · {nextPlan.location_name}
               </Text>
             </View>
-            <View style={styles.nextPlanArrow}>
-              <Text style={styles.nextPlanArrowText}>→</Text>
+            <View className="h-9 w-9 items-center justify-center rounded-full bg-buttons-orange">
+              <Text className="text-base font-bold text-white">→</Text>
             </View>
           </View>
         </TouchableOpacity>
       ) : (
-        <View className="mx-4 mb-5 gap-2 rounded-[18px] p-[18px]" style={{
-          backgroundColor: Colors.neutral.gray,
-        }}>
+        <View className="mx-4 mb-5 gap-2 rounded-[18px] bg-neutral-gray p-[18px]">
           <Text className="text-[15px] font-semibold text-black-100">
             {strings.planes.noNextPlan}
           </Text>
@@ -86,7 +84,7 @@ export function PlansHeader({
         </View>
       )}
 
-      <View className="px-5 mb-2">
+      <View className="mb-2 px-5">
         <Text className="tab-section-title">{strings.planes.feedHeader}</Text>
       </View>
 
@@ -95,7 +93,7 @@ export function PlansHeader({
         nestedScrollEnabled
         showsHorizontalScrollIndicator={false}
         className="mb-4"
-        contentContainerClassName="px-5 gap-2 flex-row"
+        contentContainerClassName="flex-row gap-2 px-5"
       >
         {FILTERS.map(filter => (
           <Pressable
@@ -114,46 +112,10 @@ export function PlansHeader({
 }
 
 const styles = StyleSheet.create({
-  nextPlanCard: {
-    backgroundColor: Colors.black[100],
-    borderRadius: 18,
-    padding: 16,
-  },
-  nextPlanEmoji: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nextPlanLabel: {
-    fontSize: 10,
+  chipText: {
+    fontSize: 13,
     fontWeight: '700',
-    color: Colors.buttons.orange,
-    letterSpacing: 1,
-  },
-  nextPlanTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  nextPlanSub: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.55)',
-  },
-  nextPlanArrow: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.buttons.orange,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nextPlanArrowText: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '700',
+    color: Colors.black[400],
   },
   chip: {
     paddingHorizontal: 16,
@@ -163,11 +125,6 @@ const styles = StyleSheet.create({
   },
   chipActive: {
     backgroundColor: Colors.black[100],
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: Colors.black[400],
   },
   chipTextActive: {
     color: '#ffffff',
