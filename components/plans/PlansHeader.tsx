@@ -28,19 +28,17 @@ function getPlanEmoji(type: string): string {
   return ACTIVITY_EMOJI[type.toLowerCase()] ?? '✨'
 }
 
-type FeedListHeaderProps = {
+type PlansHeaderProps = {
   nextPlan: Plan | null
   activeFilter: string
   onFilterChange: (filter: string) => void
-  planCount: number
 }
 
-export function FeedListHeader({
+export function PlansHeader({
   nextPlan,
   activeFilter,
   onFilterChange,
-  planCount,
-}: FeedListHeaderProps) {
+}: PlansHeaderProps) {
   const insets = useSafeAreaInsets()
 
   return (
@@ -50,14 +48,18 @@ export function FeedListHeader({
       </View>
 
       {nextPlan ? (
-        <TouchableOpacity style={styles.nextPlanCard} activeOpacity={0.85}>
-          <View style={styles.nextPlanRow}>
+        <TouchableOpacity
+          className="mx-4 mb-5"
+          style={styles.nextPlanCard}
+          activeOpacity={0.85}
+        >
+          <View className="flex-row items-center gap-3">
             <View style={styles.nextPlanEmoji}>
-              <Text style={styles.nextPlanEmojiText}>
+              <Text className="text-[22px]">
                 {getPlanEmoji(nextPlan.activity_type)}
               </Text>
             </View>
-            <View style={styles.nextPlanCenter}>
+            <View className="flex-1 gap-0.5">
               <Text style={styles.nextPlanLabel}>{strings.planes.nextPlanLabel}</Text>
               <Text style={styles.nextPlanTitle}>{nextPlan.title}</Text>
               <Text style={styles.nextPlanSub}>
@@ -70,25 +72,30 @@ export function FeedListHeader({
           </View>
         </TouchableOpacity>
       ) : (
-        <View style={styles.noNextPlanCard}>
-          <Text style={styles.noNextPlanText}>{strings.planes.noNextPlan}</Text>
+        <View className="mx-4 mb-5 gap-2 rounded-[18px] p-[18px]" style={{
+          backgroundColor: Colors.neutral.gray,
+        }}>
+          <Text className="text-[15px] font-semibold text-black-100">
+            {strings.planes.noNextPlan}
+          </Text>
           <TouchableOpacity>
-            <Text style={styles.noNextPlanCta}>{strings.planes.noNextPlanCta}</Text>
+            <Text className="text-sm font-bold text-buttons-orange">
+              {strings.planes.noNextPlanCta}
+            </Text>
           </TouchableOpacity>
         </View>
       )}
 
-      <View style={styles.feedHeader}>
-        <Text style={styles.feedHeaderTitle}>{strings.planes.feedHeader}</Text>
-        <Text style={styles.feedHeaderCount}>{strings.planes.planCount(planCount)}</Text>
+      <View className="px-5 mb-2">
+        <Text className="tab-section-title">{strings.planes.feedHeader}</Text>
       </View>
 
       <ScrollView
         horizontal
         nestedScrollEnabled
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}
-        style={styles.filterScroll}
+        className="mb-4"
+        contentContainerClassName="px-5 gap-2 flex-row"
       >
         {FILTERS.map(filter => (
           <Pressable
@@ -108,16 +115,9 @@ export function FeedListHeader({
 
 const styles = StyleSheet.create({
   nextPlanCard: {
-    marginHorizontal: 16,
-    marginBottom: 20,
-    backgroundColor: '#2A2520',
+    backgroundColor: Colors.black[100],
     borderRadius: 18,
     padding: 16,
-  },
-  nextPlanRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
   },
   nextPlanEmoji: {
     width: 44,
@@ -126,13 +126,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  nextPlanEmojiText: {
-    fontSize: 22,
-  },
-  nextPlanCenter: {
-    flex: 1,
-    gap: 2,
   },
   nextPlanLabel: {
     fontSize: 10,
@@ -162,52 +155,11 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '700',
   },
-  noNextPlanCard: {
-    marginHorizontal: 16,
-    marginBottom: 20,
-    backgroundColor: '#EDEBE5',
-    borderRadius: 18,
-    padding: 18,
-    gap: 8,
-  },
-  noNextPlanText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.black[100],
-  },
-  noNextPlanCta: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.buttons.orange,
-  },
-  feedHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    paddingHorizontal: 20,
-    marginBottom: 8,
-  },
-  feedHeaderTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: Colors.black[100],
-  },
-  feedHeaderCount: {
-    fontSize: 13,
-    color: Colors.black[400],
-  },
-  filterScroll: {
-    marginBottom: 16,
-  },
-  filterRow: {
-    paddingHorizontal: 20,
-    gap: 8,
-  },
   chip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 99,
-    backgroundColor: '#EDEBE5',
+    backgroundColor: Colors.neutral.gray,
   },
   chipActive: {
     backgroundColor: Colors.black[100],

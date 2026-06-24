@@ -21,6 +21,29 @@ export interface ApiResponse<T> {
   error: string | null
 }
 
+export interface PlanRow {
+  id: string
+  created_at: string
+  created_by: string
+  title: string
+  activity_type: string
+  description: string | null
+  location_name: string
+  location_place_id: string | null
+  location_lat: number
+  location_lng: number
+  date_time: string
+  max_spots: number
+  status: string
+  visibility: string
+  completed_at: string | null
+  plan_members: {
+    user_id: string
+    profiles: { display_name: string | null; avatar_url: string | null } | null
+  }[]
+  profiles: { display_name: string | null; role: string } | null
+}
+
 export interface Plan {
   id: string
   title: string
@@ -28,9 +51,8 @@ export interface Plan {
   location_name: string
   date_time: string
   spots_left: number
-  is_plan_del_dia: boolean
-  attendees: string[]
   extra_attendees: number
+  attendees: { initials: string; avatar_url: string | null; user_id: string }[]
   host_name: string
   host_initials: string
   host_type: 'local' | 'turista'

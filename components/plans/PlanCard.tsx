@@ -1,5 +1,6 @@
 import React from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { Image } from 'expo-image'
 import { Plan } from '@/types'
 import { strings } from '@/constants/strings'
 import { Colors } from '@/assets/constants/Colors'
@@ -53,14 +54,11 @@ export function PlanCard({ plan, onJoin }: Props) {
   const emoji = getEmoji(primaryType)
   const tags = plan.activity_type.split('|').map(t => t.trim().toUpperCase()).join(' · ')
 
-  const statusLine = plan.is_plan_del_dia
-    ? strings.planes.planDelDia(plan.spots_left)
-    : plan.spots_left <= 2
-      ? strings.planes.soloSpots(plan.spots_left)
-      : strings.planes.spotsInfo(plan.attendees.length + plan.extra_attendees, plan.spots_left)
+  const statusLine = plan.spots_left <= 2
+    ? strings.planes.soloSpots(plan.spots_left)
+    : strings.planes.spotsInfo(plan.extra_attendees, plan.spots_left)
 
-  const statusColor =
-    plan.is_plan_del_dia || plan.spots_left <= 2 ? '#E8642A' : Colors.black[400]
+  const statusColor = plan.spots_left <= 2 ? '#E8642A' : Colors.black[400]
 
   const joinBg = plan.user_joined
     ? Colors.black[100]
@@ -73,6 +71,8 @@ export function PlanCard({ plan, onJoin }: Props) {
     : plan.spots_left === 0
       ? strings.planes.fullCta
       : strings.planes.joinCta
+
+  const overflowCount = plan.extra_attendees - plan.attendees.length
 
   return (
     <View style={styles.card}>
@@ -106,21 +106,31 @@ export function PlanCard({ plan, onJoin }: Props) {
 
             <View style={styles.rightActionCol}>
               <View style={styles.avatarCluster}>
-                {plan.attendees.slice(0, 3).map((initial, i) => (
-                  <View
-                    key={i}
-                    style={[
-                      styles.avatar,
-                      i > 0 && styles.avatarOverlap,
-                      { backgroundColor: getPastelColor(initial) },
-                    ]}
-                  >
-                    <Text style={styles.avatarText}>{initial}</Text>
-                  </View>
-                ))}
-                {plan.extra_attendees > 0 && (
+                {plan.attendees.map((attendee, i) =>
+                  attendee.avatar_url ? (
+                    <Image
+                      key={attendee.user_id}
+                      source={{ uri: attendee.avatar_url }}
+                      style={[styles.avatar, i > 0 && styles.avatarOverlap]}
+                      cachePolicy="memory-disk"
+                      contentFit="cover"
+                    />
+                  ) : (
+                    <View
+                      key={attendee.user_id}
+                      style={[
+                        styles.avatar,
+                        i > 0 && styles.avatarOverlap,
+                        { backgroundColor: getPastelColor(attendee.user_id) },
+                      ]}
+                    >
+                      <Text style={styles.avatarText}>{attendee.initials}</Text>
+                    </View>
+                  )
+                )}
+                {overflowCount > 0 && (
                   <View style={[styles.avatar, styles.avatarOverlap, styles.extraAvatar]}>
-                    <Text style={styles.avatarText}>+{plan.extra_attendees}</Text>
+                    <Text style={styles.avatarText}>+{overflowCount}</Text>
                   </View>
                 )}
               </View>

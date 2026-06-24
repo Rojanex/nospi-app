@@ -55,9 +55,11 @@ export const strings = {
   },
   planes: {
     nextPlanLabel: 'PRÓXIMO PLAN',
-    noNextPlan: '¿a qué plan te apuntas hoy?',
-    noNextPlanCta: 'ver planes →',
+    noNextPlan: '¿a qué plan te apuntas?',
+    noNextPlanCta: 'tus parches →',
     feedHeader: '¿nos pillamos hoy?',
+
+
     planCount: (n: number) => `${n} planes`,
     filterAll: 'Todos',
     filterToday: 'Hoy',
@@ -66,7 +68,8 @@ export const strings = {
     joinCta: 'me apunto →',
     joinedCta: '¡ya voy! ✓',
     fullCta: 'lleno',
-    planDelDia: (spots: number) => `🔥 plan del día · ${spots} cupos`,
+    emptyFeed: 'parece que no hay planes para ti, pero... y si los creas tú?',
+    endOfFeed: 'Tus gustos son de nicho, mejor busca a los tuyos',
     soloSpots: (spots: number) => `¡solo ${spots} cupos!`,
     spotsInfo: (going: number, spots: number) => `${going} van · ${spots} cupos`,
     hostLocal: 'local verificada',

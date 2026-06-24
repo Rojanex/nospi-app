@@ -16,7 +16,7 @@ export function TabIndexHeader() {
           <View>
             <Ionicons name="notifications-outline" size={22} color={Colors.black[300]} />
             <View className="tab-notif-dot" /> 
-            {/* TODO -  make notifications actually work? does this dot need a class? */}
+            {/* TODO -  make notifications actually work? does this dot need a css class ? */}
           </View>
         </TouchableOpacity>
       </View>

@@ -1,6 +1,6 @@
-import { Text, TouchableOpacity, View } from 'react-native'
-import { supabase } from '@/lib/supabase'
 import { TabScreen } from '@/components/layout/TabScreen'
+import { supabase } from '@/lib/supabase'
+import { Text, TouchableOpacity, View } from 'react-native'
 
 export default function Profile() {
   return (

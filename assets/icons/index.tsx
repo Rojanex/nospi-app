@@ -1,13 +1,13 @@
+import { Colors } from '@/assets/constants/Colors';
 import React from "react";
+import { Explore } from './Explore';
 import { Home } from './Home';
 import { Profile } from './Profile';
-import { Explore } from './Explore';
-import { Colors } from '@/assets/constants/Colors'
 
-export { Home } from './Home';
-export { Profile } from './Profile';
 export { Explore } from './Explore';
-export { default as NospiHorizontalLogo } from './NospiHorizontalLogo'
+export { Home } from './Home';
+export { default as NospiHorizontalLogo } from './NospiHorizontalLogo';
+export { Profile } from './Profile';
 
 
 export type IconProps = {

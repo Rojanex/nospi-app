@@ -3,7 +3,7 @@ import Svg, { Path, SvgProps } from "react-native-svg"
 type NospiHorizontalLogoProps = SvgProps & {
   height?: number
 }
-const ASPECT = 454 / 76  // ~5.97 #TODO - analyze this changes
+const ASPECT = 454 / 76  // ~5.97 #TODO - analyze this
 const NospiHorizontalLogo = ({ height = 22, ...props }: NospiHorizontalLogoProps) => (
   <Svg
     width={height * ASPECT}

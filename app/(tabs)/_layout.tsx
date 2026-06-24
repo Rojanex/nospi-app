@@ -1,7 +1,7 @@
-import React from 'react'
-import { Tabs } from "expo-router";
-import { Icon } from "@/assets/icons";
 import { Colors } from "@/assets/constants/Colors";
+import { Icon } from "@/assets/icons";
+import { Tabs } from "expo-router";
+import React from 'react';
 
 const _Layout = () => {
     return (

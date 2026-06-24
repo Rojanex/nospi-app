@@ -1,6 +1,6 @@
 export const Colors = {
   primary: {
-    100: '#F2AD78',
+    100: '#F2AD78', // TODO- check if this color works...
     200: '#F6EEEC',
     300: '#FBF7F6',
   },
@@ -16,6 +16,7 @@ export const Colors = {
   },
   neutral: {
     hint: '#B4B2A9',
+    gray: '#EDEBE5'
   },
   danger: '#F75555',
   buttons: {

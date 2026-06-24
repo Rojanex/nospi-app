@@ -26,6 +26,7 @@ module.exports = {
                 },
                 neutral: {
                     hint: "#B4B2A9",
+                    gray: '#EDEBE5'
                 },
                 form: {
                     error: "#D94F4F",
