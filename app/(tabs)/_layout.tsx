@@ -1,6 +1,6 @@
 import { Colors } from "@/assets/constants/Colors";
 import { Icon } from "@/assets/icons";
-import { NuevoPlanSheet } from "@/components/plans/NuevoPlanSheet";
+import { NuevoPlanSheet } from "@/components/plans/NewPlanSheet";
 import { Tabs } from "expo-router";
 import React, { useState } from 'react';
 import { Dimensions, View } from 'react-native';

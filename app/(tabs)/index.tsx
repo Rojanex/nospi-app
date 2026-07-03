@@ -24,7 +24,7 @@ export default function IndexScreen() {
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(0)
-  const [activeFilter, setActiveFilter] = useState(strings.planes.filterAll)
+  const [activeFilter, setActiveFilter] = useState(strings.plansFeed.filterAll)
   const [nextPlan, setNextPlan] = useState<Plan | null>(null)
 
   async function fetchPlansPage(pageNum: number) {
@@ -110,7 +110,7 @@ export default function IndexScreen() {
     )
   }
 
-  const filteredPlans = activeFilter === strings.planes.filterToday
+  const filteredPlans = activeFilter === strings.plansFeed.filterToday
     ? plans.filter(p => p.date_time.toLowerCase().includes('hoy'))
     : plans
 
@@ -152,7 +152,7 @@ export default function IndexScreen() {
   const renderEmptyComponent = useCallback(() => (
     <View className="items-center px-6 py-12">
       <Text className="text-[15px] font-semibold text-neutral-hint text-center">
-        {strings.planes.emptyFeed}
+        {strings.plansFeed.emptyFeed}
       </Text>
     </View>
   ), [])
@@ -165,7 +165,7 @@ export default function IndexScreen() {
       return (
         <View className="items-center px-6 py-12">
           <Text className="text-[15px] font-semibold text-neutral-hint text-center">
-            {strings.planes.endOfFeed}
+            {strings.plansFeed.endOfFeed}
           </Text>
         </View>
       )

@@ -47,8 +47,8 @@ export function PlanCard({ plan, onJoin }: Props) {
   const tags = plan.activity_type.split('|').map(t => t.trim().toUpperCase()).join(' · ')
 
   const statusLine = plan.spots_left <= 2
-    ? strings.planes.soloSpots(plan.spots_left)
-    : strings.planes.spotsInfo(plan.extra_attendees, plan.spots_left)
+    ? strings.plansFeed.soloSpots(plan.spots_left)
+    : strings.plansFeed.spotsInfo(plan.extra_attendees, plan.spots_left)
 
   const statusColor = plan.spots_left <= 2 ? '#E8642A' : Colors.black[400]
 
@@ -59,10 +59,10 @@ export function PlanCard({ plan, onJoin }: Props) {
       : Colors.buttons.orange
 
   const joinLabel = plan.user_joined
-    ? strings.planes.joinedCta
+    ? strings.plansFeed.joinedCta
     : plan.spots_left === 0
-      ? strings.planes.fullCta
-      : strings.planes.joinCta
+      ? strings.plansFeed.fullCta
+      : strings.plansFeed.joinCta
 
   const overflowCount = plan.extra_attendees - plan.attendees.length
 
@@ -157,7 +157,7 @@ export function PlanCard({ plan, onJoin }: Props) {
             { backgroundColor: plan.host_type === 'local' ? Colors.buttons.orange : Colors.primary[100] },
           ]} />
           <Text style={styles.hostText}>
-            {strings.planes.hostPrefix} {plan.host_name} · {plan.host_type === 'local' ? strings.planes.hostLocal : strings.planes.hostTurista}
+            {strings.plansFeed.hostPrefix} {plan.host_name} · {plan.host_type === 'local' ? strings.plansFeed.hostLocal : strings.plansFeed.hostTurista}
           </Text>
           <Text style={styles.postedAgo}>{plan.posted_ago}</Text>
         </View>

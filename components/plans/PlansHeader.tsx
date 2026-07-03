@@ -12,10 +12,10 @@ import {
 } from 'react-native'
 
 const FILTERS = [
-  strings.planes.filterAll,
-  strings.planes.filterToday,
-  strings.planes.filterNearby,
-  strings.planes.filterFree,
+  strings.plansFeed.filterAll,
+  strings.plansFeed.filterToday,
+  strings.plansFeed.filterNearby,
+  strings.plansFeed.filterFree,
 ]
 
 const ACTIVITY_EMOJI: Record<string, string> = {
@@ -57,7 +57,7 @@ export function PlansHeader({
             </View>
             <View className="flex-1 gap-0.5">
               <Text className="text-[10px] font-bold tracking-[1px] text-buttons-orange">
-                {strings.planes.nextPlanLabel}
+                {strings.plansFeed.nextPlanLabel}
               </Text>
               <Text className="text-[15px] font-bold text-white">
                 {nextPlan.title}
@@ -74,18 +74,18 @@ export function PlansHeader({
       ) : (
         <View className="mx-4 mb-5 gap-2 rounded-[18px] bg-neutral-gray p-[18px]">
           <Text className="text-[15px] font-semibold text-black-100">
-            {strings.planes.noNextPlan}
+            {strings.plansFeed.noNextPlan}
           </Text>
           <TouchableOpacity>
             <Text className="text-sm font-bold text-buttons-orange">
-              {strings.planes.noNextPlanCta}
+              {strings.plansFeed.noNextPlanCta}
             </Text>
           </TouchableOpacity>
         </View>
       )}
 
       <View className="mb-2 px-5">
-        <Text className="tab-section-title">{strings.planes.feedHeader}</Text>
+        <Text className="tab-section-title">{strings.plansFeed.feedHeader}</Text>
       </View>
 
       <ScrollView
