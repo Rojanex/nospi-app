@@ -1,22 +1,22 @@
-import { View, Text, TouchableOpacity } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabScreen } from '@/components/layout/TabScreen'
 import { supabase } from '@/lib/supabase'
+import { Text, TouchableOpacity, View } from 'react-native'
 
 export default function Profile() {
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-primary-300">
-      <View className="px-4 pt-6 flex-1">
-        <Text className="text-black-100 font-bold text-3xl mb-1">Profile</Text>
+    <TabScreen>
+      <View className="px-5 pt-6 flex-1">
+        <Text className="tab-section-title mb-1">Profile</Text>
 
         {/* TODO: user avatar, display name, stats */}
 
         <TouchableOpacity
           onPress={() => supabase.auth.signOut()}
-          className="mt-6 bg-danger rounded-xl py-4 items-center"
+          className="mt-2 bg-danger rounded-xl py-4 items-center"
         >
           <Text className="text-white font-bold text-base">Log out</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </TabScreen>
   )
 }

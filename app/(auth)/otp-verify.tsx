@@ -134,7 +134,7 @@ export default function OtpVerify() {
             {strings.onboarding.verifySubtitle} {phone}
           </Text>
 
-          {/* Single hidden input captures all keystrokes */}
+          {/* Single hidden input captures all keystrokes, you might need find a better way! */}
           <TextInput
             ref={hiddenInputRef}
             autoFocus
