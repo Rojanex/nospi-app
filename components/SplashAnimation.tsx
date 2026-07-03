@@ -4,16 +4,17 @@ import { Colors } from '@/assets/constants/Colors'
 
 interface SplashAnimationProps {
   onFinish: () => void
+  loop?: boolean
 }
 
-export default function SplashAnimation({ onFinish }: SplashAnimationProps) {
+export default function SplashAnimation({ onFinish, loop = false }: SplashAnimationProps) {
   return (
     <View style={styles.container}>
       <LottieView
         source={require('@/assets/animations/splash-logo.json')}
         autoPlay
-        loop={false}
-        onAnimationFinish={onFinish}
+        loop={loop}
+        onAnimationFinish={loop ? undefined : onFinish}
         style={styles.animation}
       />
     </View>

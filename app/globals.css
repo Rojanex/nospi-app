@@ -46,4 +46,32 @@
   .btn-secondary {
     @apply bg-buttons-brown h-14 rounded-[28px] items-center justify-center;
   }
+
+  .tab-header {
+    @apply flex-row items-center justify-between bg-primary-300 px-5 pb-4;
+  }
+
+  .tab-header-actions {
+    @apply flex-row items-center gap-1;
+  }
+
+  .tab-icon-btn {
+    @apply p-1.5;
+  }
+
+  .tab-notif-dot {
+    @apply absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-buttons-orange;
+  }
+
+  .tab-body {
+    @apply flex-1;
+  }
+
+  .tab-section-title {
+    @apply text-black-100 font-bold text-[22px];
+  }
+
+  .tab-section-subtitle {
+    @apply text-black-300 text-sm;
+  }
 }
