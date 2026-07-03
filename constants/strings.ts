@@ -53,7 +53,7 @@ export const strings = {
 
 
   },
-  planes: {
+  plansFeed: {
     nextPlanLabel: 'PRÓXIMO PARCHE:',
     noNextPlan: '¿a qué plan te apuntas?',
     noNextPlanCta: 'tus parches →',
@@ -77,9 +77,33 @@ export const strings = {
     hostPrefix: 'por',
   },
   newPlan: {
-    newPlanTitle: 'Nuevo Plan',
-    newPlanSubtitle: 'Crea un plan y reúne a tu gente',
-
+    sheetTitle: 'Arma tu parche',
+    activityTypeSection: '¿qué tipo de plan es?',
+    planSection: 'el plan',
+    whereWhenSection: '¿dónde y cuándo?',
+    spotsVisibilitySection: 'cupos y visibilidad',
+    titleLabel: 'TÍTULO',
+    descriptionLabel: 'DESCRIPCIÓN (OPCIONAL)',
+    locationLabel: 'LUGAR',
+    dateLabel: 'FECHA',
+    timeLabel: 'HORA',
+    spotsLabel: 'CUPOS',
+    visibilityLabel: '¿QUIÉN PUEDE UNIRSE?',
+    titlePlaceholder: '¿cuál es el plan?',
+    descriptionPlaceholder: 'agrega detalles del plan...',
+    locationPlaceholder: 'busca un sitio...',
+    datePlaceholder: 'elige una fecha',
+    timePlaceholder: 'elige la hora',
+    spotsCount: (n: number) => `${n} personas`,
+    spotsSubtitleYouPlusOne: 'tú + 1 persona',
+    spotsSubtitleYouPlusOthers: (n: number) => `tú + ${n} personas`,
+    visibilityOpenTitle: 'abierto',
+    visibilityOpenSubtitle: 'cualquier usuario',
+    visibilityLocalTitle: 'solo locales',
+    visibilityLocalSubtitle: 'únicamente locales verificados',
+    ctaButton: 'Agregar plan',
+    ctaHint: 'tu plan aparece en el feed de una vez',
+    pickerDone: 'Listo',
   },
 
   losMios: {
