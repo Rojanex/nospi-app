@@ -9,14 +9,20 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Nospi usa tu ubicación para mostrarte planes cerca de ti"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/nospi-icon-app.png",
         "backgroundColor": "#373026"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Nospi usa tu ubicación para mostrarte planes cerca de ti"
+      }
     },
     "web": {
       "bundler": "metro",

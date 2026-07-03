@@ -35,6 +35,7 @@ export const Colors = {
     orangeDark: '#D4650E',
     green: '#2D8B5A',
     blue: '#185FA5',
+    amber: '#BA7517',
   },
   danger: '#F75555',
   buttons: {

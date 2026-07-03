@@ -1,10 +1,10 @@
-import { ACTIVITY_META, ActivityType } from '@/components/plans/PlanCard'
 import { Colors } from '@/assets/constants/Colors'
+import { ACTIVITY_META, ActivityType } from '@/components/plans/PlanCard'
 import { strings } from '@/constants/strings'
-import { NEW_PLAN_DESCRIPTION_MAX, NEW_PLAN_TITLE_MAX } from '@/lib/env_reader'
+import { NEW_PLAN_DESCRIPTION_MAX, NEW_PLAN_TITLE_MAX, GOOGLE_PLACES_KEY } from '@/lib/env_reader'
 import { Feather, Ionicons } from '@expo/vector-icons'
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import {
   Dimensions,
   Pressable,
@@ -15,6 +15,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+import GooglePlacesTextInput, {
+  GooglePlacesTextInputRef,
+  Place,
+} from 'react-native-google-places-textinput'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const TITLE_WARN_THRESHOLD = NEW_PLAN_TITLE_MAX - 8
@@ -41,6 +45,78 @@ function formatTime(time: Date): string {
     minute: '2-digit',
     hour12: true,
   }).format(time)
+}
+
+const PUBLIC_TYPES = [
+  'establishment', 'point_of_interest', 'park', 'restaurant',
+  'bar', 'cafe', 'tourist_attraction', 'stadium', 'gym',
+  'shopping_mall', 'museum', 'church', 'lodging',
+]
+
+const RESIDENTIAL_TYPES = [
+  'street_address', 'premise', 'subpremise', 'route',
+]
+
+function evaluatePlace(types: string[]): boolean {
+  const isPublic = types.some(t => PUBLIC_TYPES.includes(t))
+  const isResidential = types.some(t => RESIDENTIAL_TYPES.includes(t))
+  return !isPublic && isResidential
+}
+
+const NEIGHBORHOOD_TYPES = [
+  'neighborhood',
+  'sublocality_level_1',
+  'sublocality',
+  'administrative_area_level_3',
+] as const
+
+type AddressComponent = {
+  longText?: string
+  shortText?: string
+  long_name?: string
+  short_name?: string
+  types?: string[]
+}
+
+function addressComponentName(component: AddressComponent): string | null {
+  return component.longText ?? component.short_name ?? component.long_name ?? component.shortText ?? null
+}
+
+function placeDisplayName(place: Place): string {
+  const displayName = place.details?.displayName
+  if (typeof displayName === 'string') return displayName
+  if (
+    typeof displayName === 'object' &&
+    displayName !== null &&
+    'text' in displayName &&
+    typeof (displayName as { text: string }).text === 'string'
+  ) {
+    return (displayName as { text: string }).text
+  }
+  return place.structuredFormat.mainText.text
+}
+
+function placeNeighborhood(place: Place): string | null {
+  const components = place.details?.addressComponents
+  if (!Array.isArray(components)) return null
+
+  for (const type of NEIGHBORHOOD_TYPES) {
+    const match = components.find(
+      (component: AddressComponent) =>
+        Array.isArray(component.types) && component.types.includes(type),
+    )
+    if (match) {
+      const name = addressComponentName(match)
+      if (name) return name
+    }
+  }
+  return null
+}
+
+function formatPlaceDescription(place: Place): string {
+  const name = placeDisplayName(place)
+  const neighborhood = placeNeighborhood(place)
+  return neighborhood ? `${name}, ${neighborhood}` : name
 }
 
 function spotsSubtitle(maxSpots: number): string {
@@ -101,10 +177,15 @@ function InlinePickerPanel({
 }
 
 export function NuevoPlanSheet({ onClose: _onClose }: NewPlanSheetProps) {
+  const placesRef = useRef<GooglePlacesTextInputRef>(null)
   const [activityType, setActivityType] = useState<ActivityType | null>(null)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [locationName, setLocationName] = useState('')
+  const [locationPlaceId, setLocationPlaceId] = useState('')
+  const [locationLat, setLocationLat] = useState<number | null>(null)
+  const [locationLng, setLocationLng] = useState<number | null>(null)
+  const [locationIsPublic, setLocationIsPublic] = useState<boolean | null>(null)
   const [date, setDate] = useState<Date | null>(null)
   const [time, setTime] = useState<Date | null>(null)
   const [maxSpots, setMaxSpots] = useState(3)
@@ -129,10 +210,37 @@ export function NuevoPlanSheet({ onClose: _onClose }: NewPlanSheetProps) {
     setActivePicker(null)
   }
 
+  function handlePlaceSelect(place: Place) {
+    setLocationName(formatPlaceDescription(place))
+    setLocationPlaceId(place.placeId)
+
+    const location = place.details?.location as
+      | { latitude?: number; longitude?: number; lat?: number; lng?: number }
+      | undefined
+    if (location) {
+      setLocationLat(location.latitude ?? location.lat ?? null)
+      setLocationLng(location.longitude ?? location.lng ?? null)
+    }
+
+    const types = (place.details?.types ?? place.types ?? []) as string[]
+    setLocationIsPublic(!evaluatePlace(types))
+  }
+
+  function handleLocationTextChange(text: string) {
+    setLocationName(text)
+    if (text === '') {
+      setLocationPlaceId('')
+      setLocationLat(null)
+      setLocationLng(null)
+      setLocationIsPublic(null)
+    }
+  }
+
   const isValid =
     !!activityType &&
     title.trim().length >= 3 &&
     locationName.trim().length > 0 &&
+    locationPlaceId.length > 0 &&
     !!date &&
     !!time
 
@@ -144,7 +252,8 @@ export function NuevoPlanSheet({ onClose: _onClose }: NewPlanSheetProps) {
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-4 pb-4"
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
+        nestedScrollEnabled
         showsVerticalScrollIndicator={false}
       >
         <Text className="mb-2 mt-4 text-[10px] font-bold uppercase tracking-[0.7px] text-neutral-label">
@@ -254,20 +363,36 @@ export function NuevoPlanSheet({ onClose: _onClose }: NewPlanSheetProps) {
           {strings.newPlan.whereWhenSection}
         </Text>
         <View className="rounded-[14px] bg-white">
+          {/* location row — Places autocomplete */}
           <View className="flex-row items-start gap-2.5 px-3.5 py-3">
-            <IconSquare className="bg-surface-greenLight">
+            <IconSquare className="mt-3.5 bg-surface-greenLight">
               <Ionicons name="location-outline" size={14} color={Colors.activity.green} />
             </IconSquare>
-            <View className="flex-1">
+            <View className="z-10 flex-1">
               <Text className="mb-1 text-[10px] font-bold tracking-wide text-neutral-label">
                 {strings.newPlan.locationLabel}
               </Text>
-              <TextInput
+              <GooglePlacesTextInput
+                ref={placesRef}
+                apiKey={GOOGLE_PLACES_KEY}
                 value={locationName}
-                onChangeText={setLocationName}
-                placeholder={strings.newPlan.locationPlaceholder}
-                placeholderTextColor={Colors.neutral.label}
-                className="p-0 text-sm font-medium text-ink"
+                placeHolderText={strings.newPlan.locationPlaceholder}
+                languageCode="es"
+                includedRegionCodes={['co']}
+                fetchDetails
+                detailsFields={['types', 'displayName', 'location', 'id', 'addressComponents']}
+                onPlaceSelect={handlePlaceSelect}
+                onTextChange={handleLocationTextChange}
+                onError={(error) => console.warn('Places API error:', error)}
+                scrollEnabled={false}
+                nestedScrollEnabled={false}
+                showClearButton
+                style={placesTextInputStyles}
+                suggestionTextProps={{
+                  mainTextNumberOfLines: 1,
+                  secondaryTextNumberOfLines: 1,
+                  ellipsizeMode: 'tail',
+                }}
               />
             </View>
           </View>
@@ -329,6 +454,15 @@ export function NuevoPlanSheet({ onClose: _onClose }: NewPlanSheetProps) {
             />
           )}
         </View>
+
+        {locationIsPublic === false && (
+          <Text
+            className="mt-1.5 px-1 text-[11px] font-semibold"
+            style={{ color: Colors.activity.amber }}
+          >
+            {strings.newPlan.locationPrivateWarning}
+          </Text>
+        )}
 
         <Text className="mb-2 mt-4 text-[10px] font-bold uppercase tracking-[0.7px] text-neutral-label">
           {strings.newPlan.spotsVisibilitySection}
@@ -433,6 +567,9 @@ export function NuevoPlanSheet({ onClose: _onClose }: NewPlanSheetProps) {
               title,
               description,
               locationName,
+              locationPlaceId,
+              locationLat,
+              locationLng,
               date,
               time,
               maxSpots,
@@ -497,3 +634,56 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 })
+
+const placesTextInputStyles = {
+  container: {
+    flex: 0,
+    zIndex: 10,
+  },
+  inputContainer: {
+    backgroundColor: 'transparent',
+    height: 20,
+    padding: 0,
+    margin: 0,
+    borderWidth: 0,
+  },
+  input: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500' as const,
+    lineHeight: 20,
+    color: Colors.ink,
+    backgroundColor: 'transparent',
+    margin: 0,
+    padding: 0,
+  },
+  suggestionsContainer: {
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    marginTop: 6,
+    zIndex: 1000,
+    elevation: 8,
+    shadowColor: Colors.black.DEFAULT,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    maxHeight: 200,
+  },
+  suggestionItem: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  suggestionText: {
+    main: {
+      fontSize: 13,
+      color: Colors.ink,
+    },
+    secondary: {
+      fontSize: 11,
+      color: Colors.black[400],
+    },
+  },
+  placeholder: {
+    color: Colors.neutral.label,
+  },
+}

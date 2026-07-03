@@ -92,6 +92,8 @@ export const strings = {
     titlePlaceholder: '¿cuál es el plan?',
     descriptionPlaceholder: 'agrega detalles del plan...',
     locationPlaceholder: 'busca un sitio...',
+    locationPrivateWarning:
+      'este lugar parece una dirección privada · Nospi es para planes en sitios públicos 👀',
     datePlaceholder: 'elige una fecha',
     timePlaceholder: 'elige la hora',
     spotsCount: (n: number) => `${n} personas`,
