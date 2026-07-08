@@ -104,8 +104,13 @@ export const strings = {
     visibilityLocalTitle: 'solo locales',
     visibilityLocalSubtitle: 'únicamente locales verificados',
     ctaButton: 'Agregar plan',
+    ctaButtonLoading: 'Agregando...',
     ctaHint: 'tu plan aparece en el feed de una vez',
     pickerDone: 'Listo',
+    createErrorAuth: 'Inicia sesión para crear un plan.',
+    createErrorGeneric: 'No pudimos crear el plan. Intenta de nuevo.',
+    createErrorLimit: 'Ya alcanzaste el límite de planes esta semana.',
+    createErrorValidation: 'Revisa los datos del plan e intenta de nuevo.',
   },
 
   losMios: {

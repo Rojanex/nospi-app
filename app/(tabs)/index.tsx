@@ -5,6 +5,7 @@ import { PlansHeader } from '@/components/plans/PlansHeader'
 import { PlansHeaderSkeleton } from '@/components/plans/PlansHeaderSkeleton'
 import { strings } from '@/constants/strings'
 import { mapRowToPlan } from '@/lib/plans/mapRowToPlan'
+import { subscribePlanCreated } from '@/lib/plans/plansEvents'
 import { supabase } from '@/lib/supabase'
 import { Plan, PlanRow } from '@/types'
 import React, { useCallback, useEffect, useState } from 'react'
@@ -77,6 +78,12 @@ export default function IndexScreen() {
 
   useEffect(() => {
     fetchInitialData().finally(() => setLoading(false))
+  }, [fetchInitialData])
+
+  useEffect(() => {
+    return subscribePlanCreated(() => {
+      fetchInitialData()
+    })
   }, [fetchInitialData])
 
   const onRefresh = useCallback(async () => {

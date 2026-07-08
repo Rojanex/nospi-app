@@ -21,6 +21,45 @@ export interface ApiResponse<T> {
   error: string | null
 }
 
+export type PlanActivityType =
+  | 'social' | 'playa' | 'rumba' | 'deporte'
+  | 'comida' | 'cultura' | 'naturaleza' | 'otro'
+
+export type PlanVisibility = 'open' | 'locals'
+
+export type NewPlanLocation = {
+  name: string
+  placeId: string
+  lat: number | null
+  lng: number | null
+  isPublic: boolean | null
+}
+
+export type NewPlanFormValues = {
+  activityType: PlanActivityType | null
+  title: string
+  description: string
+  location: NewPlanLocation
+  date: Date | null
+  time: Date | null
+  maxSpots: number
+  visibility: PlanVisibility
+}
+
+export type PlanInsertRow = {
+  created_by: string
+  title: string
+  activity_type: PlanActivityType
+  description: string | null
+  location_name: string
+  location_place_id: string
+  location_lat: number
+  location_lng: number
+  date_time: string
+  max_spots: number
+  visibility: PlanVisibility
+}
+
 export interface PlanRow {
   id: string
   created_at: string
