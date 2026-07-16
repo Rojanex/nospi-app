@@ -48,6 +48,9 @@ export const LocationField = forwardRef<GooglePlacesTextInputRef, LocationFieldP
             scrollEnabled={false}
             nestedScrollEnabled={false}
             showClearButton
+            clearElement={
+              <Ionicons name="close" size={16} color={Colors.neutral.label} />
+            }
             style={placesTextInputStyles}
             suggestionTextProps={{
               mainTextNumberOfLines: 1,
@@ -79,7 +82,7 @@ const placesTextInputStyles: GooglePlacesTextInputStyles = {
     paddingVertical: 0,
     margin: 0,
     borderWidth: 0,
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   input: {
     flex: 1,
@@ -116,10 +119,6 @@ const placesTextInputStyles: GooglePlacesTextInputStyles = {
       fontSize: 11,
       color: Colors.black[400],
     },
-  },
-  clearButtonText: {
-    alignSelf: 'flex-start',
-    marginTop: 1,
   },
   placeholder: {
     color: Colors.neutral.label,

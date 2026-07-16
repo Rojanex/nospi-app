@@ -1,6 +1,6 @@
 import { Colors } from "@/assets/constants/Colors";
 import { Icon } from "@/assets/icons";
-import { NuevoPlanSheet } from "@/components/plans/NewPlanSheet";
+import { NewPlanSheet } from "@/components/plans/NewPlanSheet";
 import { Tabs } from "expo-router";
 import React, { useState } from 'react';
 import { Dimensions, View } from 'react-native';
@@ -134,7 +134,7 @@ const _Layout = () => {
                                 <View className="w-9 h-1 rounded-sm bg-neutral-hint" />
                             </View>
                         </GestureDetector>
-                        <NuevoPlanSheet onClose={closeSheet} />
+                        <NewPlanSheet onClose={closeSheet} />
                     </Animated.View>
                 </Animated.View>
             </GestureHandlerRootView>

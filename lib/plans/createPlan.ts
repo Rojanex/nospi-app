@@ -8,10 +8,7 @@ import { PostgrestError } from '@supabase/supabase-js'
 function mapCreatePlanError(error: PostgrestError): string {
   const message = error.message.toLowerCase()
   if (
-    message.includes('enforce_create_limit') ||
-    message.includes('create limit') ||
-    message.includes('límite') ||
-    message.includes('limit')
+    message.includes('create_limit_reached')
   ) {
     return strings.newPlan.createErrorLimit
   }

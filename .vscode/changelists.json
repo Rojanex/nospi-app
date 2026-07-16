@@ -1,0 +1,16 @@
+{
+  "changelists": [
+    {
+      "name": "Default",
+      "files": [
+        "app/(tabs)/_layout.tsx",
+        "components/plans/NewPlanSheet.tsx",
+        ".vscode/changelists.json",
+        "constants/strings.ts",
+        "lib/plans/createPlan.ts",
+        "components/plans/NewPlanFields.tsx"
+      ]
+    }
+  ],
+  "active": "Default"
+}

@@ -25,7 +25,7 @@ interface NewPlanSheetProps {
   onClose: () => void
 }
 
-export function NuevoPlanSheet({ onClose }: NewPlanSheetProps) {
+export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
   const placesRef = useRef<GooglePlacesTextInputRef>(null)
   const [form, setForm] = useState<NewPlanFormValues>(EMPTY_NEW_PLAN_FORM)
   const [activePicker, setActivePicker] = useState<ActivePicker>(null)
@@ -135,7 +135,7 @@ export function NuevoPlanSheet({ onClose }: NewPlanSheetProps) {
             <ActivityIndicator color="#ffffff" />
           ) : (
             <Text className="text-sm font-bold text-white ">
-              {strings.newPlan.ctaButton}
+              {strings.newPlan.addButton}
             </Text>
           )}
         </TouchableOpacity>

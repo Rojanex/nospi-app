@@ -103,7 +103,7 @@ export const strings = {
     visibilityOpenSubtitle: 'cualquier usuario',
     visibilityLocalTitle: 'solo locales',
     visibilityLocalSubtitle: 'únicamente locales verificados',
-    ctaButton: 'Agregar plan',
+    addButton: 'Agregar plan',
     ctaButtonLoading: 'Agregando...',
     ctaHint: 'tu plan aparece en el feed de una vez',
     pickerDone: 'Listo',

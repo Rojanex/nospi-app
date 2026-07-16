@@ -283,7 +283,7 @@ export function NewPlanFields({
 
       {location.isPublic === false && (
         <Text
-          className="mt-1.5 px-1 text-[11px] font-semibold"
+          className="mt-1.5 px-3.5 py-1.5 text-[11px] font-semibold"
           style={{ color: Colors.activity.amber }}
         >
           {strings.newPlan.locationPrivateWarning}
