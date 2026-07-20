@@ -4,24 +4,16 @@
       "name": "Default",
       "files": [
         "constants/strings.ts",
-        "app/(tabs)/los-mios.tsx",
-        "components/chats/ArchivedFooter.tsx",
-        "components/chats/ChatRow.tsx",
-        "components/chats/ChatSection.tsx",
         "lib/chats/mockChats.ts",
-        ".vscode/changelists.json",
-        "components/plans/NewPlanFields.tsx",
-        "components/plans/PlanCard.tsx",
-        "constants/activityMeta.ts",
-        "assets/constants/Colors.ts",
-        "tailwind.config.js",
-        "app/(tabs)/_layout.tsx",
         "app/(tabs)/chats.tsx",
         "app/_layout.tsx",
-        ".cursor/debug-1bf83a.log",
-        "assets/icons/Explore.tsx",
-        "assets/icons/Home.tsx",
-        "assets/icons/Profile.tsx"
+        "app/chats/[id].tsx",
+        "components/chats/ChatComposer.tsx",
+        "components/chats/ChatThreadHeader.tsx",
+        "components/chats/MessageBubble.tsx",
+        "lib/chats/mockMessages.ts",
+        ".vscode/changelists.json",
+        "components/chats/ChatRow.tsx"
       ]
     }
   ],

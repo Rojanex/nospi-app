@@ -4,12 +4,14 @@ import { ChatSection } from '@/components/chats/ChatSection'
 import { TabScreen } from '@/components/layout/TabScreen'
 import { strings } from '@/constants/strings'
 import { mockChats } from '@/lib/chats/mockChats'
+import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import { ScrollView, Text, View } from 'react-native'
 
 const ARCHIVED_MOCK_COUNT = 2
 
 export default function Chats() {
+  const router = useRouter()
   const [openSwipeId, setOpenSwipeId] = useState<string | null>(null)
   const activeChats = mockChats.filter(c => c.status === 'active')
   const finalizedChats = mockChats.filter(c => c.status === 'finalized')
@@ -24,7 +26,7 @@ export default function Chats() {
   }
 
   function handleChatPress(id: string) {
-    console.log('[chats] open chat', id)
+    router.push(`/chats/${id}` as never)
   }
 
   function handleLeave(id: string) {

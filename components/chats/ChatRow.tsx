@@ -13,7 +13,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
 
-const ACTION_WIDTH = 96
+const ACTION_WIDTH = 78
 const OPEN_X = -ACTION_WIDTH
 const SPRING = { damping: 20, stiffness: 200 }
 

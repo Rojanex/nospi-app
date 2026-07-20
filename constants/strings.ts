@@ -122,5 +122,10 @@ export const strings = {
     hostBadge: 'HOSTING',
     archiveAction: 'Archivar',
     leaveAction: 'Salir',
+    threadSubtitle: (memberCount: number, timeLabel: string) =>
+      `${memberCount} personas · ${timeLabel}`,
+    messagePlaceholder: 'Escribe un mensaje...',
+    readOnlyBanner: 'Este parche ya pasó · solo lectura',
+    emptyMessages: 'Aún no hay mensajes',
   },
 }
