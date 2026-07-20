@@ -1,9 +1,11 @@
+import 'react-native-gesture-handler'
+import SplashAnimation from '@/components/SplashAnimation'
+import { supabase } from '@/lib/supabase'
+import { Session } from '@supabase/supabase-js'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, View } from 'react-native'
-import { Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
-import SplashAnimation from '@/components/SplashAnimation'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import './globals.css'
 
 export default function RootLayout() {
@@ -51,16 +53,18 @@ export default function RootLayout() {
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#F2AD78" />
+        <ActivityIndicator size="large" color="Colors.primary.100" />
       </View>
     )
   }
 
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-    </Stack>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+      </Stack>
+    </GestureHandlerRootView>
   )
 }

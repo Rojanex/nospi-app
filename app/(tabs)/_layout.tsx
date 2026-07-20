@@ -101,7 +101,7 @@ const _Layout = () => {
                     )
                 }} />
             <Tabs.Screen
-                name={"los-mios"}
+                name={"chats"}
                 options={{
                     title: "Los míos",
                     headerShown: false,

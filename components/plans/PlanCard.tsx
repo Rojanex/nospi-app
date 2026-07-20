@@ -1,39 +1,15 @@
 import { Colors } from '@/assets/constants/Colors'
+import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
 import { Plan } from '@/types'
 import { Image } from 'expo-image'
 import React from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Text, TouchableOpacity, View } from 'react-native'
 
+const AVATAR_PASTEL_COLORS = ['#FFD6D6', '#D6F5D6', '#D6E8FF', '#FFF3D6', '#F5D6FF', '#D6F5F5']
 
-//TODO - Activity type in a future might be a smple string, image to the plan as group chat
-export type ActivityType =
-  | 'social' | 'playa' | 'rumba' | 'deporte'
-  | 'comida' | 'cultura' | 'naturaleza' | 'otro'
-
-type ActivityMeta = { emoji: string; label: string; tag: string; bg: string; accent: string }
-
-export const ACTIVITY_META: Record<ActivityType, ActivityMeta> = {
-  social:     { emoji: '🥥', label: 'social',     tag: '#0F6E56', bg: '#E1F5EE', accent: '#0F6E56' },
-  playa:      { emoji: '🏖️', label: 'playa',      tag: '#E8642A', bg: '#FFF0E8', accent: '#E8642A' },
-  rumba:      { emoji: '🎵', label: 'rumba',       tag: '#993556', bg: '#FBEAF0', accent: '#993556' },
-  deporte:    { emoji: '⚽', label: 'deporte',    tag: '#185FA5', bg: '#E6F1FB', accent: '#185FA5' },
-  comida:     { emoji: '🍽️', label: 'comida',     tag: '#BA7517', bg: '#FAEEDA', accent: '#BA7517' },
-  cultura:    { emoji: '🎭', label: 'cultura',    tag: '#534AB7', bg: '#EEEDFE', accent: '#534AB7' },
-  naturaleza: { emoji: '🌿', label: 'naturaleza', tag: '#3B6D11', bg: '#EAF3DE', accent: '#3B6D11' },
-  otro:       { emoji: '✨', label: 'otro',        tag: '#5F5E5A', bg: '#F1EFE8', accent: '#5F5E5A' },
-}
-
-const DEFAULT_META: ActivityMeta = { emoji: '✨', label: 'otro', tag: '#5F5E5A', bg: '#F1EFE8', accent: '#5F5E5A' }
-
-const PASTEL_COLORS = ['#FFD6D6', '#D6F5D6', '#D6E8FF', '#FFF3D6', '#F5D6FF', '#D6F5F5']
-
-function getPastelColor(initial: string): string {
-  return PASTEL_COLORS[initial.charCodeAt(0) % PASTEL_COLORS.length]
-}
-
-function getActivityMeta(type: string): ActivityMeta {
-  return ACTIVITY_META[type.toLowerCase() as ActivityType] ?? DEFAULT_META
+function getAvatarPastelColor(initial: string): string {
+  return AVATAR_PASTEL_COLORS[initial.charCodeAt(0) % AVATAR_PASTEL_COLORS.length]
 }
 
 interface Props {
@@ -50,12 +26,12 @@ export function PlanCard({ plan, onJoin }: Props) {
     ? strings.plansFeed.soloSpots(plan.spots_left)
     : strings.plansFeed.spotsInfo(plan.extra_attendees, plan.spots_left)
 
-  const statusColor = plan.spots_left <= 2 ? '#E8642A' : Colors.black[400]
+  const statusColor = plan.spots_left <= 2 ? Colors.activity.orange : Colors.black[400]
 
   const joinBg = plan.user_joined
     ? Colors.black[100]
     : plan.spots_left === 0
-      ? '#C8C6BF'
+      ? Colors.neutral.gray
       : Colors.buttons.orange
 
   const joinLabel = plan.user_joined
@@ -65,252 +41,121 @@ export function PlanCard({ plan, onJoin }: Props) {
       : strings.plansFeed.joinCta
 
   const overflowCount = plan.extra_attendees - plan.attendees.length
+  const hostDotColor =
+    plan.host_type === 'local' ? Colors.buttons.orange : Colors.primary[100]
 
   return (
-    <View style={styles.card}>
-      <View style={[styles.accentBar, { backgroundColor: meta.accent }]} />
+    <View className="mx-4 mb-3 flex-row overflow-hidden rounded-[18px] bg-white">
+      <View className="w-[3px]" style={{ backgroundColor: meta.accent }} />
 
-      <View style={styles.cardContent}>
-        {/* TOP SECTION */}
-        <View style={styles.topSection}>
-          <View style={styles.topRow}>
-            <View style={[styles.emojiSquare, { backgroundColor: meta.bg }]}>
-              <Text style={styles.emojiText}>{meta.emoji}</Text>
+      <View className="flex-1">
+        <View className="p-3.5">
+          <View className="flex-row items-start gap-2.5">
+            <View
+              className="h-11 w-11 items-center justify-center rounded-xl"
+              style={{ backgroundColor: meta.bg }}
+            >
+              <Text className="text-[22px]">{meta.emoji}</Text>
             </View>
-            <View style={styles.topRight}>
-              <Text style={[styles.tagText, { color: meta.tag }]}>{tags}</Text>
-              <Text style={styles.planTitle}>{plan.title}</Text>
-              <Text style={styles.location}>📍 {plan.location_name}</Text>
+            <View className="flex-1 gap-0.5">
+              <Text
+                className="text-[10px] font-bold tracking-wide"
+                style={{ color: meta.accent }}
+              >
+                {tags}
+              </Text>
+              <Text className="text-base font-bold text-black-100">{plan.title}</Text>
+              <Text className="text-xs text-black-400">📍 {plan.location_name}</Text>
             </View>
           </View>
         </View>
 
-        {/* DASHED DIVIDER */}
-        <View style={styles.dashedDivider} />
+        <View className="mx-3.5 border-b border-dashed border-neutral-tinted" />
 
-        {/* BOTTOM SECTION */}
-        <View style={styles.bottomSection}>
-          <View style={styles.bottomRow}>
+        <View className="p-3.5">
+          <View className="flex-row items-start justify-between">
             <View>
-              <Text style={styles.dateTime}>{plan.date_time}</Text>
-              <Text style={[styles.statusText, { color: statusColor }]}>{statusLine}</Text>
+              <Text className="text-[15px] font-bold text-black-100">{plan.date_time}</Text>
+              <Text className="mt-0.5 text-xs" style={{ color: statusColor }}>
+                {statusLine}
+              </Text>
             </View>
 
-            <View style={styles.rightActionCol}>
-              <View style={styles.avatarCluster}>
+            <View className="items-end gap-1.5">
+              <View className="flex-row items-center">
                 {plan.attendees.map((attendee, i) =>
                   attendee.avatar_url ? (
                     <Image
                       key={attendee.user_id}
                       source={{ uri: attendee.avatar_url }}
-                      style={[styles.avatar, i > 0 && styles.avatarOverlap]}
+                      className={`h-[26px] w-[26px] items-center justify-center rounded-full border-[1.5px] border-white ${i > 0 ? '-ml-[7px]' : ''}`}
                       cachePolicy="memory-disk"
                       contentFit="cover"
                     />
                   ) : (
                     <View
                       key={attendee.user_id}
-                      style={[
-                        styles.avatar,
-                        i > 0 && styles.avatarOverlap,
-                        { backgroundColor: getPastelColor(attendee.user_id) },
-                      ]}
+                      className={`h-[26px] w-[26px] items-center justify-center rounded-full border-[1.5px] border-white ${i > 0 ? '-ml-[7px]' : ''}`}
+                      style={{ backgroundColor: getAvatarPastelColor(attendee.user_id) }}
                     >
-                      <Text style={styles.avatarText}>{attendee.initials}</Text>
+                      <Text className="text-[9px] font-bold text-black-500">
+                        {attendee.initials}
+                      </Text>
                     </View>
                   )
                 )}
                 {overflowCount > 0 && (
-                  <View style={[styles.avatar, styles.avatarOverlap, styles.extraAvatar]}>
-                    <Text style={styles.avatarText}>+{overflowCount}</Text>
+                  <View className="-ml-[7px] h-[26px] w-[26px] items-center justify-center rounded-full border-[1.5px] border-white bg-neutral-tinted">
+                    <Text className="text-[9px] font-bold text-black-500">
+                      +{overflowCount}
+                    </Text>
                   </View>
                 )}
               </View>
 
               <TouchableOpacity
-                style={[styles.joinBtn, { backgroundColor: joinBg }]}
+                className="rounded-full px-[18px] py-2.5"
+                style={{ backgroundColor: joinBg }}
                 onPress={() => onJoin(plan.id)}
                 disabled={plan.spots_left === 0}
               >
-                <Text style={styles.joinBtnText}>{joinLabel}</Text>
+                <Text className="text-[13px] font-bold text-white">{joinLabel}</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
-        {/* HOST ROW */}
-        <View style={styles.hostRow}>
+        <View className="flex-row items-center gap-1.5 bg-neutral-softTint px-3.5 py-3">
           {plan.host_avatar_url ? (
             <Image
               source={{ uri: plan.host_avatar_url }}
-              style={styles.hostAvatar}
+              className="h-[22px] w-[22px] items-center justify-center rounded-full"
               cachePolicy="memory-disk"
               contentFit="cover"
             />
           ) : (
-            <View style={[styles.hostAvatar, { backgroundColor: getPastelColor(plan.host_initials) }]}>
-              <Text style={styles.hostInitialsText}>{plan.host_initials}</Text>
+            <View
+              className="h-[22px] w-[22px] items-center justify-center rounded-full"
+              style={{ backgroundColor: getAvatarPastelColor(plan.host_initials) }}
+            >
+              <Text className="text-[9px] font-bold text-black-500">
+                {plan.host_initials}
+              </Text>
             </View>
           )}
-          <View style={[
-            styles.dotBadge,
-            { backgroundColor: plan.host_type === 'local' ? Colors.buttons.orange : Colors.primary[100] },
-          ]} />
-          <Text style={styles.hostText}>
-            {strings.plansFeed.hostPrefix} {plan.host_name} · {plan.host_type === 'local' ? strings.plansFeed.hostLocal : strings.plansFeed.hostTurista}
+          <View
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ backgroundColor: hostDotColor }}
+          />
+          <Text className="flex-1 text-xs text-black-400">
+            {strings.plansFeed.hostPrefix} {plan.host_name} ·{' '}
+            {plan.host_type === 'local'
+              ? strings.plansFeed.hostLocal
+              : strings.plansFeed.hostVisitor}
           </Text>
-          <Text style={styles.postedAgo}>{plan.posted_ago}</Text>
+          <Text className="text-xs text-neutral-hint">{plan.posted_ago}</Text>
         </View>
       </View>
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
-    marginBottom: 12,
-    marginHorizontal: 16,
-    overflow: 'hidden',
-  },
-  accentBar: {
-    width: 3,
-  },
-  cardContent: {
-    flex: 1,
-  },
-  topSection: {
-    padding: 14,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  emojiSquare: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emojiText: {
-    fontSize: 22,
-  },
-  topRight: {
-    flex: 1,
-    gap: 2,
-  },
-  tagText: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  planTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.black[100],
-  },
-  location: {
-    fontSize: 12,
-    color: Colors.black[400],
-  },
-  dashedDivider: {
-    borderBottomWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: '#E0DDD7',
-    marginHorizontal: 14,
-  },
-  bottomSection: {
-    padding: 14,
-  },
-  bottomRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  dateTime: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Colors.black[100],
-  },
-  statusText: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  rightActionCol: {
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    gap: 6,
-  },
-  avatarCluster: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#ffffff',
-  },
-  avatarOverlap: {
-    marginLeft: -7,
-  },
-  avatarText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#5F5E5A',
-  },
-  extraAvatar: {
-    backgroundColor: '#E0DDD7',
-  },
-  joinBtn: {
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 99,
-  },
-  joinBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  hostRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F7F5F1',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    gap: 6,
-  },
-  hostAvatar: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  hostInitialsText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#5F5E5A',
-  },
-  dotBadge: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  hostText: {
-    flex: 1,
-    fontSize: 12,
-    color: Colors.black[400],
-  },
-  postedAgo: {
-    fontSize: 12,
-    color: Colors.neutral.hint,
-  },
-})

@@ -73,7 +73,7 @@ export const strings = {
     soloSpots: (spots: number) => `¡solo ${spots} cupos!`,
     spotsInfo: (going: number, spots: number) => `${going} van · ${spots} cupos`,
     hostLocal: 'local verificada',
-    hostTurista: 'turista',
+    hostVisitor: 'turista',
     hostPrefix: 'por',
   },
   newPlan: {
@@ -114,7 +114,13 @@ export const strings = {
   },
 
   losMios: {
-    losMiosTitle: 'Los míos',
-    losMiosSubtitle: 'Tus planes y parches',
+    title: 'Los míos',
+    activeCount: (n: number) => `${n} parches activos`,
+    activeSection: 'Activos',
+    completedSection: 'Finalizados',
+    archivedFooter: (n: number) => `Ver archivados (${n})`,
+    hostBadge: 'HOSTING',
+    archiveAction: 'Archivar',
+    leaveAction: 'Salir',
   },
 }

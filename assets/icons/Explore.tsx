@@ -6,7 +6,7 @@ type IconProps = {
     color?: string
 }
 
-export const Explore = ({ size = 24, color = '#F2AD78' }: IconProps) => {
+export const Explore = ({ size = 24, color = 'Colors.primary.100' }: IconProps) => {
     return (
         <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
             <Path

@@ -23,6 +23,8 @@ export const Colors = {
     body: '#6B6560',
     divider: '#F0EBE5',
     border: '#E6E0D8',
+    tinted: '#E0DDD7',
+    softTint: '#F7F5F1',
   },
   surface: {
     sheet: '#F2EDE8',

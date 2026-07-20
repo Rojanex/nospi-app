@@ -1,7 +1,7 @@
 import { Colors } from '@/assets/constants/Colors'
 import { IconSquare } from '@/components/plans/IconSquare'
 import { LocationField } from '@/components/plans/LocationField'
-import { ACTIVITY_META, ActivityType } from '@/components/plans/PlanCard'
+import { ACTIVITY_META, ActivityType } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
 import { NEW_PLAN_DESCRIPTION_MAX, NEW_PLAN_TITLE_MAX } from '@/lib/env_reader'
 import { ParsedPlace } from '@/lib/plans/formatPlace'

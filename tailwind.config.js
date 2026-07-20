@@ -23,6 +23,7 @@ module.exports = {
                     200: "#666876",
                     300: "#8C8E98",
                     400: "#888780",
+                    500: "#5F5E5A",
                 },
                 ink: "#1C1B19",
                 white: "#FFFFFF",
@@ -33,6 +34,8 @@ module.exports = {
                     body: '#6B6560',
                     divider: '#F0EBE5',
                     border: '#E6E0D8',
+                    tinted: '#E0DDD7',
+                    softTint: '#f7f4f1',
                 },
                 surface: {
                     sheet: '#F2EDE8',
