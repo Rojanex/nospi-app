@@ -10,7 +10,7 @@ type ArchivedFooterProps = {
 export function ArchivedFooter({ count, onPress }: ArchivedFooterProps) {
   return (
     <TouchableOpacity onPress={onPress} className="items-center py-4" activeOpacity={0.6}>
-      <Text className="text-sm font-medium text-ink/40">
+      <Text className="text-sm font-medium text-ink-40">
         {strings.losMios.archivedFooter(count)}
       </Text>
     </TouchableOpacity>

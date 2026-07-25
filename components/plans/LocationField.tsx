@@ -88,7 +88,7 @@ const placesTextInputStyles: GooglePlacesTextInputStyles = {
     flex: 1,
     fontSize: 14,
     fontWeight: '500',
-    color: Colors.ink,
+    color: Colors.ink.DEFAULT,
     backgroundColor: 'transparent',
     margin: 0,
     padding: 0,
@@ -113,7 +113,7 @@ const placesTextInputStyles: GooglePlacesTextInputStyles = {
   suggestionText: {
     main: {
       fontSize: 13,
-      color: Colors.ink,
+      color: Colors.ink.DEFAULT,
     },
     secondary: {
       fontSize: 11,

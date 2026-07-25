@@ -15,7 +15,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           className="rounded-full px-3 py-1.5"
           style={{ backgroundColor: Colors.neutral.tinted }}
         >
-          <Text className="text-xs text-ink/50">{message.content}</Text>
+          <Text className="text-xs text-ink-50">{message.content}</Text>
         </View>
       </View>
     )
@@ -52,7 +52,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       </View>
 
       <View className="max-w-[72%]">
-        <Text className="mb-1 text-[11px] text-ink/40">{message.sender!.name}</Text>
+        <Text className="mb-1 text-[11px] text-ink-40">{message.sender!.name}</Text>
         <View
           className="rounded-2xl bg-white px-3.5 py-2.5"
           style={{ borderBottomLeftRadius: 6 }}

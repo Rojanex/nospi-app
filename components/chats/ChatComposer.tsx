@@ -1,11 +1,12 @@
 import { Colors } from '@/assets/constants/Colors'
+import { isPlanExpired, PlanStatus } from '@/constants/planStatus'
 import { strings } from '@/constants/strings'
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
 import { Pressable, Text, TextInput, View } from 'react-native'
 
 type ChatComposerProps = {
-  status: 'active' | 'finalized'
+  status: PlanStatus
   value: string
   onChangeValue: (value: string) => void
   onSend: () => void
@@ -19,11 +20,11 @@ export function ChatComposer({
 }: ChatComposerProps) {
   const canSend = value.trim().length > 0
 
-  if (status === 'finalized') {
+  if (isPlanExpired(status)) {
     return (
       <View className="flex-row items-center justify-center gap-2 border-t border-neutral-border px-5 py-3.5">
-        <Ionicons name="lock-closed" size={14} color="#1C1B1966" />
-        <Text className="text-sm text-ink/50">{strings.losMios.readOnlyBanner}</Text>
+        <Ionicons name="lock-closed" size={14} color={Colors.ink[40]} />
+        <Text className="text-sm text-ink-50">{strings.losMios.readOnlyBanner}</Text>
       </View>
     )
   }
@@ -33,7 +34,7 @@ export function ChatComposer({
       <TextInput
         className="flex-1 rounded-full bg-neutral-softTint px-4 py-2.5 text-sm text-ink"
         placeholder={strings.losMios.messagePlaceholder}
-        placeholderTextColor="#1C1B1940"
+        placeholderTextColor={Colors.ink[25]}
         value={value}
         onChangeText={onChangeValue}
         multiline

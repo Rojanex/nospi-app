@@ -7,13 +7,24 @@
         "lib/chats/mockChats.ts",
         "app/(tabs)/chats.tsx",
         "app/_layout.tsx",
+        "components/chats/ChatRow.tsx",
+        "app/chats/archived.tsx",
+        ".vscode/changelists.json",
         "app/chats/[id].tsx",
+        "assets/constants/Colors.ts",
+        "components/chats/ArchivedFooter.tsx",
         "components/chats/ChatComposer.tsx",
+        "components/chats/ChatSection.tsx",
         "components/chats/ChatThreadHeader.tsx",
         "components/chats/MessageBubble.tsx",
-        "lib/chats/mockMessages.ts",
-        ".vscode/changelists.json",
-        "components/chats/ChatRow.tsx"
+        "components/plans/LocationField.tsx",
+        "components/plans/NewPlanFields.tsx",
+        "tailwind.config.js",
+        "types/index.ts",
+        "components/chats/ParticipantsSheet.tsx",
+        "constants/planStatus.ts",
+        "lib/chats/mockParticipants.ts",
+        "lib/chats/mockMessages.ts"
       ]
     }
   ],

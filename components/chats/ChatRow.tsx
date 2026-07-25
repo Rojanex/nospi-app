@@ -1,5 +1,6 @@
 import { Colors } from '@/assets/constants/Colors'
 import { ACTIVITY_META } from '@/constants/activityMeta'
+import { isChatArchived, isPlanActive, isPlanExpired } from '@/constants/planStatus'
 import { strings } from '@/constants/strings'
 import { ChatListItem } from '@/lib/chats/mockChats'
 import { Ionicons } from '@expo/vector-icons'
@@ -30,6 +31,7 @@ type ChatRowProps = {
   onPress: () => void
   onLeave: () => void
   onArchive: () => void
+  onUnarchive: () => void
 }
 
 export function ChatRow({
@@ -39,23 +41,30 @@ export function ChatRow({
   onPress,
   onLeave,
   onArchive,
+  onUnarchive,
 }: ChatRowProps) {
   const meta = ACTIVITY_META[item.activityType]
-  const isFinalized = item.status === 'finalized'
-  const cardBg = isFinalized ? Colors.neutral.gray : meta.bg
-  const circleBg = isFinalized ? Colors.neutral.tinted : meta.circle
+  const expired = isPlanExpired(item.status)
+  const cardBg = expired ? Colors.neutral.gray : meta.bg
+  const circleBg = expired ? Colors.neutral.tinted : meta.circle
 
-  const swipeAction: SwipeAction = isFinalized
+  const swipeAction: SwipeAction = isPlanActive(item.status)
     ? {
-        label: strings.losMios.archiveAction,
-        backgroundColor: Colors.activity.orangeDark,
-        onPress: onArchive,
-      }
-    : {
         label: strings.losMios.leaveAction,
         backgroundColor: Colors.buttons.brown,
         onPress: onLeave,
       }
+    : isChatArchived(item)
+      ? {
+          label: strings.losMios.unarchiveAction,
+          backgroundColor: Colors.neutral.body,
+          onPress: onUnarchive,
+        }
+      : {
+          label: strings.losMios.archiveAction,
+          backgroundColor: Colors.activity.orangeDark,
+          onPress: onArchive,
+        }
 
   return (
     <SwipeableRow
@@ -71,9 +80,9 @@ export function ChatRow({
         <View className="flex-row items-start gap-3">
           <View
             className="h-11 w-11 items-center justify-center rounded-full"
-            style={{ backgroundColor: circleBg, opacity: isFinalized ? 0.55 : 1 }}
+            style={{ backgroundColor: circleBg, opacity: expired ? 0.55 : 1 }}
           >
-            <Text className="text-[22px]" style={{ opacity: isFinalized ? 0.7 : 1 }}>
+            <Text className="text-[22px]" style={{ opacity: expired ? 0.7 : 1 }}>
               {meta.emoji}
             </Text>
           </View>
@@ -84,14 +93,14 @@ export function ChatRow({
                 {item.title}
               </Text>
               <View className="flex-row items-center gap-1 pt-0.5">
-                {isFinalized ? (
-                  <Ionicons name="lock-closed" size={10} color="#1C1B1966" />
+                {expired ? (
+                  <Ionicons name="lock-closed" size={10} color={Colors.ink[40]} />
                 ) : null}
-                <Text className="text-xs text-ink/40">{item.timeLabel}</Text>
+                <Text className="text-xs text-ink-40">{item.timeLabel}</Text>
               </View>
             </View>
             <View className="mt-0.5 flex-row items-center gap-2">
-              <Text className="min-w-0 flex-1 text-sm text-ink/60" numberOfLines={1}>
+              <Text className="min-w-0 flex-1 text-sm text-ink-60" numberOfLines={1}>
                 {item.previewText}
               </Text>
               {item.isHost ? (
@@ -219,7 +228,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     color: Colors.white,
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '700',
   },
 })

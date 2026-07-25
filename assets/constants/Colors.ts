@@ -14,7 +14,13 @@ export const Colors = {
     300: '#8C8E98',
     400: '#888780',
   },
-  ink: '#1C1B19',
+  ink: {
+    DEFAULT: '#1C1B19',
+    25: '#1C1B1940',
+    40: '#1C1B1966',
+    50: '#1C1B1980',
+    60: '#1C1B1999',
+  },
   white: '#FFFFFF',
   neutral: {
     hint: '#B4B2A9',

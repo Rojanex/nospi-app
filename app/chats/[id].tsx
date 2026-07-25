@@ -1,9 +1,12 @@
 import { ChatComposer } from '@/components/chats/ChatComposer'
 import { ChatThreadHeader } from '@/components/chats/ChatThreadHeader'
 import { MessageBubble } from '@/components/chats/MessageBubble'
+import { ParticipantsSheet } from '@/components/chats/ParticipantsSheet'
 import { strings } from '@/constants/strings'
+import { isPlanExpired } from '@/constants/planStatus'
 import { mockChats } from '@/lib/chats/mockChats'
 import { ChatMessage, mockMessagesByChat } from '@/lib/chats/mockMessages'
+import { mockParticipantsByChat } from '@/lib/chats/mockParticipants'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import {
@@ -24,11 +27,15 @@ export default function ChatThread() {
   const [messages, setMessages] = useState<ChatMessage[]>(
     () => mockMessagesByChat[id ?? ''] ?? [],
   )
+  const [participantsVisible, setParticipantsVisible] = useState(false)
+  const [participants, setParticipants] = useState(
+    () => mockParticipantsByChat[id ?? ''] ?? [],
+  )
 
   if (!chat) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-primary-300">
-        <Text className="text-sm text-ink/50">Chat no encontrado</Text>
+        <Text className="text-sm text-ink-50">{strings.losMios.notFoundChat}</Text>
       </SafeAreaView>
     )
   }
@@ -37,7 +44,7 @@ export default function ChatThread() {
 
   function handleSend() {
     const content = draft.trim()
-    if (!content || chatItem.status === 'finalized') return
+    if (!content || isPlanExpired(chatItem.status)) return
 
     const newMessage: ChatMessage = {
       id: `local-${Date.now()}`,
@@ -52,7 +59,22 @@ export default function ChatThread() {
   }
 
   function handlePressMembers() {
-    console.log('[chat-thread] open members', chatItem.id)
+    setParticipantsVisible(true)
+  }
+
+  function handleRemoveMember(memberId: string) {
+    console.log('[chat-thread] remove member', memberId)
+    setParticipants(current => current.filter(p => p.id !== memberId))
+  }
+
+  function handleLeave() {
+    console.log('[chat-thread] leave chat', chatItem.id)
+    setParticipantsVisible(false)
+  }
+
+  function handleDeletePlan() {
+    console.log('[chat-thread] delete plan', chatItem.id)
+    setParticipantsVisible(false)
   }
 
   return (
@@ -75,7 +97,7 @@ export default function ChatThread() {
         >
           {messages.length === 0 ? (
             <View className="items-center py-12">
-              <Text className="text-sm text-ink/40">{strings.losMios.emptyMessages}</Text>
+              <Text className="text-sm text-ink-40">{strings.losMios.emptyMessages}</Text>
             </View>
           ) : (
             messages.map(message => <MessageBubble key={message.id} message={message} />)
@@ -91,6 +113,16 @@ export default function ChatThread() {
           />
         </View>
       </KeyboardAvoidingView>
+
+      <ParticipantsSheet
+        visible={participantsVisible}
+        onClose={() => setParticipantsVisible(false)}
+        chat={chatItem}
+        participants={participants}
+        onRemoveMember={handleRemoveMember}
+        onLeave={handleLeave}
+        onDeletePlan={handleDeletePlan}
+      />
     </SafeAreaView>
   )
 }

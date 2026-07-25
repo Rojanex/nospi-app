@@ -25,7 +25,13 @@ module.exports = {
                     400: "#888780",
                     500: "#5F5E5A",
                 },
-                ink: "#1C1B19",
+                ink: {
+                    DEFAULT: "#1C1B19",
+                    25: "#1C1B1940",
+                    40: "#1C1B1966",
+                    50: "#1C1B1980",
+                    60: "#1C1B1999",
+                },
                 white: "#FFFFFF",
                 neutral: {
                     hint: "#B4B2A9",

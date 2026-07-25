@@ -180,4 +180,12 @@ export const mockMessagesByChat: Record<string, ChatMessage[]> = {
       timeLabel: '13:00',
     },
   ],
+  'chat-8': [
+    {
+      id: 'm8-1',
+      type: 'system',
+      content: 'Creaste el parche',
+      timeLabel: 'Ahora',
+    },
+  ],
 }

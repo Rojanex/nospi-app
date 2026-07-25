@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     minHeight: 22,
     padding: 0,
-    color: Colors.ink,
+    color: Colors.ink.DEFAULT,
     ...(Platform.OS === 'android'
       ? { includeFontPadding: false, textAlignVertical: 'center' }
       : {}),
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
     color: Colors.activity.orangeDark,
   },
   visibilityTitleDefault: {
-    color: Colors.ink,
+    color: Colors.ink.DEFAULT,
   },
   visibilitySubtitle: {
     fontSize: 9,

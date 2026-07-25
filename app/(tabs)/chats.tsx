@@ -3,18 +3,21 @@ import { ChatRow } from '@/components/chats/ChatRow'
 import { ChatSection } from '@/components/chats/ChatSection'
 import { TabScreen } from '@/components/layout/TabScreen'
 import { strings } from '@/constants/strings'
-import { mockChats } from '@/lib/chats/mockChats'
+import {
+  getActiveChats,
+  getArchivedChats,
+  getExpiredChats,
+} from '@/lib/chats/mockChats'
 import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import { ScrollView, Text, View } from 'react-native'
 
-const ARCHIVED_MOCK_COUNT = 2
-
 export default function Chats() {
   const router = useRouter()
   const [openSwipeId, setOpenSwipeId] = useState<string | null>(null)
-  const activeChats = mockChats.filter(c => c.status === 'active')
-  const finalizedChats = mockChats.filter(c => c.status === 'finalized')
+  const activeChats = getActiveChats()
+  const expiredChats = getExpiredChats()
+  const archivedCount = getArchivedChats().length
 
   function getSwipeProps(id: string) {
     return {
@@ -37,8 +40,12 @@ export default function Chats() {
     console.log('[chats] archive chat', id)
   }
 
+  function handleUnarchive(id: string) {
+    console.log('[chats] unarchive chat', id)
+  }
+
   function handleArchivedPress() {
-    console.log('[chats] view archived')
+    router.push('/chats/archived' as never)
   }
 
   return (
@@ -67,12 +74,13 @@ export default function Chats() {
                 onPress={() => handleChatPress(item.id)}
                 onLeave={() => handleLeave(item.id)}
                 onArchive={() => handleArchive(item.id)}
+                onUnarchive={() => handleUnarchive(item.id)}
               />
             ))}
           </ChatSection>
 
           <ChatSection label={strings.losMios.completedSection} locked>
-            {finalizedChats.map(item => (
+            {expiredChats.map(item => (
               <ChatRow
                 key={item.id}
                 item={item}
@@ -80,12 +88,13 @@ export default function Chats() {
                 onPress={() => handleChatPress(item.id)}
                 onLeave={() => handleLeave(item.id)}
                 onArchive={() => handleArchive(item.id)}
+                onUnarchive={() => handleUnarchive(item.id)}
               />
             ))}
           </ChatSection>
         </View>
 
-        <ArchivedFooter count={ARCHIVED_MOCK_COUNT} onPress={handleArchivedPress} />
+        <ArchivedFooter count={archivedCount} onPress={handleArchivedPress} />
       </ScrollView>
     </TabScreen>
   )

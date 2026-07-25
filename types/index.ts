@@ -1,3 +1,7 @@
+import type { PlanStatus } from '@/constants/planStatus'
+
+export type { PlanStatus }
+
 export type UserRole = 'explorer' | 'visitor' | 'local'
 
 export type Profile = {
@@ -73,7 +77,7 @@ export interface PlanRow {
   location_lng: number
   date_time: string
   max_spots: number
-  status: string
+  status: PlanStatus
   visibility: string
   completed_at: string | null
   plan_members: {
