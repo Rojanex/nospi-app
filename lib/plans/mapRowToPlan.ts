@@ -1,13 +1,7 @@
+import { initialsFromName } from '@/lib/utils/avatar'
 import { Plan, PlanRow } from '@/types'
 
 const WEEKDAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const
-
-function deriveInitials(name: string): string {
-  const words = name.trim().split(/\s+/).filter(Boolean)
-  if (words.length === 0) return 'A'
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase()
-  return (words[0][0] + words[1][0]).toUpperCase()
-}
 
 function formatPostedAgo(createdAt: string): string {
   const created = new Date(createdAt)
@@ -55,7 +49,7 @@ export function mapRowToPlan(
   const hostName = hostProfile?.display_name ?? 'Host'
   const attendees = row.plan_members.slice(0, 3).map(m => ({
     user_id: m.user_id,
-    initials: deriveInitials(m.profiles?.display_name ?? 'Usuario'),
+    initials: initialsFromName(m.profiles?.display_name ?? 'Usuario'),
     avatar_url: m.profiles?.avatar_url ?? null,
   }))
 
@@ -69,7 +63,7 @@ export function mapRowToPlan(
     extra_attendees: memberCount,
     attendees,
     host_name: hostName,
-    host_initials: deriveInitials(hostName),
+    host_initials: initialsFromName(hostName),
     host_avatar_url: hostProfile?.avatar_url ?? null,
     host_type: hostProfile?.role === 'local' ? 'local' : 'turista',
     posted_ago: formatPostedAgo(row.created_at),

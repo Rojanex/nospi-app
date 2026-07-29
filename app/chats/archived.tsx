@@ -2,21 +2,38 @@ import { Colors } from '@/assets/constants/Colors'
 import { ChatRow } from '@/components/chats/ChatRow'
 import { ChatSection } from '@/components/chats/ChatSection'
 import { strings } from '@/constants/strings'
-import { getArchivedChats } from '@/lib/chats/mockChats'
+import { fetchChatList, unarchiveChat } from '@/lib/chats/api'
+import { getArchivedChats } from '@/lib/chats/filters'
+import { ChatListItem } from '@/types'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import React, { useState } from 'react'
-import { Pressable, ScrollView, Text, View } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function ArchivedChats() {
   const router = useRouter()
-  const [unarchivedIds, setUnarchivedIds] = useState<string[]>([])
+  const [chats, setChats] = useState<ChatListItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [openSwipeId, setOpenSwipeId] = useState<string | null>(null)
 
-  const archivedChats = getArchivedChats().filter(
-    item => !unarchivedIds.includes(item.id),
-  )
+  const loadChats = useCallback(async () => {
+    setError(null)
+    try {
+      const data = await fetchChatList()
+      setChats(data)
+    } catch (err) {
+      console.error('[archived] load', err)
+      setError(strings.losMios.loadError)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadChats().finally(() => setLoading(false))
+  }, [loadChats])
+
+  const archivedChats = getArchivedChats(chats)
 
   function getSwipeProps(id: string) {
     return {
@@ -27,13 +44,26 @@ export default function ArchivedChats() {
     }
   }
 
-  function handleChatPress(id: string) {
-    router.push(`/chats/${id}` as never)
+  function handleChatPress(item: ChatListItem) {
+    router.push({
+      pathname: '/chats/[id]',
+      params: { id: item.id, chat: JSON.stringify(item) },
+    } as never)
   }
 
-  function handleUnarchive(id: string) {
-    setUnarchivedIds(current => (current.includes(id) ? current : [...current, id]))
-    setOpenSwipeId(current => (current === id ? null : current))
+  async function handleUnarchive(id: string) {
+    try {
+      await unarchiveChat(id)
+      setChats(current =>
+        current.map(item =>
+          item.id === id ? { ...item, archivedAt: null } : item,
+        ),
+      )
+      setOpenSwipeId(current => (current === id ? null : current))
+    } catch (err) {
+      console.error('[archived] unarchive', err)
+      setError(strings.losMios.loadError)
+    }
   }
 
   return (
@@ -49,31 +79,45 @@ export default function ArchivedChats() {
         <Text className="text-xl font-bold text-ink">{strings.losMios.archivedSection}</Text>
       </View>
 
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="px-5 pt-2 pb-8"
-        showsVerticalScrollIndicator={false}
-      >
-        {archivedChats.length === 0 ? (
-          <View className="items-center py-12">
-            <Text className="text-sm text-ink-40">{strings.losMios.emptyArchived}</Text>
-          </View>
-        ) : (
-          <ChatSection label={strings.losMios.archivedSection} locked>
-            {archivedChats.map(item => (
-              <ChatRow
-                key={item.id}
-                item={item}
-                {...getSwipeProps(item.id)}
-                onPress={() => handleChatPress(item.id)}
-                onLeave={() => {}}
-                onArchive={() => {}}
-                onUnarchive={() => handleUnarchive(item.id)}
-              />
-            ))}
-          </ChatSection>
-        )}
-      </ScrollView>
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={Colors.buttons.orange} />
+        </View>
+      ) : error && archivedChats.length === 0 ? (
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-center text-sm text-ink-50">{error}</Text>
+        </View>
+      ) : (
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="px-5 pt-2 pb-8"
+          showsVerticalScrollIndicator={false}
+        >
+          {error ? (
+            <Text className="mb-4 text-sm text-ink-50">{error}</Text>
+          ) : null}
+
+          {archivedChats.length === 0 ? (
+            <View className="items-center py-12">
+              <Text className="text-sm text-ink-40">{strings.losMios.emptyArchived}</Text>
+            </View>
+          ) : (
+            <ChatSection label={strings.losMios.archivedSection} locked>
+              {archivedChats.map(item => (
+                <ChatRow
+                  key={item.id}
+                  item={item}
+                  {...getSwipeProps(item.id)}
+                  onPress={() => handleChatPress(item)}
+                  onLeave={() => {}}
+                  onArchive={() => {}}
+                  onUnarchive={() => handleUnarchive(item.id)}
+                />
+              ))}
+            </ChatSection>
+          )}
+        </ScrollView>
+      )}
     </SafeAreaView>
   )
 }

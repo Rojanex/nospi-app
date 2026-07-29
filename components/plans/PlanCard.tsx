@@ -1,16 +1,11 @@
 import { Colors } from '@/assets/constants/Colors'
 import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
+import { avatarColorsForId } from '@/lib/utils/avatar'
 import { Plan } from '@/types'
 import { Image } from 'expo-image'
 import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
-
-const AVATAR_PASTEL_COLORS = ['#FFD6D6', '#D6F5D6', '#D6E8FF', '#FFF3D6', '#F5D6FF', '#D6F5F5']
-
-function getAvatarPastelColor(initial: string): string {
-  return AVATAR_PASTEL_COLORS[initial.charCodeAt(0) % AVATAR_PASTEL_COLORS.length]
-}
 
 interface Props {
   plan: Plan
@@ -43,6 +38,7 @@ export function PlanCard({ plan, onJoin }: Props) {
   const overflowCount = plan.extra_attendees - plan.attendees.length
   const hostDotColor =
     plan.host_type === 'local' ? Colors.buttons.orange : Colors.primary[100]
+  const hostAvatarColors = avatarColorsForId(plan.host_initials)
 
   return (
     <View className="mx-4 mb-3 flex-row overflow-hidden rounded-[18px] bg-white">
@@ -83,8 +79,9 @@ export function PlanCard({ plan, onJoin }: Props) {
 
             <View className="items-end gap-1.5">
               <View className="flex-row items-center">
-                {plan.attendees.map((attendee, i) =>
-                  attendee.avatar_url ? (
+                {plan.attendees.map((attendee, i) => {
+                  const colors = avatarColorsForId(attendee.user_id)
+                  return attendee.avatar_url ? (
                     <Image
                       key={attendee.user_id}
                       source={{ uri: attendee.avatar_url }}
@@ -96,14 +93,14 @@ export function PlanCard({ plan, onJoin }: Props) {
                     <View
                       key={attendee.user_id}
                       className={`h-[26px] w-[26px] items-center justify-center rounded-full border-[1.5px] border-white ${i > 0 ? '-ml-[7px]' : ''}`}
-                      style={{ backgroundColor: getAvatarPastelColor(attendee.user_id) }}
+                      style={{ backgroundColor: colors.bg }}
                     >
-                      <Text className="text-[9px] font-bold text-black-500">
+                      <Text className="text-[9px] font-bold" style={{ color: colors.text }}>
                         {attendee.initials}
                       </Text>
                     </View>
                   )
-                )}
+                })}
                 {overflowCount > 0 && (
                   <View className="-ml-[7px] h-[26px] w-[26px] items-center justify-center rounded-full border-[1.5px] border-white bg-neutral-tinted">
                     <Text className="text-[9px] font-bold text-black-500">
@@ -136,9 +133,9 @@ export function PlanCard({ plan, onJoin }: Props) {
           ) : (
             <View
               className="h-[22px] w-[22px] items-center justify-center rounded-full"
-              style={{ backgroundColor: getAvatarPastelColor(plan.host_initials) }}
+              style={{ backgroundColor: hostAvatarColors.bg }}
             >
-              <Text className="text-[9px] font-bold text-black-500">
+              <Text className="text-[9px] font-bold" style={{ color: hostAvatarColors.text }}>
                 {plan.host_initials}
               </Text>
             </View>

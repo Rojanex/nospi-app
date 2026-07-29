@@ -1,8 +1,7 @@
 import { Colors } from '@/assets/constants/Colors'
 import { isPlanActive } from '@/constants/planStatus'
 import { strings } from '@/constants/strings'
-import { ChatListItem } from '@/lib/chats/mockChats'
-import { Participant } from '@/lib/chats/mockParticipants'
+import { ChatListItem, Participant } from '@/types'
 import { Ionicons } from '@expo/vector-icons'
 import React, { useEffect, useState } from 'react'
 import {

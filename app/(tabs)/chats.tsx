@@ -1,23 +1,74 @@
+import { Colors } from '@/assets/constants/Colors'
 import { ArchivedFooter } from '@/components/chats/ArchivedFooter'
 import { ChatRow } from '@/components/chats/ChatRow'
 import { ChatSection } from '@/components/chats/ChatSection'
 import { TabScreen } from '@/components/layout/TabScreen'
 import { strings } from '@/constants/strings'
 import {
+  archiveChat,
+  fetchChatList,
+  leavePlan,
+} from '@/lib/chats/api'
+import {
   getActiveChats,
   getArchivedChats,
   getExpiredChats,
-} from '@/lib/chats/mockChats'
+} from '@/lib/chats/filters'
+import {
+  subscribePlanCreated,
+  subscribePlanDeleted,
+} from '@/lib/plans/plansEvents'
+import { ChatListItem } from '@/types'
 import { useRouter } from 'expo-router'
-import React, { useState } from 'react'
-import { ScrollView, Text, View } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native'
 
 export default function Chats() {
   const router = useRouter()
+  const [chats, setChats] = useState<ChatListItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [openSwipeId, setOpenSwipeId] = useState<string | null>(null)
-  const activeChats = getActiveChats()
-  const expiredChats = getExpiredChats()
-  const archivedCount = getArchivedChats().length
+
+  const loadChats = useCallback(async () => {
+    setError(null)
+    try {
+      const data = await fetchChatList()
+      setChats(data)
+    } catch (err) {
+      console.error('[chats] load', err)
+      setError(strings.losMios.loadError)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadChats().finally(() => setLoading(false))
+  }, [loadChats])
+
+  useEffect(() => {
+    return subscribePlanCreated(() => {
+      loadChats()
+    })
+  }, [loadChats])
+
+  useEffect(() => {
+    return subscribePlanDeleted(planId => {
+      setChats(current => current.filter(chat => chat.id !== planId))
+      setOpenSwipeId(current => (current === planId ? null : current))
+    })
+  }, [])
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true)
+    const minDelay = new Promise(resolve => setTimeout(resolve, 600))
+    await Promise.all([loadChats(), minDelay])
+    setRefreshing(false)
+  }, [loadChats])
+
+  const activeChats = getActiveChats(chats)
+  const expiredChats = getExpiredChats(chats)
+  const archivedCount = getArchivedChats(chats).length
 
   function getSwipeProps(id: string) {
     return {
@@ -28,24 +79,64 @@ export default function Chats() {
     }
   }
 
-  function handleChatPress(id: string) {
-    router.push(`/chats/${id}` as never)
+  function handleChatPress(item: ChatListItem) {
+    router.push({
+      pathname: '/chats/[id]',
+      params: { id: item.id, chat: JSON.stringify(item) },
+    } as never)
   }
 
-  function handleLeave(id: string) {
-    console.log('[chats] leave chat', id)
+  async function handleLeave(id: string) {
+    const chat = chats.find(item => item.id === id)
+    if (!chat) return
+
+    try {
+      await leavePlan(id, chat.isHost)
+      setChats(current => current.filter(item => item.id !== id))
+      setOpenSwipeId(current => (current === id ? null : current))
+    } catch (err) {
+      console.error('[chats] leave', err)
+      setError(strings.losMios.loadError)
+    }
   }
 
-  function handleArchive(id: string) {
-    console.log('[chats] archive chat', id)
-  }
-
-  function handleUnarchive(id: string) {
-    console.log('[chats] unarchive chat', id)
+  async function handleArchive(id: string) {
+    try {
+      await archiveChat(id)
+      setChats(current =>
+        current.map(item =>
+          item.id === id ? { ...item, archivedAt: new Date().toISOString() } : item,
+        ),
+      )
+      setOpenSwipeId(current => (current === id ? null : current))
+    } catch (err) {
+      console.error('[chats] archive', err)
+      setError(strings.losMios.loadError)
+    }
   }
 
   function handleArchivedPress() {
     router.push('/chats/archived' as never)
+  }
+
+  if (loading) {
+    return (
+      <TabScreen>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={Colors.buttons.orange} />
+        </View>
+      </TabScreen>
+    )
+  }
+
+  if (error && chats.length === 0) {
+    return (
+      <TabScreen>
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-center text-sm text-ink-50">{error}</Text>
+        </View>
+      </TabScreen>
+    )
   }
 
   return (
@@ -54,6 +145,9 @@ export default function Chats() {
         className="flex-1"
         contentContainerClassName="px-5 pt-6 pb-8"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         <View className="mb-6 flex-row items-end justify-between gap-3">
           <Text className="text-3xl font-extrabold text-ink">
@@ -64,6 +158,10 @@ export default function Chats() {
           </Text>
         </View>
 
+        {error ? (
+          <Text className="mb-4 text-sm text-ink-50">{error}</Text>
+        ) : null}
+
         <View className="gap-7">
           <ChatSection label={strings.losMios.activeSection}>
             {activeChats.map(item => (
@@ -71,10 +169,10 @@ export default function Chats() {
                 key={item.id}
                 item={item}
                 {...getSwipeProps(item.id)}
-                onPress={() => handleChatPress(item.id)}
+                onPress={() => handleChatPress(item)}
                 onLeave={() => handleLeave(item.id)}
                 onArchive={() => handleArchive(item.id)}
-                onUnarchive={() => handleUnarchive(item.id)}
+                onUnarchive={() =>{}}
               />
             ))}
           </ChatSection>
@@ -85,10 +183,10 @@ export default function Chats() {
                 key={item.id}
                 item={item}
                 {...getSwipeProps(item.id)}
-                onPress={() => handleChatPress(item.id)}
+                onPress={() => handleChatPress(item)}
                 onLeave={() => handleLeave(item.id)}
                 onArchive={() => handleArchive(item.id)}
-                onUnarchive={() => handleUnarchive(item.id)}
+                onUnarchive={() => {}}
               />
             ))}
           </ChatSection>

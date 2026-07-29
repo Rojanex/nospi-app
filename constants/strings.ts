@@ -123,7 +123,7 @@ export const strings = {
     hostBadge: 'HOSTING',
     archiveAction: 'Archivar',
     unarchiveAction: 'Desarchivar',
-    leaveAction: 'Salir del parche',
+    leaveAction: 'Salirse',
     removeMemberAction: 'Sacar del parche',
     removeMemberConfirmTitle: (name: string) => `¿Sacar a ${name} del parche?`,
     leaveConfirmTitle: '¿Seguro que quieres salir del parche?',
@@ -136,5 +136,12 @@ export const strings = {
     emptyMessages: 'Aún no hay mensajes',
     emptyArchived: 'Todavía no has archivado ningún parche',
     notFoundChat: 'Chat no encontrado',
+    loadError: 'No pudimos cargar tus parches. Intenta de nuevo.',
+  },
+  systemMessages: {
+    planCreated: 'Se armo el parche',
+    leftPlanSystem: (name: string) => `${name} salió del parche`,
+    removedMemberSystem: (name: string) => `${name} fue removido del parche`,
+
   },
 }

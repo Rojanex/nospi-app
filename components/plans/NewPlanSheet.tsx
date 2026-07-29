@@ -12,9 +12,9 @@ import { DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import React, { useRef, useState } from 'react'
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native'
 import { GooglePlacesTextInputRef } from 'react-native-google-places-textinput'
@@ -92,6 +92,7 @@ export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
   }
 
   const isValid = isNewPlanFormValid(form)
+  const isSubmitDisabled = !isValid || submitting
 
   return (
     <View className="flex-1 w-full">
@@ -126,10 +127,12 @@ export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
       </ScrollView>
 
       <View className="bg-surface-sheet px-4 pb-7 pt-3">
-        <TouchableOpacity
-          disabled={!isValid || submitting}
+        <Pressable
+          key={isSubmitDisabled ? 'submit-disabled' : 'submit-enabled'}
+          disabled={isSubmitDisabled}
           onPress={handleSubmit}
-          className={`w-full items-center rounded-full bg-buttons-brown py-[15px] ${!isValid || submitting ? 'opacity-40' : ''}`}
+          className="w-full items-center rounded-full bg-buttons-brown py-[15px]"
+          style={{ opacity: isSubmitDisabled ? 0.4 : 1 }}
         >
           {submitting ? (
             <ActivityIndicator color="#ffffff" />
@@ -138,7 +141,7 @@ export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
               {strings.newPlan.addButton}
             </Text>
           )}
-        </TouchableOpacity>
+        </Pressable>
         <Text
           className={`mt-[7px] text-center text-[10px] ${submitError ? 'text-activity-orange' : 'text-neutral-label'}`}
         >

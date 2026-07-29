@@ -1,4 +1,5 @@
 import { strings } from '@/constants/strings'
+import { insertSystemMessage } from '@/lib/chats/api'
 import { buildPlanInsert, isNewPlanFormValid } from '@/lib/plans/newPlanForm'
 import { notifyPlanCreated } from '@/lib/plans/plansEvents'
 import { supabase } from '@/lib/supabase'
@@ -40,6 +41,13 @@ export async function createPlan(
   if (error) {
     console.error('[createPlan]', error)
     return { data: null, error: mapCreatePlanError(error) }
+  }
+
+  try {
+    await insertSystemMessage(data.id, strings.systemMessages.planCreated)
+  } catch (messageError) {
+    // The plan already exists, so avoid surfacing a create failure here.
+    console.error('[createPlan] seed system message', messageError)
   }
 
   notifyPlanCreated()

@@ -103,3 +103,39 @@ export interface Plan {
   posted_ago: string
   user_joined: boolean
 }
+
+export type ChatListItem = {
+  id: string
+  activityType: PlanActivityType
+  title: string
+  previewText: string
+  timeLabel: string
+  memberCount: number
+  isHost: boolean
+  status: PlanStatus
+  archivedAt?: string | null
+}
+
+export type ChatMessage = {
+  id: string
+  type: 'user' | 'system'
+  content: string
+  timeLabel: string
+  isOwn?: boolean
+  sender?: {
+    name: string
+    initials: string
+    bg: string
+    text: string
+  }
+}
+
+export type Participant = {
+  id: string
+  name: string
+  initials: string
+  avatarBg: string
+  avatarText: string
+  role: 'host' | 'member'
+  isSelf: boolean
+}

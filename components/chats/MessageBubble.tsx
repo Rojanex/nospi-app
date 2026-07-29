@@ -1,5 +1,5 @@
 import { Colors } from '@/assets/constants/Colors'
-import { ChatMessage } from '@/lib/chats/mockMessages'
+import { ChatMessage } from '@/types'
 import React from 'react'
 import { Text, View } from 'react-native'
 
