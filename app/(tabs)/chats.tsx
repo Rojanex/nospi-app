@@ -7,13 +7,13 @@ import { strings } from '@/constants/strings'
 import {
   archiveChat,
   fetchChatList,
-  leavePlan,
 } from '@/lib/chats/api'
 import {
   getActiveChats,
   getArchivedChats,
   getExpiredChats,
 } from '@/lib/chats/filters'
+import { leavePlan } from '@/lib/plans/lifecycle'
 import {
   subscribePlanCreated,
   subscribePlanDeleted,

@@ -1,6 +1,7 @@
 import { Colors } from '@/assets/constants/Colors'
 import { ChatRow } from '@/components/chats/ChatRow'
 import { ChatSection } from '@/components/chats/ChatSection'
+import { TabScreen } from '@/components/layout/TabScreen'
 import { strings } from '@/constants/strings'
 import { fetchChatList, unarchiveChat } from '@/lib/chats/api'
 import { getArchivedChats } from '@/lib/chats/filters'
@@ -9,7 +10,6 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function ArchivedChats() {
   const router = useRouter()
@@ -66,8 +66,28 @@ export default function ArchivedChats() {
     }
   }
 
+  if (loading) {
+    return (
+      <TabScreen>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={Colors.buttons.orange} />
+        </View>
+      </TabScreen>
+    )
+  }
+
+  if (error && archivedChats.length === 0) {
+    return (
+      <TabScreen>
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-center text-sm text-ink-50">{error}</Text>
+        </View>
+      </TabScreen>
+    )
+  }
+
   return (
-    <SafeAreaView className="flex-1 bg-primary-300" edges={['top', 'left', 'right']}>
+    <TabScreen>
       <View className="flex-row items-center gap-2 px-4 py-3">
         <Pressable
           onPress={() => router.back()}
@@ -79,45 +99,35 @@ export default function ArchivedChats() {
         <Text className="text-xl font-bold text-ink">{strings.losMios.archivedSection}</Text>
       </View>
 
-      {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={Colors.buttons.orange} />
-        </View>
-      ) : error && archivedChats.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-center text-sm text-ink-50">{error}</Text>
-        </View>
-      ) : (
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="px-5 pt-2 pb-8"
-          showsVerticalScrollIndicator={false}
-        >
-          {error ? (
-            <Text className="mb-4 text-sm text-ink-50">{error}</Text>
-          ) : null}
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="px-5 pt-2 pb-8"
+        showsVerticalScrollIndicator={false}
+      >
+        {error ? (
+          <Text className="mb-4 text-sm text-ink-50">{error}</Text>
+        ) : null}
 
-          {archivedChats.length === 0 ? (
-            <View className="items-center py-12">
-              <Text className="text-sm text-ink-40">{strings.losMios.emptyArchived}</Text>
-            </View>
-          ) : (
-            <ChatSection label={strings.losMios.archivedSection} locked>
-              {archivedChats.map(item => (
-                <ChatRow
-                  key={item.id}
-                  item={item}
-                  {...getSwipeProps(item.id)}
-                  onPress={() => handleChatPress(item)}
-                  onLeave={() => {}}
-                  onArchive={() => {}}
-                  onUnarchive={() => handleUnarchive(item.id)}
-                />
-              ))}
-            </ChatSection>
-          )}
-        </ScrollView>
-      )}
-    </SafeAreaView>
+        {archivedChats.length === 0 ? (
+          <View className="items-center py-12">
+            <Text className="text-sm text-ink-40">{strings.losMios.emptyArchived}</Text>
+          </View>
+        ) : (
+          <ChatSection label={strings.losMios.archivedSection} locked>
+            {archivedChats.map(item => (
+              <ChatRow
+                key={item.id}
+                item={item}
+                {...getSwipeProps(item.id)}
+                onPress={() => handleChatPress(item)}
+                onLeave={() => {}}
+                onArchive={() => {}}
+                onUnarchive={() => handleUnarchive(item.id)}
+              />
+            ))}
+          </ChatSection>
+        )}
+      </ScrollView>
+    </TabScreen>
   )
 }

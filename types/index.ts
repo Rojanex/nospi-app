@@ -104,6 +104,15 @@ export interface Plan {
   user_joined: boolean
 }
 
+export type PlanMetaRow = {
+  id: string
+  title: string
+  activity_type: string
+  status: 'active' | 'expired' | 'completed'
+  previewText: string
+  timeLabel: string
+}
+
 export type ChatListItem = {
   id: string
   activityType: PlanActivityType

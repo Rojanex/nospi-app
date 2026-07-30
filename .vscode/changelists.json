@@ -4,26 +4,17 @@
       "name": "Default",
       "files": [
         "constants/strings.ts",
-        "lib/chats/mockChats.ts",
         "app/(tabs)/chats.tsx",
-        "components/chats/ChatRow.tsx",
         "app/chats/archived.tsx",
         "app/chats/[id].tsx",
-        "components/chats/ChatThreadHeader.tsx",
-        "components/chats/MessageBubble.tsx",
         "types/index.ts",
-        "components/chats/ParticipantsSheet.tsx",
-        "lib/chats/mockParticipants.ts",
-        "lib/chats/mockMessages.ts",
-        "components/plans/PlanCard.tsx",
-        "lib/plans/mapRowToPlan.ts",
         "lib/chats/api.ts",
-        "lib/chats/filters.ts",
-        "lib/utils/avatar.ts",
-        ".vscode/changelists.json",
-        "lib/plans/createPlan.ts",
         "components/plans/NewPlanSheet.tsx",
-        "lib/plans/plansEvents.ts"
+        "app/(onboarding)/dni-verify.tsx",
+        "app/(onboarding)/selfie.tsx",
+        "app/(tabs)/_layout.tsx",
+        "lib/plans/lifecycle.ts",
+        ".vscode/changelists.json"
       ]
     }
   ],

@@ -1,10 +1,10 @@
-import { Colors } from "@/assets/constants/Colors";
-import { strings } from "@/constants/strings";
-import { supabase } from "@/lib/supabase";
-import { Ionicons } from "@expo/vector-icons";
-import * as Crypto from 'expo-crypto';
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { Colors } from '@/assets/constants/Colors'
+import { strings } from '@/constants/strings'
+import { supabase } from '@/lib/supabase'
+import { Ionicons } from '@expo/vector-icons'
+import * as Crypto from 'expo-crypto'
+import { useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Keyboard,
@@ -15,9 +15,9 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
-} from "react-native";
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from 'react-native'
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 type DocType = 'CC' | 'DNI'
 
@@ -136,19 +136,19 @@ export default function DniVerify() {
 
           <View className="back-bar">
             <TouchableOpacity onPress={router.back}>
-              <Ionicons name='chevron-back' size={24} color={Colors.neutral.hint} />
+              <Ionicons name="chevron-back" size={24} color={Colors.neutral.hint} />
             </TouchableOpacity>
           </View>
 
-          <View className='px-[28px] mb-[16px]' style={{ marginTop: 10 }}>
+          <View className="px-[28px] mb-[16px]" style={{ marginTop: 10 }}>
             <View className={`relative ${keyboardVisible ? 'min-h-0' : 'min-h-[220px]'}`}>
-              <Text className='auth-title text-[37px]' style={{ zIndex: 1, lineHeight: 60 }}>
+              <Text className="auth-title text-[37px]" style={{ zIndex: 1, lineHeight: 60 }}>
                 {strings.onboarding.dniTitle}
               </Text>
 
               <Animated.Image
                 source={require('@/assets/images/dni-enter-screen.png')}
-                resizeMode='contain'
+                resizeMode="contain"
                 style={[{
                   position: 'absolute',
                   right: -65,
@@ -160,7 +160,7 @@ export default function DniVerify() {
               />
               <Animated.Image
                 source={require('@/assets/images/dni-enter-screen.png')}
-                resizeMode='contain'
+                resizeMode="contain"
                 style={[{
                   position: 'absolute',
                   right: -65,
@@ -173,8 +173,8 @@ export default function DniVerify() {
             </View>
           </View>
 
-          <View className='px-[28px]' style={{ marginTop: 18 }}>
-            <Text className='auth-subtitle mb-[20px]'>
+          <View className="px-[28px]" style={{ marginTop: 18 }}>
+            <Text className="auth-subtitle mb-[20px]">
               {strings.onboarding.dniSubtitle}
             </Text>
 
@@ -225,7 +225,7 @@ export default function DniVerify() {
               disabled={isDisabled}
             >
               {loading ? (
-                <ActivityIndicator color="#ffffff" />
+                <ActivityIndicator color={Colors.white} />
               ) : (
                 <Text className="btn-primary-text">{strings.onboarding.dniContinue}</Text>
               )}
@@ -236,12 +236,12 @@ export default function DniVerify() {
             ) : null}
           </View>
 
-          <View className='mb-5 items-center gap-2'>
+          <View className="mb-5 items-center gap-2">
             <TouchableOpacity
               onPress={() => router.push('/(tabs)/' as never)}
-              className='px-3 py-5'
+              className="px-3 py-5"
             >
-              <Text className='text-sm text-black-400' style={{ textDecorationLine: 'underline' }}>
+              <Text className="text-sm text-black-400" style={{ textDecorationLine: 'underline' }}>
                 {strings.onboarding.dniSkip}
               </Text>
             </TouchableOpacity>

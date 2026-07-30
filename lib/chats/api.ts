@@ -2,7 +2,7 @@ import { PlanStatus } from '@/constants/planStatus'
 import { strings } from '@/constants/strings'
 import { avatarColorsForId, initialsFromName } from '@/lib/utils/avatar'
 import { supabase } from '@/lib/supabase'
-import { ChatListItem, ChatMessage, Participant, PlanActivityType } from '@/types'
+import { ChatListItem, ChatMessage, Participant, PlanActivityType, PlanMetaRow } from '@/types'
 
 type DbPlanStatus = 'active' | 'expired' | 'completed'
 
@@ -43,15 +43,6 @@ type MemberRow = {
   user_id: string
   role: 'host' | 'member'
   profiles: ProfileEmbed | ProfileEmbed[] | null
-}
-
-export type PlanMetaRow = {
-  id: string
-  title: string
-  activity_type: string
-  status: DbPlanStatus
-  previewText: string
-  timeLabel: string
 }
 
 export function mapPlanStatusToUi(status: DbPlanStatus): PlanStatus {
@@ -100,16 +91,6 @@ async function requireUserId(): Promise<string> {
     throw new Error('Not authenticated')
   }
   return data.session.user.id
-}
-
-async function getCurrentDisplayName(userId: string): Promise<string> {
-  const { data } = await supabase
-    .from('profiles')
-    .select('display_name')
-    .eq('id', userId)
-    .maybeSingle()
-
-  return data?.display_name?.trim() || 'Alguien'
 }
 
 export async function fetchPlanMeta(planId: string): Promise<PlanMetaRow | null> {
@@ -360,51 +341,6 @@ export async function unarchiveChat(planId: string): Promise<void> {
     console.error('[unarchiveChat]', error)
     throw error
   }
-}
-
-export async function deletePlan(planId: string): Promise<void> {
-  const userId = await requireUserId()
-
-  const { error } = await supabase
-    .from('plans')
-    .delete()
-    .eq('id', planId)
-    .eq('created_by', userId)
-
-  if (error) {
-    console.error('[deletePlan]', error)
-    throw error
-  }
-}
-
-export async function leavePlan(planId: string, isHost: boolean): Promise<void> {
-  const userId = await requireUserId()
-
-  if (isHost) {
-    const { error } = await supabase.rpc('leave_plan_as_host', {
-      target_plan_id: planId,
-    })
-    if (error) {
-      console.error('[leavePlan] host rpc', error)
-      throw error
-    }
-    return
-  }
-
-  const displayName = await getCurrentDisplayName(userId)
-
-  const { error } = await supabase
-    .from('plan_members')
-    .delete()
-    .eq('plan_id', planId)
-    .eq('user_id', userId)
-
-  if (error) {
-    console.error('[leavePlan] delete member', error)
-    throw error
-  }
-
-  await insertSystemMessage(planId, strings.systemMessages.leftPlanSystem(displayName))
 }
 
 export async function removeMember(

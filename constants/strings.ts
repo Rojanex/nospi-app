@@ -113,6 +113,13 @@ export const strings = {
     createErrorValidation: 'Revisa los datos del plan e intenta de nuevo.',
   },
 
+  tabs: {
+    plans: 'Planes',
+    newPlan: 'Nuevo plan',
+    chats: 'Los míos',
+    profile: 'Perfil',
+  },
+
   losMios: {
     title: 'Los míos',
     activeCount: (n: number) => `${n} parches activos`,

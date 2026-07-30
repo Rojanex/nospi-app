@@ -3,19 +3,19 @@ import { ChatComposer } from '@/components/chats/ChatComposer'
 import { ChatThreadHeader } from '@/components/chats/ChatThreadHeader'
 import { MessageBubble } from '@/components/chats/MessageBubble'
 import { ParticipantsSheet } from '@/components/chats/ParticipantsSheet'
+import { TabScreen } from '@/components/layout/TabScreen'
 import { isPlanExpired } from '@/constants/planStatus'
 import { strings } from '@/constants/strings'
 import {
   asActivityType,
-  deletePlan,
   fetchMessages,
   fetchParticipants,
   fetchPlanMeta,
-  leavePlan,
   mapPlanStatusToUi,
   removeMember,
   sendMessage,
 } from '@/lib/chats/api'
+import { deletePlan, leavePlan } from '@/lib/plans/lifecycle'
 import { notifyPlanDeleted } from '@/lib/plans/plansEvents'
 import { ChatListItem, ChatMessage, Participant } from '@/types'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -28,7 +28,7 @@ import {
   Text,
   View,
 } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 function parseChatParam(raw: string | string[] | undefined): ChatListItem | null {
   if (!raw) return null
@@ -124,25 +124,31 @@ export default function ChatThread() {
 
   if (headerLoading && !chat) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-primary-300">
-        <ActivityIndicator size="large" color={Colors.buttons.orange} />
-      </SafeAreaView>
+      <TabScreen>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={Colors.buttons.orange} />
+        </View>
+      </TabScreen>
     )
   }
 
   if (error && !chat) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-primary-300 px-6">
-        <Text className="text-center text-sm text-ink-50">{error}</Text>
-      </SafeAreaView>
+      <TabScreen>
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-center text-sm text-ink-50">{error}</Text>
+        </View>
+      </TabScreen>
     )
   }
 
   if (!chat) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-primary-300">
-        <Text className="text-sm text-ink-50">{strings.losMios.notFoundChat}</Text>
-      </SafeAreaView>
+      <TabScreen>
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-sm text-ink-50">{strings.losMios.notFoundChat}</Text>
+        </View>
+      </TabScreen>
     )
   }
 
@@ -219,18 +225,20 @@ export default function ChatThread() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-primary-300" edges={['top', 'left', 'right']}>
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-      >
+    <TabScreen
+      header={
         <ChatThreadHeader
           item={chatItem}
           onBack={() => router.back()}
           onPressMembers={handlePressMembers}
         />
-
+      }
+    >
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
         {error ? (
           <Text className="px-4 pt-2 text-sm text-ink-50">{error}</Text>
         ) : null}
@@ -272,6 +280,6 @@ export default function ChatThread() {
         onLeave={handleLeave}
         onDeletePlan={handleDeletePlan}
       />
-    </SafeAreaView>
+    </TabScreen>
   )
 }

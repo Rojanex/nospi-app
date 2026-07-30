@@ -1,4 +1,4 @@
-import { NewPlanFields } from '@/components/plans/NewPlanFields'
+import { ActivePicker, NewPlanFields } from '@/components/plans/NewPlanFields'
 import { strings } from '@/constants/strings'
 import { createPlan } from '@/lib/plans/createPlan'
 import { ParsedPlace } from '@/lib/plans/formatPlace'
@@ -18,8 +18,6 @@ import {
   View,
 } from 'react-native'
 import { GooglePlacesTextInputRef } from 'react-native-google-places-textinput'
-
-type ActivePicker = 'date' | 'time' | null
 
 interface NewPlanSheetProps {
   onClose: () => void
