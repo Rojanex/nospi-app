@@ -17,7 +17,7 @@ async function getCurrentDisplayName(userId: string): Promise<string> {
     .eq('id', userId)
     .maybeSingle()
 
-  return data?.display_name?.trim() || 'Alguien'
+  return data?.display_name?.trim() || strings.common.someoneFallback
 }
 
 export async function deletePlan(planId: string): Promise<void> {
@@ -31,6 +31,21 @@ export async function deletePlan(planId: string): Promise<void> {
 
   if (error) {
     console.error('[deletePlan]', error)
+    throw error
+  }
+}
+
+export async function joinPlan(planId: string): Promise<void> {
+  const userId = await requireUserId()
+
+  const { error } = await supabase.from('plan_members').insert({
+    plan_id: planId,
+    user_id: userId,
+    role: 'member',
+  })
+
+  if (error) {
+    console.error('[joinPlan]', error)
     throw error
   }
 }

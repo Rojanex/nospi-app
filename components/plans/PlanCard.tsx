@@ -10,9 +10,10 @@ import { Text, TouchableOpacity, View } from 'react-native'
 interface Props {
   plan: Plan
   onJoin: (id: string) => void
+  onOpenChat: (id: string) => void
 }
 
-export function PlanCard({ plan, onJoin }: Props) {
+export function PlanCard({ plan, onJoin, onOpenChat }: Props) {
   const primaryType = plan.activity_type.split('|')[0].trim().toLowerCase()
   const meta = getActivityMeta(primaryType)
   const tags = plan.activity_type.split('|').map(t => t.trim().toUpperCase()).join(' · ')
@@ -23,22 +24,14 @@ export function PlanCard({ plan, onJoin }: Props) {
 
   const statusColor = plan.spots_left <= 2 ? Colors.activity.orange : Colors.black[400]
 
-  const joinBg = plan.user_joined
-    ? Colors.black[100]
-    : plan.spots_left === 0
-      ? Colors.neutral.gray
-      : Colors.buttons.orange
-
-  const joinLabel = plan.user_joined
-    ? strings.plansFeed.joinedCta
-    : plan.spots_left === 0
-      ? strings.plansFeed.fullCta
-      : strings.plansFeed.joinCta
+  const joined = plan.user_joined
+  const joinBg = joined ? Colors.black[100] : Colors.buttons.orange
+  const joinLabel = joined ? strings.plansFeed.joinedCta : strings.plansFeed.joinCta
 
   const overflowCount = plan.extra_attendees - plan.attendees.length
   const hostDotColor =
     plan.host_type === 'local' ? Colors.buttons.orange : Colors.primary[100]
-  const hostAvatarColors = avatarColorsForId(plan.host_initials)
+  const hostAvatarColors = avatarColorsForId(plan.host_id)
 
   return (
     <View className="mx-4 mb-3 flex-row overflow-hidden rounded-[18px] bg-white">
@@ -113,8 +106,7 @@ export function PlanCard({ plan, onJoin }: Props) {
               <TouchableOpacity
                 className="rounded-full px-[18px] py-2.5"
                 style={{ backgroundColor: joinBg }}
-                onPress={() => onJoin(plan.id)}
-                disabled={plan.spots_left === 0}
+                onPress={() => (joined ? onOpenChat(plan.id) : onJoin(plan.id))}
               >
                 <Text className="text-[13px] font-bold text-white">{joinLabel}</Text>
               </TouchableOpacity>

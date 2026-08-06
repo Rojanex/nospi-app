@@ -85,7 +85,7 @@ export default function OtpVerify() {
     setLoading(true)
     setError(null)
 
-    const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
+    const { error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
 
     if (error) {
       setError(error.message)
@@ -93,15 +93,7 @@ export default function OtpVerify() {
       return
     }
 
-    setLoading(false)
-    if (!error && data.user) {
-      const isNewUser = data.user.created_at === data.user.last_sign_in_at
-      if (isNewUser) {
-        router.replace('/(onboarding)/name')
-      } else {
-        router.replace('/')
-      }
-    }
+    // Keep loading until root layout resolves display_name and navigates.
   }
 
   const renderBox = (digit: string, i: number) => (

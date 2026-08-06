@@ -1,4 +1,41 @@
+const DATE_TODAY = 'Hoy'
+const DATE_WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const
+const DATE_WEEKDAYS_LONG = [
+  'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado',
+] as const
+const DATE_MONTHS = [
+  'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+  'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
+] as const
+
 export const strings = {
+  dates: {
+    today: DATE_TODAY,
+    weekdays: DATE_WEEKDAYS,
+    weekdaysLong: DATE_WEEKDAYS_LONG,
+    months: DATE_MONTHS,
+    am: 'am',
+    pm: 'pm',
+    postedJustNow: 'hace 1 min',
+    postedMinutes: (n: number) => `hace ${n} min`,
+    postedHoursOne: 'hace 1 h',
+    postedHours: (n: number) => `hace ${n} h`,
+    postedDaysOne: 'hace 1 d',
+    postedDays: (n: number) => `hace ${n} d`,
+    planDateTime: (day: string, date: number, month: string, time: string) =>
+      `${day} ${date} ${month} · ${time}`,
+    sheetDate: (weekday: string, day: number, month: string) =>
+      `${weekday} ${day} ${month}`,
+    clockTime: (hour: number, minutePart: string, period: string) =>
+      `${hour}${minutePart} ${period}`,
+  },
+
+  common: {
+    hostFallback: 'Host',
+    userFallback: 'Usuario',
+    someoneFallback: 'Alguien',
+  },
+
   onboarding: {
     //welcome screen
     welcomeTitle: '¿Y si nos pillamos\nhoy?',
@@ -62,12 +99,11 @@ export const strings = {
 
     planCount: (n: number) => `${n} planes`,
     filterAll: 'Todos',
-    filterToday: 'Hoy',
+    filterToday: DATE_TODAY,
     filterNearby: 'Cerca',
     filterFree: 'Gratis',
-    joinCta: 'me apunto →',
-    joinedCta: '¡ya voy! ✓',
-    fullCta: 'lleno',
+    joinCta: 'me apunto',
+    joinedCta: 'ya voy',
     emptyFeed: 'parece que no hay planes para ti, pero... y si los creas tú?',
     endOfFeed: 'Tus gustos son de nicho, mejor busca a los tuyos',
     soloSpots: (spots: number) => `¡solo ${spots} cupos!`,

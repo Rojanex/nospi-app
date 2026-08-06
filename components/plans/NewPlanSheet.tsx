@@ -12,6 +12,7 @@ import { DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import React, { useRef, useState } from 'react'
 import {
   ActivityIndicator,
+  Keyboard,
   Pressable,
   ScrollView,
   Text,
@@ -38,6 +39,7 @@ export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
   }
 
   function openPicker(picker: 'date' | 'time') {
+    Keyboard.dismiss()
     setPickerDraft(picker === 'date' ? (form.date ?? new Date()) : (form.time ?? new Date()))
     setActivePicker(picker)
   }
@@ -53,6 +55,7 @@ export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
   }
 
   function handleLocationPlaceSelect(parsed: ParsedPlace) {
+    Keyboard.dismiss()
     patchForm({
       location: {
         name: parsed.locationName,
@@ -72,6 +75,7 @@ export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
   }
 
   async function handleSubmit() {
+    Keyboard.dismiss()
     setSubmitting(true)
     setSubmitError(null)
 
@@ -94,15 +98,19 @@ export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
 
   return (
     <View className="flex-1 w-full">
-      <Text className="text-center px-4 pt-1 pb-3 text-xl font-extrabold text-ink">
-        {strings.newPlan.sheetTitle}
-      </Text>
+      <Pressable onPress={Keyboard.dismiss}>
+        <Text className="text-center px-4 pt-1 pb-3 text-xl font-extrabold text-ink">
+          {strings.newPlan.sheetTitle}
+        </Text>
+      </Pressable>
       <ScrollView
         className="flex-1"
-        contentContainerClassName="px-4 pb-4"
-        keyboardShouldPersistTaps="always"
+        contentContainerClassName="grow px-4 pb-4"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         nestedScrollEnabled
         showsVerticalScrollIndicator={false}
+        onScrollBeginDrag={Keyboard.dismiss}
       >
         <NewPlanFields
           form={form}
@@ -128,7 +136,9 @@ export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
         <Pressable
           key={isSubmitDisabled ? 'submit-disabled' : 'submit-enabled'}
           disabled={isSubmitDisabled}
-          onPress={handleSubmit}
+          onPress={() => {
+            void handleSubmit()
+          }}
           className="w-full items-center rounded-full bg-buttons-brown py-[15px]"
           style={{ opacity: isSubmitDisabled ? 0.4 : 1 }}
         >

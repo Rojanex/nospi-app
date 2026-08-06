@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { unlockAppAfterDisplayName } from '@/lib/profiles/onboarding'
 import { strings } from '@/constants/strings'
 import { Colors } from '@/assets/constants/Colors'
 import { useRouter } from 'expo-router'
@@ -67,6 +68,7 @@ export default function Name() {
       return
     }
 
+    unlockAppAfterDisplayName()
     setLoading(false)
     router.push('/(onboarding)/dni-verify')
   }

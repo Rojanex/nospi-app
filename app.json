@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/nospi-icon-app.png",
     "scheme": "nospinative",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light", 
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,

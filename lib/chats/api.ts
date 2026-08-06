@@ -3,6 +3,7 @@ import { strings } from '@/constants/strings'
 import { avatarColorsForId, initialsFromName } from '@/lib/utils/avatar'
 import { supabase } from '@/lib/supabase'
 import { ChatListItem, ChatMessage, Participant, PlanActivityType, PlanMetaRow } from '@/types'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 
 type DbPlanStatus = 'active' | 'expired' | 'completed'
 
@@ -62,13 +63,158 @@ function unwrapProfile(
   return Array.isArray(profiles) ? profiles[0] ?? null : profiles
 }
 
-function formatTimestampLabel(iso: string): string {
+export function formatTimestampLabel(iso: string): string {
   const date = new Date(iso)
   return date.toLocaleTimeString('es-CO', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
   })
+}
+
+/** Raw INSERT row from realtime — no profile join. */
+export type ThreadMessageInsert = {
+  id: string
+  plan_id: string
+  user_id: string | null
+  content: string
+  type: string
+  created_at: string
+}
+
+export function mapRealtimeMessageToChatMessage(
+  row: ThreadMessageInsert,
+  currentUserId: string | null,
+  participants: Participant[],
+): ChatMessage {
+  const isSystem = row.user_id === null || row.type === 'system'
+  if (isSystem) {
+    return {
+      id: row.id,
+      type: 'system',
+      content: row.content,
+      timeLabel: formatTimestampLabel(row.created_at),
+    }
+  }
+
+  const isOwn = currentUserId != null && row.user_id === currentUserId
+  if (isOwn) {
+    return {
+      id: row.id,
+      type: 'user',
+      content: row.content,
+      timeLabel: formatTimestampLabel(row.created_at),
+      isOwn: true,
+    }
+  }
+
+  const participant = participants.find(p => p.id === row.user_id)
+  const name = participant?.name ?? strings.common.userFallback
+  const colors = participant
+    ? { bg: participant.avatarBg, text: participant.avatarText }
+    : avatarColorsForId(row.user_id!)
+
+  return {
+    id: row.id,
+    type: 'user',
+    content: row.content,
+    timeLabel: formatTimestampLabel(row.created_at),
+    isOwn: false,
+    sender: {
+      name,
+      initials: participant?.initials ?? initialsFromName(name),
+      bg: colors.bg,
+      text: colors.text,
+    },
+  }
+}
+
+export function subscribeToChatPreviews(
+  planIds: string[],
+  onNewMessage: (message: ThreadMessageInsert) => void,
+): RealtimeChannel | null {
+  if (planIds.length === 0) return null
+
+  const channel = supabase
+    .channel('chat-list-previews')
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `plan_id=in.(${planIds.join(',')})`,
+      },
+      payload => {
+        onNewMessage(payload.new as ThreadMessageInsert)
+      },
+    )
+    .subscribe()
+
+  return channel
+}
+
+export function subscribeToThreadMessages(
+  planId: string,
+  onNewMessage: (message: ThreadMessageInsert) => void,
+): RealtimeChannel {
+  const channel = supabase
+    .channel(`thread-messages-${planId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `plan_id=eq.${planId}`,
+      },
+      payload => {
+        onNewMessage(payload.new as ThreadMessageInsert)
+      },
+    )
+    .subscribe()
+
+  return channel
+}
+
+export type ThreadParticipantChange = {
+  eventType: 'INSERT' | 'DELETE'
+  row: { user_id: string; plan_id: string }
+}
+
+export function subscribeToThreadParticipants(
+  planId: string,
+  onParticipantChange: (event: ThreadParticipantChange) => void,
+): RealtimeChannel {
+  const channel = supabase
+    .channel(`thread-participants-${planId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'plan_members',
+        filter: `plan_id=eq.${planId}`,
+      },
+      payload => {
+        // Archive/unarchive update archived_at; leave/remove are DELETE. Ignore UPDATE.
+        if (payload.eventType === 'UPDATE') return
+
+        if (payload.eventType === 'INSERT') {
+          const row = payload.new as { user_id: string; plan_id: string }
+          onParticipantChange({ eventType: 'INSERT', row })
+          return
+        }
+
+        if (payload.eventType === 'DELETE') {
+          const row = payload.old as { user_id: string; plan_id: string }
+          onParticipantChange({ eventType: 'DELETE', row })
+        }
+      },
+    )
+    .subscribe()
+
+  return channel
 }
 
 export function asActivityType(value: string): PlanActivityType {
@@ -196,6 +342,7 @@ export async function fetchChatList(): Promise<ChatListItem[]> {
         title: plan.title,
         previewText: last?.content ?? '',
         timeLabel: last ? formatTimestampLabel(last.created_at) : '',
+        lastMessageAt: last?.created_at ?? null,
         memberCount: memberCounts.get(row.plan_id) ?? 0,
         isHost: row.role === 'host',
         status: mapPlanStatusToUi(plan.status),
@@ -204,6 +351,14 @@ export async function fetchChatList(): Promise<ChatListItem[]> {
       return item
     })
     .filter((item): item is ChatListItem => item !== null)
+    .sort((a, b) => {
+      const aTime = a.lastMessageAt ?? ''
+      const bTime = b.lastMessageAt ?? ''
+      if (aTime === bTime) return 0
+      if (!aTime) return 1
+      if (!bTime) return -1
+      return bTime.localeCompare(aTime)
+    })
 }
 
 export async function fetchMessages(planId: string): Promise<ChatMessage[]> {
@@ -232,7 +387,7 @@ export async function fetchMessages(planId: string): Promise<ChatMessage[]> {
     }
 
     const profile = unwrapProfile(row.profiles)
-    const name = profile?.display_name?.trim() || 'Usuario'
+    const name = profile?.display_name?.trim() || strings.common.userFallback
     const colors = avatarColorsForId(row.user_id!)
 
     return {
@@ -269,7 +424,7 @@ export async function fetchParticipants(planId: string): Promise<Participant[]> 
 
   return ((data as unknown as MemberRow[] | null) ?? []).map(row => {
     const profile = unwrapProfile(row.profiles)
-    const name = profile?.display_name?.trim() || 'Usuario'
+    const name = profile?.display_name?.trim() || strings.common.userFallback
     const colors = avatarColorsForId(row.user_id)
     return {
       id: row.user_id,
@@ -281,6 +436,44 @@ export async function fetchParticipants(planId: string): Promise<Participant[]> 
       isSelf: row.user_id === userId,
     }
   })
+}
+
+/** Single member + profile for a plan. planId is required so .maybeSingle() is safe across multi-plan users. */
+export async function fetchParticipantProfile(
+  planId: string,
+  userId: string,
+): Promise<Participant> {
+  const currentUserId = await requireUserId()
+
+  const { data, error } = await supabase
+    .from('plan_members')
+    .select('user_id, role, profiles(display_name, avatar_url)')
+    .eq('plan_id', planId)
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[fetchParticipantProfile]', error)
+    throw error
+  }
+  if (!data) {
+    throw new Error('Participant not found')
+  }
+
+  const row = data as unknown as MemberRow
+  const profile = unwrapProfile(row.profiles)
+  const name = profile?.display_name?.trim() || strings.common.userFallback
+  const colors = avatarColorsForId(row.user_id)
+
+  return {
+    id: row.user_id,
+    name,
+    initials: initialsFromName(name),
+    avatarBg: colors.bg,
+    avatarText: colors.text,
+    role: row.role,
+    isSelf: row.user_id === currentUserId,
+  }
 }
 
 export async function sendMessage(planId: string, content: string): Promise<void> {

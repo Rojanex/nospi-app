@@ -96,6 +96,7 @@ export interface Plan {
   spots_left: number
   extra_attendees: number
   attendees: { initials: string; avatar_url: string | null; user_id: string }[]
+  host_id: string
   host_name: string
   host_initials: string
   host_avatar_url: string | null
@@ -119,6 +120,8 @@ export type ChatListItem = {
   title: string
   previewText: string
   timeLabel: string
+  /** ISO timestamp of latest message; used for list ordering */
+  lastMessageAt?: string | null
   memberCount: number
   isHost: boolean
   status: PlanStatus

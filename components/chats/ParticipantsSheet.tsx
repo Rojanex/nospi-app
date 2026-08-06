@@ -7,6 +7,8 @@ import React, { useEffect, useState } from 'react'
 import {
   Alert,
   Dimensions,
+  Keyboard,
+  Modal,
   Pressable,
   ScrollView,
   Text,
@@ -65,6 +67,8 @@ export function ParticipantsSheet({
 
   useEffect(() => {
     if (!visible) return
+
+    Keyboard.dismiss()
     setExpandedRemoveId(null)
     translateY.value = SCREEN_HEIGHT
     overlayOpacity.value = 0
@@ -73,6 +77,7 @@ export function ParticipantsSheet({
   }, [visible, translateY, overlayOpacity])
 
   function closeSheet() {
+    Keyboard.dismiss()
     translateY.value = withTiming(
       SCREEN_HEIGHT,
       {
@@ -137,156 +142,162 @@ export function ParticipantsSheet({
     ])
   }
 
-  if (!visible) return null
-
   return (
-    <GestureHandlerRootView className="absolute inset-0 z-50">
-      <Animated.View className="flex-1 justify-end bg-black/40" style={overlayStyle}>
-        <Pressable className="absolute inset-0" onPress={closeSheet} />
-        <Animated.View
-          className="max-h-[80%] w-full rounded-t-3xl bg-primary-200 pt-3"
-          style={sheetStyle}
-        >
-          <Pressable onPress={() => setExpandedRemoveId(null)}>
-            <GestureDetector gesture={swipeDown}>
-              <View className="mb-1 w-full items-center py-3">
-                <View className="h-1 w-9 rounded-sm bg-neutral-hint" />
-              </View>
-            </GestureDetector>
-
-            <View className="px-5 pb-3">
-              <Text className="text-xl font-extrabold text-ink" numberOfLines={1}>
-                {chat.title}
-              </Text>
-              <Text className="mt-0.5 text-sm text-ink-50">
-                {participants.length} personas
-              </Text>
-              {!canManage ? (
-                <View className="mt-3 flex-row items-center justify-center gap-2 rounded-2xl bg-neutral-softTint px-3 py-2.5">
-                  <Ionicons name="lock-closed" size={14} color={Colors.ink[40]} />
-                  <Text className="text-sm text-ink-50">
-                    {strings.losMios.readOnlyBanner}
-                  </Text>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      onRequestClose={closeSheet}
+    >
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Animated.View className="flex-1 justify-end bg-black/40" style={overlayStyle}>
+          <Pressable className="absolute inset-0" onPress={closeSheet} />
+          <Animated.View
+            className="max-h-[80%] w-full rounded-t-3xl bg-primary-200 pt-3"
+            style={sheetStyle}
+          >
+            <Pressable onPress={() => setExpandedRemoveId(null)}>
+              <GestureDetector gesture={swipeDown}>
+                <View className="mb-1 w-full items-center py-3">
+                  <View className="h-1 w-9 rounded-sm bg-neutral-hint" />
                 </View>
-              ) : null}
-            </View>
+              </GestureDetector>
 
-            <ScrollView
-              className="flex-grow-0"
-              contentContainerClassName="px-5 pb-4"
-              showsVerticalScrollIndicator={false}
-              bounces={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              <View className="gap-1">
-                {participants.map(participant => {
-                  const canRemove =
-                    canManage &&
-                    isHostViewing &&
-                    !participant.isSelf &&
-                    participant.role !== 'host'
-                  const isExpanded = expandedRemoveId === participant.id
+              <View className="px-5 pb-3">
+                <Text className="text-xl font-extrabold text-ink" numberOfLines={1}>
+                  {chat.title}
+                </Text>
+                <Text className="mt-0.5 text-sm text-ink-50">
+                  {participants.length} personas
+                </Text>
+                {!canManage ? (
+                  <View className="mt-3 flex-row items-center justify-center gap-2 rounded-2xl bg-neutral-softTint px-3 py-2.5">
+                    <Ionicons name="lock-closed" size={14} color={Colors.ink[40]} />
+                    <Text className="text-sm text-ink-50">
+                      {strings.losMios.readOnlyBanner}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
 
-                  return (
-                    <Pressable
-                      key={participant.id}
-                      onPress={() => setExpandedRemoveId(null)}
-                      className="flex-row items-center gap-3 rounded-2xl px-2 py-2.5"
-                    >
-                      <View
-                        className="h-10 w-10 items-center justify-center rounded-full"
-                        style={{ backgroundColor: participant.avatarBg }}
+              <ScrollView
+                className="flex-grow-0"
+                contentContainerClassName="px-5 pb-4"
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+                keyboardShouldPersistTaps="handled"
+              >
+                <View className="gap-1">
+                  {participants.map(participant => {
+                    const canRemove =
+                      canManage &&
+                      isHostViewing &&
+                      !participant.isSelf &&
+                      participant.role !== 'host'
+                    const isExpanded = expandedRemoveId === participant.id
+
+                    return (
+                      <Pressable
+                        key={participant.id}
+                        onPress={() => setExpandedRemoveId(null)}
+                        className="flex-row items-center gap-3 rounded-2xl px-2 py-2.5"
                       >
-                        <Text
-                          className="text-sm font-bold"
-                          style={{ color: participant.avatarText }}
+                        <View
+                          className="h-10 w-10 items-center justify-center rounded-full"
+                          style={{ backgroundColor: participant.avatarBg }}
                         >
-                          {participant.initials}
-                        </Text>
-                      </View>
+                          <Text
+                            className="text-sm font-bold"
+                            style={{ color: participant.avatarText }}
+                          >
+                            {participant.initials}
+                          </Text>
+                        </View>
 
-                      <View className="min-w-0 flex-1 flex-row items-center gap-2">
-                        <Text
-                          className="shrink text-base font-semibold text-ink"
-                          numberOfLines={1}
-                        >
-                          {participant.isSelf
-                            ? `${participant.name} (tú)`
-                            : participant.name}
-                        </Text>
-                        {participant.role === 'host' ? (
-                          <View className="shrink-0 rounded-full bg-activity-orangeDark px-2.5 py-1">
-                            <Text className="text-[10px] font-bold text-white">
-                              {strings.losMios.hostBadge}
-                            </Text>
-                          </View>
+                        <View className="min-w-0 flex-1 flex-row items-center gap-2">
+                          <Text
+                            className="shrink text-base font-semibold text-ink"
+                            numberOfLines={1}
+                          >
+                            {participant.isSelf
+                              ? `${participant.name} (tú)`
+                              : participant.name}
+                          </Text>
+                          {participant.role === 'host' ? (
+                            <View className="shrink-0 rounded-full bg-activity-orangeDark px-2.5 py-1">
+                              <Text className="text-[10px] font-bold text-white">
+                                {strings.losMios.hostBadge}
+                              </Text>
+                            </View>
+                          ) : null}
+                        </View>
+
+                        {canRemove ? (
+                          isExpanded ? (
+                            <Pressable
+                              onPress={() => confirmRemove(participant)}
+                              hitSlop={8}
+                            >
+                              <Text className="text-sm font-semibold text-danger">
+                                {strings.losMios.removeMemberAction}
+                              </Text>
+                            </Pressable>
+                          ) : (
+                            <Pressable
+                              onPress={() => setExpandedRemoveId(participant.id)}
+                              hitSlop={8}
+                              className="h-8 w-8 items-center justify-center"
+                            >
+                              <Ionicons
+                                name="ellipsis-horizontal"
+                                size={18}
+                                color={Colors.ink.DEFAULT}
+                              />
+                            </Pressable>
+                          )
                         ) : null}
-                      </View>
+                      </Pressable>
+                    )
+                  })}
+                </View>
+              </ScrollView>
 
-                      {canRemove ? (
-                        isExpanded ? (
-                          <Pressable
-                            onPress={() => confirmRemove(participant)}
-                            hitSlop={8}
-                          >
-                            <Text className="text-sm font-semibold text-danger">
-                              {strings.losMios.removeMemberAction}
-                            </Text>
-                          </Pressable>
-                        ) : (
-                          <Pressable
-                            onPress={() => setExpandedRemoveId(participant.id)}
-                            hitSlop={8}
-                            className="h-8 w-8 items-center justify-center"
-                          >
-                            <Ionicons
-                              name="ellipsis-horizontal"
-                              size={18}
-                              color={Colors.ink.DEFAULT}
-                            />
-                          </Pressable>
-                        )
-                      ) : null}
-                    </Pressable>
-                  )
-                })}
-              </View>
-            </ScrollView>
-
-            {showDeleteButton ? (
-              <View className="px-5 pb-8 pt-2">
-                <Pressable
-                  onPress={() => {
-                    setExpandedRemoveId(null)
-                    confirmDeletePlan()
-                  }}
-                  className="w-full items-center rounded-full bg-danger py-[15px]"
-                >
-                  <Text className="text-sm font-bold text-white">
-                    {strings.losMios.deletePlanAction}
-                  </Text>
-                </Pressable>
-              </View>
-            ) : showLeaveButton ? (
-              <View className="px-5 pb-8 pt-2">
-                <Pressable
-                  onPress={() => {
-                    setExpandedRemoveId(null)
-                    confirmLeave()
-                  }}
-                  className="w-full items-center rounded-full bg-buttons-brown py-[15px]"
-                >
-                  <Text className="text-sm font-bold text-white">
-                    {strings.losMios.leaveAction}
-                  </Text>
-                </Pressable>
-              </View>
-            ) : (
-              <View className="pb-6" />
-            )}
-          </Pressable>
+              {showDeleteButton ? (
+                <View className="px-5 pb-8 pt-2">
+                  <Pressable
+                    onPress={() => {
+                      setExpandedRemoveId(null)
+                      confirmDeletePlan()
+                    }}
+                    className="w-full items-center rounded-full bg-danger py-[15px]"
+                  >
+                    <Text className="text-sm font-bold text-white">
+                      {strings.losMios.deletePlanAction}
+                    </Text>
+                  </Pressable>
+                </View>
+              ) : showLeaveButton ? (
+                <View className="px-5 pb-8 pt-2">
+                  <Pressable
+                    onPress={() => {
+                      setExpandedRemoveId(null)
+                      confirmLeave()
+                    }}
+                    className="w-full items-center rounded-full bg-buttons-brown py-[15px]"
+                  >
+                    <Text className="text-sm font-bold text-white">
+                      {strings.losMios.leaveAction}
+                    </Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <View className="pb-6" />
+              )}
+            </Pressable>
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
-    </GestureHandlerRootView>
+      </GestureHandlerRootView>
+    </Modal>
   )
 }

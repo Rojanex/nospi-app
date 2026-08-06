@@ -5,13 +5,14 @@ import { ACTIVITY_META, ActivityType } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
 import { NEW_PLAN_DESCRIPTION_MAX, NEW_PLAN_TITLE_MAX } from '@/lib/env_reader'
 import { ParsedPlace } from '@/lib/plans/formatPlace'
-import { formatSheetDate, formatSheetTime } from '@/lib/plans/formatSheetDateTime'
+import { formatSheetDate, formatSheetTime } from '@/lib/plans/formatDateTime'
 import { NewPlanFormValues, PlanVisibility } from '@/types'
 import { Feather, Ionicons } from '@expo/vector-icons'
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import React, { RefObject } from 'react'
 import {
   Dimensions,
+  Keyboard,
   Platform,
   Pressable,
   StyleSheet,
@@ -67,13 +68,20 @@ function InlinePickerPanel({
   onConfirm: () => void
 }) {
   return (
-    <View className="px-3.5 pb-3">
+    <View className="px-3.5 pb-3" style={{ backgroundColor: Colors.white }}>
       <DateTimePicker
         value={value}
         mode={mode}
         display="spinner"
         minimumDate={minimumDate}
         onChange={onChange}
+        // iOS spinner goes blank on real devices in dark mode without these.
+        {...(Platform.OS === 'ios'
+          ? {
+              themeVariant: 'light' as const,
+              textColor: Colors.ink.DEFAULT,
+            }
+          : {})}
       />
       <Pressable
         onPress={onConfirm}
@@ -119,7 +127,10 @@ export function NewPlanFields({
             return (
               <Pressable
                 key={key}
-                onPress={() => onPatchForm({ activityType: key })}
+                onPress={() => {
+                  Keyboard.dismiss()
+                  onPatchForm({ activityType: key })
+                }}
                 style={[
                   styles.activityChip,
                   { width: CHIP_WIDTH },
@@ -313,7 +324,10 @@ export function NewPlanFields({
           </View>
           <View className="flex-row items-center gap-2">
             <Pressable
-              onPress={() => onPatchForm({ maxSpots: Math.max(2, maxSpots - 1) })}
+              onPress={() => {
+                Keyboard.dismiss()
+                onPatchForm({ maxSpots: Math.max(2, maxSpots - 1) })
+              }}
               disabled={maxSpots === 2}
               className={`h-[30px] w-[30px] items-center justify-center rounded-full bg-neutral-border ${maxSpots === 2 ? 'opacity-40' : ''}`}
             >
@@ -323,7 +337,10 @@ export function NewPlanFields({
               {maxSpots}
             </Text>
             <Pressable
-              onPress={() => onPatchForm({ maxSpots: Math.min(5, maxSpots + 1) })}
+              onPress={() => {
+                Keyboard.dismiss()
+                onPatchForm({ maxSpots: Math.min(5, maxSpots + 1) })
+              }}
               disabled={maxSpots === 5}
               className={`h-[30px] w-[30px] items-center justify-center rounded-full bg-neutral-border ${maxSpots === 5 ? 'opacity-40' : ''}`}
             >
@@ -356,7 +373,10 @@ export function NewPlanFields({
             return (
               <Pressable
                 key={option.key}
-                onPress={() => onPatchForm({ visibility: option.key as PlanVisibility })}
+                onPress={() => {
+                  Keyboard.dismiss()
+                  onPatchForm({ visibility: option.key as PlanVisibility })
+                }}
                 style={[
                   styles.visibilityOption,
                   selected

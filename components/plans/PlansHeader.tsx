@@ -1,5 +1,6 @@
 import { Colors } from '@/assets/constants/Colors'
 import { TabIndexHeader } from '@/components/tabs/TabIndexHeader'
+import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
 import { Plan } from '@/types'
 import {
@@ -17,15 +18,6 @@ const FILTERS = [
   strings.plansFeed.filterNearby,
   strings.plansFeed.filterFree,
 ]
-
-const ACTIVITY_EMOJI: Record<string, string> = {
-  playa: '🏖️', social: '🥥', rumba: '🎵', salsa: '🎵',
-  deporte: '⚽', comida: '🍽️',
-}
-
-function getPlanEmoji(type: string): string {
-  return ACTIVITY_EMOJI[type.toLowerCase()] ?? '✨'
-}
 
 type PlansHeaderProps = {
   nextPlan: Plan | null
@@ -52,7 +44,7 @@ export function PlansHeader({
           <View className="flex-row items-center gap-3">
             <View className="h-11 w-11 items-center justify-center rounded-xl bg-white/[0.12]">
               <Text className="text-[22px]">
-                {getPlanEmoji(nextPlan.activity_type)}
+                {getActivityMeta(nextPlan.activity_type.split('|')[0].trim()).emoji}
               </Text>
             </View>
             <View className="flex-1 gap-0.5">
@@ -127,6 +119,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.black[100],
   },
   chipTextActive: {
-    color: '#ffffff',
+    color: Colors.white,
   },
 })

@@ -4,10 +4,11 @@ import { PlanCardSkeleton } from '@/components/plans/PlanCardSkeleton'
 import { PlansHeader } from '@/components/plans/PlansHeader'
 import { PlansHeaderSkeleton } from '@/components/plans/PlansHeaderSkeleton'
 import { strings } from '@/constants/strings'
-import { mapRowToPlan } from '@/lib/plans/mapRowToPlan'
+import { fetchNextJoinedPlan, fetchPlansPage } from '@/lib/plans/api'
+import { joinPlan } from '@/lib/plans/lifecycle'
 import { subscribePlanCreated } from '@/lib/plans/plansEvents'
-import { supabase } from '@/lib/supabase'
-import { Plan, PlanRow } from '@/types'
+import { Plan } from '@/types'
+import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import {
   FlatList,
@@ -16,9 +17,9 @@ import {
   Text,
   View,
 } from 'react-native'
-const PAGE_SIZE = 20
 
 export default function IndexScreen() {
+  const router = useRouter()
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -28,52 +29,19 @@ export default function IndexScreen() {
   const [activeFilter, setActiveFilter] = useState(strings.plansFeed.filterAll)
   const [nextPlan, setNextPlan] = useState<Plan | null>(null)
 
-  async function fetchPlansPage(pageNum: number) {
-    const { data, error } = await supabase
-      .from('plans')
-      .select('*, plan_members(user_id, profiles(display_name, avatar_url)), host:profiles!created_by(display_name, avatar_url, role)')
-      .order('date_time', { ascending: true })
-      .range(pageNum * PAGE_SIZE, pageNum * PAGE_SIZE + PAGE_SIZE - 1)
-
-    if (error) {
-      console.error(error)
-      return { rows: [], more: false }
-    }
-
-    const rows = (data as PlanRow[]) ?? []
-    const more = rows.length === PAGE_SIZE
-    return { rows, more }
-  }
-
   const fetchInitialData = useCallback(async () => {
-    const currentUserId = (await supabase.auth.getUser()).data.user?.id ?? ''
-
-    const { data: comingPlan, error: comingPlanError } = await supabase
-      .from('plans')
-      .select('*, plan_members!inner(user_id, profiles(display_name, avatar_url)), host:profiles!created_by(display_name, avatar_url, role)')
-      .eq('plan_members.user_id', currentUserId)
-      .gt('date_time', new Date().toISOString())
-      .order('date_time', { ascending: true })
-      .limit(1)
-
-    if (comingPlanError) {
-      console.error(comingPlanError)
-      setNextPlan(null)
-    } else if (comingPlan?.[0]) {
-      const row = comingPlan[0] as PlanRow
-      setNextPlan(mapRowToPlan(row, currentUserId, row.host ?? undefined))
-    } else {
-      setNextPlan(null)
+    try {
+      const [coming, pageResult] = await Promise.all([
+        fetchNextJoinedPlan(),
+        fetchPlansPage(0),
+      ])
+      setNextPlan(coming)
+      setPlans(pageResult.plans)
+      setPage(0)
+      setHasMore(pageResult.more)
+    } catch (err) {
+      console.error('[plans feed] load', err)
     }
-
-    const { rows, more } = await fetchPlansPage(0)
-    setPlans(
-      rows.map(row =>
-        mapRowToPlan(row, currentUserId, row.host ?? undefined)
-      )
-    )
-    setPage(0)
-    setHasMore(more)
   }, [])
 
   useEffect(() => {
@@ -97,28 +65,39 @@ export default function IndexScreen() {
     if (loadingMore || !hasMore || loading || refreshing) return
     setLoadingMore(true)
 
-    const currentUserId = (await supabase.auth.getUser()).data.user?.id ?? ''
-    const nextPage = page + 1
-    const { rows, more } = await fetchPlansPage(nextPage)
-
-    const newPlans = rows.map(row =>
-      mapRowToPlan(row, currentUserId, row.host ?? undefined)
-    )
-
-    setPlans(prev => [...prev, ...newPlans])
-    setPage(nextPage)
-    setHasMore(more)
-    setLoadingMore(false)
+    try {
+      const nextPage = page + 1
+      const { plans: newPlans, more } = await fetchPlansPage(nextPage)
+      setPlans(prev => [...prev, ...newPlans])
+      setPage(nextPage)
+      setHasMore(more)
+    } catch (err) {
+      console.error('[plans feed] load more', err)
+    } finally {
+      setLoadingMore(false)
+    }
   }
 
-  function handleJoin(id: string) {
-    setPlans(prev =>
-      prev.map(p => p.id === id ? { ...p, user_joined: !p.user_joined } : p)
-    )
+  async function handleJoin(id: string) {
+    try {
+      await joinPlan(id)
+      await fetchInitialData()
+    } catch (err) {
+      console.error('[plans feed] join', err)
+    }
+  }
+
+  function handleOpenChat(id: string) {
+    router.push({
+      pathname: '/chats/[id]',
+      params: { id },
+    })
   }
 
   const filteredPlans = activeFilter === strings.plansFeed.filterToday
-    ? plans.filter(p => p.date_time.toLowerCase().includes('hoy'))
+    ? plans.filter(p =>
+        p.date_time.toLowerCase().includes(strings.dates.today.toLowerCase()),
+      )
     : plans
 
   const listData: readonly (Plan | string)[] = loading ? ['sk-1', 'sk-2', 'sk-3', 'sk-4'] : filteredPlans
@@ -126,7 +105,6 @@ export default function IndexScreen() {
   const renderListHeader = useCallback(
     () => (
       <View>
-
         {loading ? (
           <PlansHeaderSkeleton />
         ) : (
@@ -138,7 +116,7 @@ export default function IndexScreen() {
         )}
       </View>
     ),
-    [loading, nextPlan, activeFilter]
+    [loading, nextPlan, activeFilter],
   )
 
   const renderItem = useCallback(
@@ -146,14 +124,20 @@ export default function IndexScreen() {
       if (loading || typeof item === 'string') {
         return <PlanCardSkeleton />
       }
-      return <PlanCard plan={item} onJoin={handleJoin} />
+      return (
+        <PlanCard
+          plan={item}
+          onJoin={handleJoin}
+          onOpenChat={handleOpenChat}
+        />
+      )
     },
-    [loading]
+    [loading],
   )
 
   const keyExtractor = useCallback(
     (item: Plan | string) => (typeof item === 'string' ? item : item.id),
-    []
+    [],
   )
 
   const renderEmptyComponent = useCallback(() => (

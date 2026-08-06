@@ -7,6 +7,8 @@ import { strings } from '@/constants/strings'
 import {
   archiveChat,
   fetchChatList,
+  formatTimestampLabel,
+  subscribeToChatPreviews,
 } from '@/lib/chats/api'
 import {
   getActiveChats,
@@ -18,6 +20,7 @@ import {
   subscribePlanCreated,
   subscribePlanDeleted,
 } from '@/lib/plans/plansEvents'
+import { supabase } from '@/lib/supabase'
 import { ChatListItem } from '@/types'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
@@ -58,6 +61,38 @@ export default function Chats() {
       setOpenSwipeId(current => (current === planId ? null : current))
     })
   }, [])
+
+  // Sorted so reordering on new messages does not change the key / re-subscribe.
+  const planIdsKey = [...chats.map(chat => chat.id)].sort().join(',')
+
+  useEffect(() => {
+    const planIds = planIdsKey.length === 0 ? [] : planIdsKey.split(',')
+
+    const channel = subscribeToChatPreviews(planIds, message => {
+      setChats(current => {
+        const index = current.findIndex(chat => chat.id === message.plan_id)
+        if (index === -1) return current
+
+        const updated: ChatListItem = {
+          ...current[index],
+          previewText: message.content,
+          timeLabel: formatTimestampLabel(message.created_at),
+          lastMessageAt: message.created_at,
+        }
+
+        const next = [...current]
+        next.splice(index, 1)
+        next.unshift(updated)
+        return next
+      })
+    })
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
+  }, [planIdsKey])
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true)
