@@ -69,7 +69,7 @@ export const strings = {
 
 
     // dni input screen
-    dniTitle: 'Ingresa tu documento',
+    dniTitle: 'Ingresa tu\ndocumento',
     dniSubtitle: 'Funciona con cédula colombiana o cualquier documento internacional.',
     dniPlaceholder: 'Número de documento',
     dniContinue: 'Continuar',

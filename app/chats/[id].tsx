@@ -1,7 +1,7 @@
 import { Colors } from '@/assets/constants/Colors'
 import { ChatComposer } from '@/components/chats/ChatComposer'
 import { ChatThreadHeader } from '@/components/chats/ChatThreadHeader'
-import { MessageBubble } from '@/components/chats/MessageBubble'
+import { MessageBubble, isSameMessageGroup } from '@/components/chats/MessageBubble'
 import { ParticipantsSheet } from '@/components/chats/ParticipantsSheet'
 import { TabScreen } from '@/components/layout/TabScreen'
 import { isPlanExpired } from '@/constants/planStatus'
@@ -74,9 +74,26 @@ export default function ChatThread() {
   const participantsRef = useRef(participants)
   participantsRef.current = participants
   const currentUserIdRef = useRef<string | null>(null)
+  const listRef = useRef<FlatList<ChatMessage>>(null)
+  /** Set on own send; cleared after we jump to the latest (inverted offset 0). */
+  const pendingScrollToLatestRef = useRef(false)
 
-  /** Newest-first for inverted FlatList (index 0 renders at the visual bottom). */
+  /** Newest-first so inverted FlatList pins the latest message at the visual bottom. */
   const listMessages = useMemo(() => [...messages].reverse(), [messages])
+
+  function jumpToLatest(animated: boolean) {
+    listRef.current?.scrollToOffset({ offset: 0, animated })
+  }
+
+  function requestScrollToLatest() {
+    pendingScrollToLatestRef.current = true
+  }
+
+  function handleListContentSizeChange() {
+    if (!pendingScrollToLatestRef.current) return
+    pendingScrollToLatestRef.current = false
+    jumpToLatest(true)
+  }
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
@@ -94,7 +111,7 @@ export default function ChatThread() {
       onHide.remove()
     }
   }, [])
-
+  
   const loadThread = useCallback(async () => {
     if (!id) return
 
@@ -161,6 +178,7 @@ export default function ChatThread() {
   useEffect(() => {
     loadThread()
   }, [loadThread])
+
 
   useEffect(() => {
     if (!id) return
@@ -309,7 +327,6 @@ export default function ChatThread() {
 
   const chatItem = {
     ...chat,
-    // Keep seeded count until the roster fetch finishes (avoid flashing "0 personas").
     memberCount:
       !messagesLoading || participants.length > 0
         ? participants.length
@@ -334,6 +351,7 @@ export default function ChatThread() {
       content,
     })
     setDraft('')
+    requestScrollToLatest()
 
     try {
       await sendMessage(id, content)
@@ -421,14 +439,29 @@ export default function ChatThread() {
           </View>
         ) : (
           <FlatList
+            ref={listRef}
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
             data={listMessages}
             keyExtractor={item => item.id}
-            renderItem={({ item }) => <MessageBubble message={item} />}
+            renderItem={({ item, index }) => {
+              // listMessages is newest-first (inverted). Older = index+1, newer = index-1.
+              const older = listMessages[index + 1]
+              const newer = listMessages[index - 1]
+              const isFirstInGroup = !isSameMessageGroup(item, older)
+              const isLastInGroup = !isSameMessageGroup(item, newer)
+              return (
+                <MessageBubble
+                  message={item}
+                  isFirstInGroup={isFirstInGroup}
+                  isLastInGroup={isLastInGroup}
+                />
+              )
+            }}
             inverted
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="interactive"
+            onContentSizeChange={handleListContentSizeChange}
           />
         )}
 

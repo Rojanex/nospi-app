@@ -11,7 +11,7 @@ export const SUPABASE_ANON_KEY = readEnvString('EXPO_PUBLIC_SUPABASE_ANON_KEY', 
 
 
 // Auth flow env_vars needed
-export const RESEND_COUNTDOWN_IN_SECONDS = readEnvInt('EXPO_PUBLIC_RESEND_SECONDS', 2 * 60 + 50) //(default 2:50)
+export const RESEND_COUNTDOWN_IN_SECONDS = readEnvInt('EXPO_PUBLIC_RESEND_SECONDS', 60 + 30) //(default 1:30)
 export const OTP_LENGTH = readEnvInt('EXPO_PUBLIC_OTP_LENGTH', 6)
 export const SIGN_IN_PHONE_MIN_DIGITS = readEnvInt('EXPO_PUBLIC_SIGN_IN_PHONE_MIN_DIGITS', 4)
 
