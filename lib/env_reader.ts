@@ -21,3 +21,8 @@ export const NEW_PLAN_DESCRIPTION_MAX = readEnvInt('EXPO_PUBLIC_NEW_PLAN_DESCRIP
 
 // Google Places
 export const GOOGLE_PLACES_KEY = readEnvString('EXPO_PUBLIC_GOOGLE_PLACES_KEY', '')
+
+// Chat performance
+export const CHAT_LIST_CACHE_TTL_MS = readEnvInt('EXPO_PUBLIC_CHAT_LIST_CACHE_TTL_MS', 60_000)
+export const MESSAGES_CACHE_TTL_MS = readEnvInt('EXPO_PUBLIC_MESSAGES_CACHE_TTL_MS', 30_000)
+export const MESSAGES_PAGE_SIZE = readEnvInt('EXPO_PUBLIC_MESSAGES_PAGE_SIZE', 70)

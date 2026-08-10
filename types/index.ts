@@ -132,6 +132,7 @@ export type ChatMessage = {
   id: string
   type: 'user' | 'system'
   content: string
+  createdAt: string
   timeLabel: string
   isOwn?: boolean
   sender?: {

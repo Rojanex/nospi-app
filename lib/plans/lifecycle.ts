@@ -48,6 +48,9 @@ export async function joinPlan(planId: string): Promise<void> {
     console.error('[joinPlan]', error)
     throw error
   }
+
+  const displayName = await getCurrentDisplayName(userId)
+  await insertSystemMessage(planId, strings.systemMessages.joinedPlanSystem(displayName))
 }
 
 export async function leavePlan(planId: string, isHost: boolean): Promise<void> {

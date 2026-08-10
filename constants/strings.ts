@@ -180,9 +180,12 @@ export const strings = {
     emptyArchived: 'Todavía no has archivado ningún parche',
     notFoundChat: 'Chat no encontrado',
     loadError: 'No pudimos cargar tus parches. Intenta de nuevo.',
+    newMessagesBadge: (n: number) =>
+      n === 1 ? '1 mensaje nuevo' : `${n} mensajes nuevos`,
   },
   systemMessages: {
     planCreated: 'Se armo el parche',
+    joinedPlanSystem: (name: string) => `${name} se unió al parche`,
     leftPlanSystem: (name: string) => `${name} salió del parche`,
     removedMemberSystem: (name: string) => `${name} fue removido del parche`,
 

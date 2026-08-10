@@ -8,6 +8,8 @@ import {
   archiveChat,
   fetchChatList,
   formatTimestampLabel,
+  getChatListCache,
+  prefetchMessages,
   subscribeToChatPreviews,
 } from '@/lib/chats/api'
 import {
@@ -28,25 +30,32 @@ import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react
 
 export default function Chats() {
   const router = useRouter()
-  const [chats, setChats] = useState<ChatListItem[]>([])
-  const [loading, setLoading] = useState(true)
+  const [chats, setChats] = useState<ChatListItem[]>(() => getChatListCache() ?? [])
+  const [loading, setLoading] = useState(() => !getChatListCache())
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [openSwipeId, setOpenSwipeId] = useState<string | null>(null)
 
-  const loadChats = useCallback(async () => {
-    setError(null)
+  const loadChats = useCallback(async (background = false) => {
+    if (!background) setError(null)
     try {
       const data = await fetchChatList()
       setChats(data)
     } catch (err) {
-      console.error('[chats] load', err)
-      setError(strings.losMios.loadError)
+      if (!background) {
+        console.error('[chats] load', err)
+        setError(strings.losMios.loadError)
+      }
     }
   }, [])
 
   useEffect(() => {
-    loadChats().finally(() => setLoading(false))
+    if (getChatListCache()) {
+      setLoading(false)
+      loadChats(true)
+    } else {
+      loadChats().finally(() => setLoading(false))
+    }
   }, [loadChats])
 
   useEffect(() => {
@@ -115,6 +124,7 @@ export default function Chats() {
   }
 
   function handleChatPress(item: ChatListItem) {
+    prefetchMessages(item.id)
     router.push({
       pathname: '/chats/[id]',
       params: { id: item.id, chat: JSON.stringify(item) },

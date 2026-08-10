@@ -1,5 +1,10 @@
 import { PlanStatus } from '@/constants/planStatus'
 import { strings } from '@/constants/strings'
+import {
+  CHAT_LIST_CACHE_TTL_MS,
+  MESSAGES_CACHE_TTL_MS,
+  MESSAGES_PAGE_SIZE,
+} from '@/lib/env_reader'
 import { avatarColorsForId, initialsFromName } from '@/lib/utils/avatar'
 import { supabase } from '@/lib/supabase'
 import { ChatListItem, ChatMessage, Participant, PlanActivityType, PlanMetaRow } from '@/types'
@@ -7,12 +12,19 @@ import type { RealtimeChannel } from '@supabase/supabase-js'
 
 type DbPlanStatus = 'active' | 'expired' | 'completed'
 
+type MessagePreviewEmbed = {
+  content: string
+  created_at: string
+  user_id: string | null
+}
+
 type PlanEmbed = {
   id: string
   title: string
   activity_type: string
   status: DbPlanStatus
   date_time: string
+  messages?: MessagePreviewEmbed[] | null
 }
 
 type MembershipRow = {
@@ -20,13 +32,6 @@ type MembershipRow = {
   role: 'host' | 'member'
   archived_at: string | null
   plans: PlanEmbed | PlanEmbed[] | null
-}
-
-type MessagePreviewRow = {
-  plan_id: string
-  content: string
-  created_at: string
-  user_id: string | null
 }
 
 type ProfileEmbed = { display_name: string | null; avatar_url: string | null }
@@ -72,7 +77,6 @@ export function formatTimestampLabel(iso: string): string {
   })
 }
 
-/** Raw INSERT row from realtime — no profile join. */
 export type ThreadMessageInsert = {
   id: string
   plan_id: string
@@ -93,6 +97,7 @@ export function mapRealtimeMessageToChatMessage(
       id: row.id,
       type: 'system',
       content: row.content,
+      createdAt: row.created_at,
       timeLabel: formatTimestampLabel(row.created_at),
     }
   }
@@ -103,6 +108,7 @@ export function mapRealtimeMessageToChatMessage(
       id: row.id,
       type: 'user',
       content: row.content,
+      createdAt: row.created_at,
       timeLabel: formatTimestampLabel(row.created_at),
       isOwn: true,
     }
@@ -118,6 +124,7 @@ export function mapRealtimeMessageToChatMessage(
     id: row.id,
     type: 'user',
     content: row.content,
+    createdAt: row.created_at,
     timeLabel: formatTimestampLabel(row.created_at),
     isOwn: false,
     sender: {
@@ -231,12 +238,86 @@ export function asActivityType(value: string): PlanActivityType {
   return (allowed.includes(value as PlanActivityType) ? value : 'otro') as PlanActivityType
 }
 
+let _cachedUserId: string | null = null
+
+export function setCachedUserId(id: string | null): void {
+  _cachedUserId = id
+}
+
+export function clearUserIdCache(): void {
+  _cachedUserId = null
+}
+
 async function requireUserId(): Promise<string> {
+  if (_cachedUserId) return _cachedUserId
   const { data, error } = await supabase.auth.getSession()
   if (error || !data.session?.user) {
     throw new Error('Not authenticated')
   }
-  return data.session.user.id
+  _cachedUserId = data.session.user.id
+  return _cachedUserId
+}
+
+type ChatListCacheEntry = { data: ChatListItem[]; fetchedAt: number }
+let _chatListCache: ChatListCacheEntry | null = null
+
+export function getChatListCache(): ChatListItem[] | null {
+  if (!_chatListCache || Date.now() - _chatListCache.fetchedAt > CHAT_LIST_CACHE_TTL_MS) return null
+  return _chatListCache.data
+}
+
+export function setChatListCache(data: ChatListItem[]): void {
+  _chatListCache = { data, fetchedAt: Date.now() }
+}
+
+export function clearChatListCache(): void {
+  _chatListCache = null
+}
+
+type MessagesCacheEntry = {
+  data: ChatMessage[]
+  hasMore: boolean
+  fetchedAt: number
+}
+const _messagesCacheByPlan = new Map<string, MessagesCacheEntry>()
+
+export type MessagesCacheMeta = {
+  messages: ChatMessage[]
+  hasMore: boolean
+}
+
+export function getMessagesCacheMeta(planId: string): MessagesCacheMeta | null {
+  const entry = _messagesCacheByPlan.get(planId)
+  if (!entry || Date.now() - entry.fetchedAt > MESSAGES_CACHE_TTL_MS) return null
+  return { messages: entry.data, hasMore: entry.hasMore }
+}
+
+export function getMessagesCache(planId: string): ChatMessage[] | null {
+  return getMessagesCacheMeta(planId)?.messages ?? null
+}
+
+/** When `hasMore` is omitted, keep the previous flag (realtime / merge updates). */
+export function setMessagesCache(
+  planId: string,
+  data: ChatMessage[],
+  hasMore?: boolean,
+): void {
+  const existing = _messagesCacheByPlan.get(planId)
+  _messagesCacheByPlan.set(planId, {
+    data,
+    hasMore: hasMore ?? existing?.hasMore ?? false,
+    fetchedAt: Date.now(),
+  })
+}
+
+export function clearMessagesCache(): void {
+  _messagesCacheByPlan.clear()
+}
+
+export function prefetchMessages(planId: string): void {
+  fetchMessagesPage(planId)
+    .then(page => setMessagesCache(planId, page.messages, page.hasMore))
+    .catch(() => {})
 }
 
 export async function fetchPlanMeta(planId: string): Promise<PlanMetaRow | null> {
@@ -283,9 +364,23 @@ export async function fetchChatList(): Promise<ChatListItem[]> {
   const { data: memberships, error } = await supabase
     .from('plan_members')
     .select(
-      'plan_id, role, archived_at, plans(id, title, activity_type, status, date_time)',
+      `
+      plan_id,
+      role,
+      archived_at,
+      plans(
+        id,
+        title,
+        activity_type,
+        status,
+        date_time,
+        messages(content, created_at, user_id)
+      )
+      `,
     )
     .eq('user_id', userId)
+    .order('created_at', { referencedTable: 'plans.messages', ascending: false })
+    .limit(1, { referencedTable: 'plans.messages' })
 
   if (error) {
     console.error('[fetchChatList] memberships', error)
@@ -297,23 +392,14 @@ export async function fetchChatList(): Promise<ChatListItem[]> {
 
   const planIds = rows.map(row => row.plan_id)
 
-  const [{ data: allMembers, error: membersError }, { data: recentMessages, error: messagesError }] =
-    await Promise.all([
-      supabase.from('plan_members').select('plan_id').in('plan_id', planIds),
-      supabase
-        .from('messages')
-        .select('plan_id, content, created_at, user_id')
-        .in('plan_id', planIds)
-        .order('created_at', { ascending: false }),
-    ])
+  const { data: allMembers, error: membersError } = await supabase
+    .from('plan_members')
+    .select('plan_id')
+    .in('plan_id', planIds)
 
   if (membersError) {
     console.error('[fetchChatList] member counts', membersError)
     throw membersError
-  }
-  if (messagesError) {
-    console.error('[fetchChatList] last messages', messagesError)
-    throw messagesError
   }
 
   const memberCounts = new Map<string, number>()
@@ -322,19 +408,12 @@ export async function fetchChatList(): Promise<ChatListItem[]> {
     memberCounts.set(planId, (memberCounts.get(planId) ?? 0) + 1)
   }
 
-  const lastMessageByPlan = new Map<string, MessagePreviewRow>()
-  for (const row of (recentMessages as MessagePreviewRow[] | null) ?? []) {
-    if (!lastMessageByPlan.has(row.plan_id)) {
-      lastMessageByPlan.set(row.plan_id, row)
-    }
-  }
-
-  return rows
+  const result = rows
     .map(row => {
       const plan = unwrapPlan(row.plans)
       if (!plan) return null
 
-      const last = lastMessageByPlan.get(row.plan_id)
+      const last = plan.messages?.[0] ?? null
 
       const item: ChatListItem = {
         id: plan.id,
@@ -359,54 +438,90 @@ export async function fetchChatList(): Promise<ChatListItem[]> {
       if (!bTime) return -1
       return bTime.localeCompare(aTime)
     })
+
+  setChatListCache(result)
+  return result
 }
 
-export async function fetchMessages(planId: string): Promise<ChatMessage[]> {
-  const userId = await requireUserId()
+export type MessagesPage = {
+  messages: ChatMessage[]
+  hasMore: boolean
+}
 
-  const { data, error } = await supabase
+function mapMessageRow(row: MessageRow, userId: string): ChatMessage {
+  const isSystem = row.user_id === null || row.type === 'system'
+  if (isSystem) {
+    return {
+      id: row.id,
+      type: 'system',
+      content: row.content,
+      createdAt: row.created_at,
+      timeLabel: formatTimestampLabel(row.created_at),
+    }
+  }
+
+  const profile = unwrapProfile(row.profiles)
+  const name = profile?.display_name?.trim() || strings.common.userFallback
+  const colors = avatarColorsForId(row.user_id!)
+
+  return {
+    id: row.id,
+    type: 'user',
+    content: row.content,
+    createdAt: row.created_at,
+    timeLabel: formatTimestampLabel(row.created_at),
+    isOwn: row.user_id === userId,
+    sender:
+      row.user_id === userId
+        ? undefined
+        : {
+            name,
+            initials: initialsFromName(name),
+            bg: colors.bg,
+            text: colors.text,
+          },
+  }
+}
+
+/**
+ * Cursor page of messages (newest-first query, returned chronological).
+ * Pass `beforeCreatedAt` to load older history while scrolling up.
+ */
+export async function fetchMessagesPage(
+  planId: string,
+  opts: { beforeCreatedAt?: string; limit?: number } = {},
+): Promise<MessagesPage> {
+  const userId = await requireUserId()
+  const limit = opts.limit ?? MESSAGES_PAGE_SIZE
+
+  let query = supabase
     .from('messages')
     .select('id, content, type, user_id, created_at, profiles(display_name, avatar_url)')
     .eq('plan_id', planId)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
+    .limit(limit + 1)
+
+  if (opts.beforeCreatedAt) {
+    query = query.lt('created_at', opts.beforeCreatedAt)
+  }
+
+  const { data, error } = await query
 
   if (error) {
-    console.error('[fetchMessages]', error)
+    console.error('[fetchMessagesPage]', error)
     throw error
   }
 
-  return ((data as unknown as MessageRow[] | null) ?? []).map(row => {
-    const isSystem = row.user_id === null || row.type === 'system'
-    if (isSystem) {
-      return {
-        id: row.id,
-        type: 'system' as const,
-        content: row.content,
-        timeLabel: formatTimestampLabel(row.created_at),
-      }
-    }
+  const rows = (data as unknown as MessageRow[] | null) ?? []
+  const hasMore = rows.length > limit
+  const pageRows = rows.slice(0, limit).reverse()
+  const messages = pageRows.map(row => mapMessageRow(row, userId))
 
-    const profile = unwrapProfile(row.profiles)
-    const name = profile?.display_name?.trim() || strings.common.userFallback
-    const colors = avatarColorsForId(row.user_id!)
+  if (!opts.beforeCreatedAt) {
+    setMessagesCache(planId, messages, hasMore)
+  }
 
-    return {
-      id: row.id,
-      type: 'user' as const,
-      content: row.content,
-      timeLabel: formatTimestampLabel(row.created_at),
-      isOwn: row.user_id === userId,
-      sender:
-        row.user_id === userId
-          ? undefined
-          : {
-              name,
-              initials: initialsFromName(name),
-              bg: colors.bg,
-              text: colors.text,
-            },
-    }
-  })
+  return { messages, hasMore }
 }
 
 export async function fetchParticipants(planId: string): Promise<Participant[]> {

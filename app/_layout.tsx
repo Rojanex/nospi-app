@@ -1,6 +1,12 @@
 import 'react-native-gesture-handler'
 import SplashAnimation from '@/components/SplashAnimation'
 import {
+  clearChatListCache,
+  clearMessagesCache,
+  clearUserIdCache,
+  setCachedUserId,
+} from '@/lib/chats/api'
+import {
   profileNeedsOnboarding,
   subscribeAppUnlocked,
 } from '@/lib/profiles/onboarding'
@@ -29,11 +35,16 @@ export default function RootLayout() {
       if (!mounted) return
 
       if (!next) {
+        clearUserIdCache()
+        clearChatListCache()
+        clearMessagesCache()
         setSession(null)
         setAllowApp(false)
         setLoading(false)
         return
       }
+
+      setCachedUserId(next.user.id)
 
       if (event === 'TOKEN_REFRESHED') {
         setSession(next)
