@@ -190,4 +190,22 @@ export const strings = {
     removedMemberSystem: (name: string) => `${name} fue removido del parche`,
 
   },
+
+  profile: {
+    title: 'Mi perfil',
+    founderPill: 'Founder',
+    verificationExplorer: 'Explorer · sin verificar',
+    verificationVisitor: 'Visitante verificado',
+    verificationLocal: 'Local verificado',
+    statsCreated: 'parches creados',
+    statsAttended: 'asistidos',
+    onboardingBannerBody:
+      'Verifica tu identidad para desbloquear planes solo para locales y salir como local verificado.',
+    onboardingBannerCta: 'Verificar identidad',
+    founderCta: 'Sé parte del programa fundador',
+    recentPlansTitle: 'Tus últimos parches',
+    seeAll: 'ver todos',
+    emptyPlans: 'aún no te has apuntado a nada',
+    emptyPlansCta: 'ver planes',
+  },
 }

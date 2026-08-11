@@ -22,6 +22,12 @@ export const NEW_PLAN_DESCRIPTION_MAX = readEnvInt('EXPO_PUBLIC_NEW_PLAN_DESCRIP
 // Google Places
 export const GOOGLE_PLACES_KEY = readEnvString('EXPO_PUBLIC_GOOGLE_PLACES_KEY', '')
 
+// Profile
+export const FOUNDER_TYPEFORM_URL = readEnvString(
+  'EXPO_PUBLIC_FOUNDER_TYPEFORM_URL',
+  'https://form.typeform.com/to/PLACEHOLDER',
+)
+
 // Chat performance
 export const CHAT_LIST_CACHE_TTL_MS = readEnvInt('EXPO_PUBLIC_CHAT_LIST_CACHE_TTL_MS', 60_000)
 export const MESSAGES_CACHE_TTL_MS = readEnvInt('EXPO_PUBLIC_MESSAGES_CACHE_TTL_MS', 30_000)
