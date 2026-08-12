@@ -146,6 +146,19 @@ export function ParticipantsSheet({
       }
     })
 
+  function goBackToList() {
+    setViewMode('list')
+  }
+
+  const swipeBack = Gesture.Pan()
+    .activeOffsetX(24)
+    .failOffsetY([-18, 18])
+    .onEnd(e => {
+      if (e.translationX > 72 || e.velocityX > 450) {
+        scheduleOnRN(goBackToList)
+      }
+    })
+
   function confirmRemove(participant: Participant) {
     Alert.alert(strings.losMios.removeMemberConfirmTitle(participant.name), undefined, [
       { text: 'Cancelar', style: 'cancel' },
@@ -347,7 +360,8 @@ export function ParticipantsSheet({
                 )}
               </Pressable>
             ) : (
-              <>
+              <GestureDetector gesture={swipeBack}>
+                <View>
                 <GestureDetector gesture={swipeDown}>
                   <View className="mb-1 w-full items-center py-3">
                     <View className="h-1 w-9 rounded-sm bg-neutral-hint" />
@@ -355,7 +369,7 @@ export function ParticipantsSheet({
                 </GestureDetector>
 
                 <Pressable
-                  onPress={() => setViewMode('list')}
+                  onPress={goBackToList}
                   className="mb-2 flex-row items-center gap-1 px-5"
                   hitSlop={8}
                 >
@@ -387,7 +401,8 @@ export function ParticipantsSheet({
                     </>
                   ) : null}
                 </ScrollView>
-              </>
+                </View>
+              </GestureDetector>
             )}
           </Animated.View>
         </Animated.View>
