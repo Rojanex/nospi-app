@@ -1,83 +1,91 @@
+import { Colors } from '@/assets/constants/Colors'
 import { TabScreen } from '@/components/layout/TabScreen'
 import { FounderCta } from '@/components/profile/FounderCta'
 import { OnboardingBanner } from '@/components/profile/OnboardingBanner'
 import { ProfileHeader } from '@/components/profile/ProfileHeader'
-import { ProfileIdentity } from '@/components/profile/ProfileIdentity'
-import { ProfileStats } from '@/components/profile/ProfileStats'
-import {
-  ProfileRecentPlan,
-  RecentPlansSection,
-} from '@/components/profile/RecentPlansSection'
+import { ProfileScreenHeader } from '@/components/profile/ProfileScreenHeader'
+import { RecentPlansSection } from '@/components/profile/RecentPlansSection'
+import { strings } from '@/constants/strings'
 import { FOUNDER_TYPEFORM_URL } from '@/lib/env_reader'
+import {
+  fetchProfile,
+  fetchRecentJoinedPlans,
+  type ProfileRecentPlan,
+  type ProfileWithStats,
+} from '@/lib/profiles/api'
+import { supabase } from '@/lib/supabase'
 import type { Profile } from '@/types'
 import { useRouter } from 'expo-router'
-import React from 'react'
-import { Linking, ScrollView } from 'react-native'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  ActivityIndicator,
+  Linking,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 
-// TODO: replace MOCK_PROFILE + MOCK_RECENT_PLANS with Supabase fetch (lib/profiles/api.ts)
-
-const MOCK_PROFILE: Profile = {
-  id: 'mock-user-001',
-  phone: '+573001112233',
-  display_name: 'Camila R.',
-  avatar_url: null,
-  role: 'explorer',
-  plans_created_this_week: 2,
-  plans_joined_this_week: 5,
-  reputation_score: 0,
-  home_city: 'Cartagena',
-  is_founder: false,
-  onboarding_completed: false,
-  created_at: '2026-06-01T12:00:00.000Z',
-  updated_at: '2026-08-10T12:00:00.000Z',
+function toProfileViewModel(data: ProfileWithStats): Profile {
+  return {
+    id: data.id,
+    phone: null,
+    display_name: data.display_name,
+    avatar_url: data.avatar_url,
+    role: data.role,
+    plans_created_this_week: data.plansCreated,
+    plans_joined_this_week: data.plansJoined,
+    reputation_score: 0,
+    home_city: data.home_city,
+    is_founder: data.is_founder,
+    onboarding_completed: data.onboarding_completed,
+    created_at: '',
+    updated_at: '',
+  }
 }
-
-const MOCK_RECENT_PLANS: ProfileRecentPlan[] = [
-  {
-    id: 'plan-mock-1',
-    title: 'Ceviche en Bazurto',
-    activity_type: 'comida',
-    date_time: '2026-08-12T19:00:00.000Z',
-  },
-  {
-    id: 'plan-mock-2',
-    title: 'Atardecer en La Boquilla',
-    activity_type: 'playa',
-    date_time: '2026-08-11T17:30:00.000Z',
-  },
-  {
-    id: 'plan-mock-3',
-    title: 'Fútbol 5 en Manga',
-    activity_type: 'deporte',
-    date_time: '2026-08-10T18:00:00.000Z',
-  },
-  {
-    id: 'plan-mock-4',
-    title: 'Rumba en Getsemaní',
-    activity_type: 'rumba',
-    date_time: '2026-08-09T22:00:00.000Z',
-  },
-  {
-    id: 'plan-mock-5',
-    title: 'Café y charla',
-    activity_type: 'social',
-    date_time: '2026-08-08T16:00:00.000Z',
-  },
-  {
-    id: 'plan-mock-6',
-    title: 'Museo del Oro',
-    activity_type: 'cultura',
-    date_time: '2026-08-07T11:00:00.000Z',
-  },
-]
 
 export default function ProfileScreen() {
   const router = useRouter()
-  const profile = MOCK_PROFILE
-  const recentPlans = MOCK_RECENT_PLANS
+  const [profileData, setProfileData] = useState<ProfileWithStats | null>(null)
+  const [recentPlans, setRecentPlans] = useState<ProfileRecentPlan[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const profile = useMemo(
+    () => (profileData ? toProfileViewModel(profileData) : null),
+    [profileData],
+  )
+
+  const loadProfile = useCallback(async () => {
+    setError(null)
+    try {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser()
+
+      if (authError || !user) {
+        throw authError ?? new Error('Not authenticated')
+      }
+
+      const [nextProfile, nextPlans] = await Promise.all([
+        fetchProfile(user.id),
+        fetchRecentJoinedPlans(user.id),
+      ])
+
+      setProfileData(nextProfile)
+      setRecentPlans(nextPlans)
+    } catch (err) {
+      console.error('[profile] load', err)
+      setError(strings.profile.loadError)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadProfile().finally(() => setLoading(false))
+  }, [loadProfile])
 
   function handleSettingsPress() {
-    // Stub — settings screen lands in a follow-up prompt
     router.push('/settings' as never)
   }
 
@@ -90,7 +98,7 @@ export default function ProfileScreen() {
   }
 
   function handleSeeAllPlans() {
-    // Stub — full history list comes later
+    router.push('/(tabs)/chats' as never)
   }
 
   function handlePlanPress(planId: string) {
@@ -104,6 +112,35 @@ export default function ProfileScreen() {
     router.push('/(tabs)/' as never)
   }
 
+  if (loading) {
+    return (
+      <TabScreen>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={Colors.buttons.orange} />
+        </View>
+      </TabScreen>
+    )
+  }
+
+  if (error && !profile) {
+    return (
+      <TabScreen>
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="mb-4 text-center text-sm text-ink-50">{error}</Text>
+          <TouchableOpacity onPress={() => loadProfile()} hitSlop={8}>
+            <Text className="text-sm font-semibold text-buttons-orange">
+              {strings.profile.retry}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </TabScreen>
+    )
+  }
+
+  if (!profile) {
+    return null
+  }
+
   return (
     <TabScreen>
       <ScrollView
@@ -111,13 +148,23 @@ export default function ProfileScreen() {
         contentContainerClassName="px-5 pt-6 pb-10"
         showsVerticalScrollIndicator={false}
       >
-        <ProfileHeader onSettingsPress={handleSettingsPress} />
+        <ProfileScreenHeader onSettingsPress={handleSettingsPress} />
 
-        <ProfileIdentity profile={profile} />
+        {error ? (
+          <View className="mb-4 items-center">
+            <Text className="mb-2 text-center text-sm text-ink-50">{error}</Text>
+            <TouchableOpacity onPress={() => loadProfile()} hitSlop={8}>
+              <Text className="text-sm font-semibold text-buttons-orange">
+                {strings.profile.retry}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
 
-        <ProfileStats
-          created={profile.plans_created_this_week}
-          attended={profile.plans_joined_this_week}
+        <ProfileHeader
+          profile={profile}
+          plansCreated={profile.plans_created_this_week} //Todo - this should be this week's plans created
+          plansJoined={profile.plans_joined_this_week}
         />
 
         {!profile.onboarding_completed ? (

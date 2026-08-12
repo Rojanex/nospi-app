@@ -1,18 +1,28 @@
 import { Colors } from '@/assets/constants/Colors'
+import { HatCowboySide } from '@/assets/icons'
 import { strings } from '@/constants/strings'
 import {
   verificationBadgeForRole,
   verificationLabelForRole,
 } from '@/lib/profiles/verification'
 import { avatarColorsForId, initialsFromName } from '@/lib/utils/avatar'
-import type { Profile } from '@/types'
-import { FontAwesome5, Ionicons } from '@expo/vector-icons'
+import type { UserRole } from '@/types'
+import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import React from 'react'
 import { Text, View } from 'react-native'
 
+export type ProfileIdentityData = {
+  id: string
+  display_name: string | null
+  avatar_url: string | null
+  home_city: string | null
+  role: UserRole
+  is_founder: boolean
+}
+
 type ProfileIdentityProps = {
-  profile: Profile
+  profile: ProfileIdentityData
 }
 
 export function ProfileIdentity({ profile }: ProfileIdentityProps) {
@@ -48,7 +58,7 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
           style={{ backgroundColor: badge.bg }}
         >
           {badge.kind === 'cowboy' ? (
-            <FontAwesome5 name="hat-cowboy" size={11} color={Colors.white} />
+            <HatCowboySide size={12} color={Colors.white} />
           ) : (
             <Ionicons name="checkmark" size={14} color={Colors.white} />
           )}
@@ -68,10 +78,10 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
 
       <Text className="mb-2 text-sm font-medium text-black-400">{statusLabel}</Text>
 
-      {profile.home_city ? (
+      {profile.home_city?.trim() ? (
         <View className="flex-row items-center gap-1">
           <Ionicons name="location-sharp" size={14} color={Colors.black[300]} />
-          <Text className="text-sm text-black-300">{profile.home_city}</Text>
+          <Text className="text-sm text-black-300">{profile.home_city.trim()}</Text>
         </View>
       ) : null}
     </View>

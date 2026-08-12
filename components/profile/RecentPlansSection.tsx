@@ -1,15 +1,8 @@
 import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
-import type { PlanActivityType } from '@/types'
+import type { ProfileRecentPlan } from '@/lib/profiles/api'
 import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
-
-export type ProfileRecentPlan = {
-  id: string
-  title: string
-  activity_type: PlanActivityType
-  date_time: string
-}
 
 type RecentPlansSectionProps = {
   plans: ProfileRecentPlan[]
@@ -91,7 +84,10 @@ export function RecentPlansSection({
       </View>
 
       {tiles.length > 0 ? (
-        <View className="flex-row flex-wrap justify-between">
+        <View
+          className="flex-row flex-wrap"
+          style={{ justifyContent: 'center', gap: 10 }}
+        >
           {tiles.map(plan => (
             <PlanTile
               key={plan.id}
@@ -107,13 +103,11 @@ export function RecentPlansSection({
           <Text className="mb-3 text-center text-sm text-black-400">
             {strings.profile.emptyPlans}
           </Text>
-          <TouchableOpacity
-            className="btn-primary px-8"
-            style={{ height: 44, borderRadius: 22 }}
-            onPress={onEmptyCtaPress}
-            activeOpacity={0.85}
-          >
-            <Text className="btn-primary-text text-[13px]">
+          <TouchableOpacity onPress={onEmptyCtaPress} hitSlop={8} activeOpacity={0.7}>
+            <Text
+              className="text-sm font-semibold text-primary-100"
+              style={{ textDecorationLine: 'underline' }}
+            >
               {strings.profile.emptyPlansCta}
             </Text>
           </TouchableOpacity>
