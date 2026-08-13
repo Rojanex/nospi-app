@@ -4,7 +4,8 @@ import {
   formatPostedAgo,
 } from '@/lib/plans/formatDateTime'
 import { initialsFromName } from '@/lib/utils/avatar'
-import { Plan, PlanRow } from '@/types'
+import { Plan, PlanRow, PlanVisibility } from '@/types'
+
 
 export function mapRowToPlan(
   row: PlanRow,
@@ -37,5 +38,7 @@ export function mapRowToPlan(
     host_type: hostProfile?.role === 'local' ? 'local' : 'turista',
     posted_ago: formatPostedAgo(row.created_at),
     user_joined: row.plan_members.some(m => m.user_id === currentUserId),
+    visibility: row.visibility as PlanVisibility,
+    description: row.description,
   }
 }

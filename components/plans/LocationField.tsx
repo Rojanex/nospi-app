@@ -16,10 +16,11 @@ type LocationFieldProps = {
   value: string
   onPlaceSelect: (parsed: ParsedPlace) => void
   onTextChange: (text: string) => void
+  onFocus?: () => void
 }
 
 export const LocationField = forwardRef<GooglePlacesTextInputRef, LocationFieldProps>(
-  function LocationField({ value, onPlaceSelect, onTextChange }, ref) {
+  function LocationField({ value, onPlaceSelect, onTextChange, onFocus }, ref) {
     function handlePlaceSelect(place: Place) {
       onPlaceSelect(parsePlaceSelection(place))
     }
@@ -44,6 +45,7 @@ export const LocationField = forwardRef<GooglePlacesTextInputRef, LocationFieldP
             detailsFields={['types', 'displayName', 'location', 'id', 'addressComponents']}
             onPlaceSelect={handlePlaceSelect}
             onTextChange={onTextChange}
+            onFocus={onFocus}
             onError={(error) => console.warn('Places API error:', error)}
             scrollEnabled={false}
             nestedScrollEnabled={false}

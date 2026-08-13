@@ -3,9 +3,9 @@ import { Icon } from '@/assets/icons'
 import { NewPlanSheet } from '@/components/plans/NewPlanSheet'
 import { strings } from '@/constants/strings'
 import { Tabs } from 'expo-router'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Dimensions, View } from 'react-native'
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -16,11 +16,15 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height
+const SCROLL_TOP_EPSILON = 1
+const DISMISS_PULL_THRESHOLD = 8
 
 const _Layout = () => {
   const [showNewPlanSheet, setShowNewPlanSheet] = useState(false)
   const translateY = useSharedValue(SCREEN_HEIGHT)
   const overlayOpacity = useSharedValue(0)
+  const scrollOffset = useSharedValue(0)
+  const touchStartY = useSharedValue(0)
 
   const sheetStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
@@ -31,6 +35,7 @@ const _Layout = () => {
   }))
 
   const openSheet = () => {
+    scrollOffset.value = 0
     setShowNewPlanSheet(true)
     translateY.value = withSpring(0, { stiffness: 300 })
     overlayOpacity.value = withTiming(1, { duration: 240 })
@@ -46,20 +51,48 @@ const _Layout = () => {
     overlayOpacity.value = withTiming(0, { duration: 280 })
   }
 
-  const swipeDown = Gesture.Pan()
-    .activeOffsetY(8)
-    .onUpdate((e) => {
-      if (e.translationY > 0) {
-        translateY.value = e.translationY
-      }
-    })
-    .onEnd((e) => {
-      if (e.translationY > 120 || e.velocityY > 800) {
-        scheduleOnRN(closeSheet)
-      } else {
-        translateY.value = withSpring(0, { stiffness: 200 })
-      }
-    })
+  const nativeScrollGesture = useMemo(() => Gesture.Native(), [])
+
+  // Claim dismiss only when scroll is at top and the user pulls down;
+  // otherwise fail so the ScrollView can scroll normally.
+  const swipeDown = useMemo(
+    () =>
+      Gesture.Pan()
+        .manualActivation(true)
+        .simultaneousWithExternalGesture(nativeScrollGesture)
+        .onTouchesDown((e) => {
+          touchStartY.value = e.allTouches[0]?.absoluteY ?? 0
+        })
+        .onTouchesMove((e, state) => {
+          // Off-top content is always a scroll gesture, never a dismiss gesture.
+          if (scrollOffset.value > SCROLL_TOP_EPSILON) {
+            state.fail()
+            return
+          }
+
+          const y = e.allTouches[0]?.absoluteY ?? touchStartY.value
+          const dy = y - touchStartY.value
+
+          // Don't fail on a brief upward jitter (normal at the start of a fast
+          // downward flick) — just keep waiting instead of permanently failing.
+          if (dy > DISMISS_PULL_THRESHOLD) {
+            state.activate()
+          }
+        })
+        .onUpdate((e) => {
+          if (e.translationY > 0) {
+            translateY.value = e.translationY
+          }
+        })
+        .onEnd((e) => {
+          if (e.translationY > 120 || e.velocityY > 800) {
+            scheduleOnRN(closeSheet)
+          } else {
+            translateY.value = withSpring(0, { stiffness: 200 })
+          }
+        }),
+    [nativeScrollGesture],
+  )
 
   return (
     <>
@@ -126,24 +159,26 @@ const _Layout = () => {
         />
       </Tabs>
       {showNewPlanSheet && (
-        <GestureHandlerRootView className="absolute inset-0">
-          <Animated.View
-            className="flex-1 bg-black/40 justify-end"
-            style={overlayStyle}
-          >
+        <Animated.View
+          className="absolute inset-0 flex-1 bg-black/40 justify-end"
+          style={overlayStyle}
+        >
+          <GestureDetector gesture={swipeDown}>
             <Animated.View
               className="bg-primary-200 rounded-t-3xl h-[92%] w-full pt-3"
               style={sheetStyle}
             >
-              <GestureDetector gesture={swipeDown}>
-                <View className="w-full items-center py-5 mb-1">
-                  <View className="w-9 h-1 rounded-sm bg-neutral-hint" />
-                </View>
-              </GestureDetector>
-              <NewPlanSheet onClose={closeSheet} />
+              <View className="mb-0 w-full items-center py-2.5">
+                <View className="h-1 w-9 rounded-sm bg-neutral-hint" />
+              </View>
+              <NewPlanSheet
+                onClose={closeSheet}
+                scrollOffset={scrollOffset}
+                nativeScrollGesture={nativeScrollGesture}
+              />
             </Animated.View>
-          </Animated.View>
-        </GestureHandlerRootView>
+          </GestureDetector>
+        </Animated.View>
       )}
     </>
   )

@@ -3,7 +3,7 @@ import { IconSquare } from '@/components/plans/IconSquare'
 import { LocationField } from '@/components/plans/LocationField'
 import { ACTIVITY_META, ActivityType } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
-import { NEW_PLAN_DESCRIPTION_MAX, NEW_PLAN_TITLE_MAX } from '@/lib/env_reader'
+import { NEW_PLAN_DESCRIPTION_MAX, NEW_PLAN_MAX_SPOTS, NEW_PLAN_TITLE_MAX } from '@/lib/env_reader'
 import { ParsedPlace } from '@/lib/plans/formatPlace'
 import { formatSheetDate, formatSheetTime } from '@/lib/plans/formatDateTime'
 import { NewPlanFormValues, PlanVisibility } from '@/types'
@@ -40,11 +40,13 @@ export type NewPlanFieldsProps = {
   placesRef: RefObject<GooglePlacesTextInputRef | null>
   onLocationPlaceSelect: (parsed: ParsedPlace) => void
   onLocationTextChange: (text: string) => void
+  onLocationFocus: () => void
   activePicker: ActivePicker
   pickerDraft: Date
   onOpenPicker: (picker: 'date' | 'time') => void
   onPickerChange: (event: DateTimePickerEvent, selected?: Date) => void
   onConfirmPicker: () => void
+  onDismissPickerForOtherInput: () => void
 }
 
 function spotsSubtitle(maxSpots: number): string {
@@ -107,11 +109,13 @@ export function NewPlanFields({
   placesRef,
   onLocationPlaceSelect,
   onLocationTextChange,
+  onLocationFocus,
   activePicker,
   pickerDraft,
   onOpenPicker,
   onPickerChange,
   onConfirmPicker,
+  onDismissPickerForOtherInput,
 }: NewPlanFieldsProps) {
   const { activityType, title, description, location, date, time, maxSpots, visibility } = form
 
@@ -129,6 +133,7 @@ export function NewPlanFields({
                 key={key}
                 onPress={() => {
                   Keyboard.dismiss()
+                  onDismissPickerForOtherInput()
                   onPatchForm({ activityType: key })
                 }}
                 style={[
@@ -232,6 +237,7 @@ export function NewPlanFields({
           value={location.name}
           onPlaceSelect={onLocationPlaceSelect}
           onTextChange={onLocationTextChange}
+          onFocus={onLocationFocus}
         />
 
         <View className="mx-3.5 h-[0.5px] bg-neutral-divider" />
@@ -326,6 +332,7 @@ export function NewPlanFields({
             <Pressable
               onPress={() => {
                 Keyboard.dismiss()
+                onDismissPickerForOtherInput()
                 onPatchForm({ maxSpots: Math.max(2, maxSpots - 1) })
               }}
               disabled={maxSpots === 2}
@@ -339,10 +346,11 @@ export function NewPlanFields({
             <Pressable
               onPress={() => {
                 Keyboard.dismiss()
-                onPatchForm({ maxSpots: Math.min(5, maxSpots + 1) })
+                onDismissPickerForOtherInput()
+                onPatchForm({ maxSpots: Math.min(NEW_PLAN_MAX_SPOTS, maxSpots + 1) })
               }}
-              disabled={maxSpots === 5}
-              className={`h-[30px] w-[30px] items-center justify-center rounded-full bg-neutral-border ${maxSpots === 5 ? 'opacity-40' : ''}`}
+              disabled={maxSpots === NEW_PLAN_MAX_SPOTS}
+              className={`h-[30px] w-[30px] items-center justify-center rounded-full bg-neutral-border ${maxSpots === NEW_PLAN_MAX_SPOTS ? 'opacity-40' : ''}`}
             >
               <Text className="text-lg font-semibold leading-5 text-ink">+</Text>
             </Pressable>

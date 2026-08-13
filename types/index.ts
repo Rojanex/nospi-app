@@ -78,7 +78,7 @@ export interface PlanRow {
   date_time: string
   max_spots: number
   status: PlanStatus
-  visibility: string
+  visibility: PlanVisibility
   completed_at: string | null
   plan_members: {
     user_id: string
@@ -103,6 +103,8 @@ export interface Plan {
   host_type: 'local' | 'turista'
   posted_ago: string
   user_joined: boolean
+  visibility: PlanVisibility
+  description: string | null
 }
 
 export type PlanMetaRow = {

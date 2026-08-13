@@ -56,30 +56,35 @@ export function ChatThreadHeader({ item, onBack, onPressMembers }: ChatThreadHea
           <Ionicons name="chevron-back" size={24} color={Colors.ink.DEFAULT} />
         </Pressable>
 
-        <View
-          style={{
-            height: 40,
-            width: 40,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 12,
-            backgroundColor: circleBg,
-            opacity: expired ? 0.55 : 1,
-          }}
+        <Pressable
+          onPress={onPressMembers}
+          style={{ minWidth: 0, flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 }}
         >
-          <Text style={{ fontSize: 20, opacity: expired ? 0.7 : 1 }}>{meta.emoji}</Text>
-        </View>
-
-        <Pressable onPress={onPressMembers} style={{ minWidth: 0, flex: 1 }}>
-          <Text
-            style={{ fontSize: 16, fontWeight: '700', color: Colors.ink.DEFAULT }}
-            numberOfLines={1}
+          <View
+            style={{
+              height: 40,
+              width: 40,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 12,
+              backgroundColor: circleBg,
+              opacity: expired ? 0.55 : 1,
+            }}
           >
-            {item.title}
-          </Text>
-          <Text style={{ marginTop: 2, fontSize: 12, color: Colors.ink[50] }}>
-            {strings.losMios.threadSubtitle(item.memberCount, item.timeLabel)}
-          </Text>
+            <Text style={{ fontSize: 20, opacity: expired ? 0.7 : 1 }}>{meta.emoji}</Text>
+          </View>
+
+          <View style={{ minWidth: 0, flex: 1 }}>
+            <Text
+              style={{ fontSize: 16, fontWeight: '700', color: Colors.ink.DEFAULT }}
+              numberOfLines={1}
+            >
+              {item.title}
+            </Text>
+            <Text style={{ marginTop: 2, fontSize: 12, color: Colors.ink[50] }}>
+              {strings.losMios.threadSubtitle(item.memberCount, item.timeLabel)}
+            </Text>
+          </View>
         </Pressable>
 
         {item.isHost && !expired ? (

@@ -13,18 +13,28 @@ import React, { useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Keyboard,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Pressable,
   ScrollView,
   Text,
   View,
 } from 'react-native'
+import { GestureDetector, GestureType } from 'react-native-gesture-handler'
 import { GooglePlacesTextInputRef } from 'react-native-google-places-textinput'
+import { SharedValue } from 'react-native-reanimated'
 
 interface NewPlanSheetProps {
   onClose: () => void
+  scrollOffset: SharedValue<number>
+  nativeScrollGesture: GestureType
 }
 
-export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
+export function NewPlanSheet({
+  onClose,
+  scrollOffset,
+  nativeScrollGesture,
+}: NewPlanSheetProps) {
   const placesRef = useRef<GooglePlacesTextInputRef>(null)
   const [form, setForm] = useState<NewPlanFormValues>(EMPTY_NEW_PLAN_FORM)
   const [activePicker, setActivePicker] = useState<ActivePicker>(null)
@@ -52,6 +62,11 @@ export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
     if (activePicker === 'date') patchForm({ date: pickerDraft })
     if (activePicker === 'time') patchForm({ time: pickerDraft })
     setActivePicker(null)
+  }
+
+  function dismissPickerForOtherInput() {
+    if (!activePicker) return
+    confirmPicker()
   }
 
   function handleLocationPlaceSelect(parsed: ParsedPlace) {
@@ -93,44 +108,62 @@ export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
     onClose()
   }
 
+  function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    scrollOffset.value = event.nativeEvent.contentOffset.y
+  }
+
   const isValid = isNewPlanFormValid(form)
   const isSubmitDisabled = !isValid || submitting
 
   return (
     <View className="flex-1 w-full">
-      <Pressable onPress={Keyboard.dismiss}>
-        <Text className="text-center px-4 pt-1 pb-3 text-xl font-extrabold text-ink">
-          {strings.newPlan.sheetTitle}
-        </Text>
+      <Pressable onPress={Keyboard.dismiss} className="px-4">
+
       </Pressable>
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="grow px-4 pb-4"
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        nestedScrollEnabled
-        showsVerticalScrollIndicator={false}
-        onScrollBeginDrag={Keyboard.dismiss}
-      >
-        <NewPlanFields
-          form={form}
-          onPatchForm={patchForm}
-          titleFocused={titleFocused}
-          onTitleFocus={() => setTitleFocused(true)}
-          onTitleBlur={() => setTitleFocused(false)}
-          descriptionFocused={descriptionFocused}
-          onDescriptionFocus={() => setDescriptionFocused(true)}
-          onDescriptionBlur={() => setDescriptionFocused(false)}
-          placesRef={placesRef}
-          onLocationPlaceSelect={handleLocationPlaceSelect}
-          onLocationTextChange={handleLocationTextChange}
-          activePicker={activePicker}
-          pickerDraft={pickerDraft}
-          onOpenPicker={openPicker}
-          onPickerChange={handlePickerChange}
-          onConfirmPicker={confirmPicker}
-        />
-      </ScrollView>
+
+      <GestureDetector gesture={nativeScrollGesture}>
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="grow px-4 pb-4"
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          nestedScrollEnabled
+          bounces={false}
+          overScrollMode="never"
+          showsVerticalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onScroll={handleScroll}
+          onScrollBeginDrag={Keyboard.dismiss}
+        >
+          
+          <NewPlanFields
+            form={form}
+            onPatchForm={patchForm}
+            titleFocused={titleFocused}
+            onTitleFocus={() => {
+              dismissPickerForOtherInput()
+              setTitleFocused(true)
+            }}
+            onTitleBlur={() => setTitleFocused(false)}
+            descriptionFocused={descriptionFocused}
+            onDescriptionFocus={() => {
+              dismissPickerForOtherInput()
+              setDescriptionFocused(true)
+            }}
+            onDescriptionBlur={() => setDescriptionFocused(false)}
+            placesRef={placesRef}
+            onLocationPlaceSelect={handleLocationPlaceSelect}
+            onLocationTextChange={handleLocationTextChange}
+            onLocationFocus={dismissPickerForOtherInput}
+            activePicker={activePicker}
+            pickerDraft={pickerDraft}
+            onOpenPicker={openPicker}
+            onPickerChange={handlePickerChange}
+            onConfirmPicker={confirmPicker}
+            onDismissPickerForOtherInput={dismissPickerForOtherInput}
+          />
+        </ScrollView>
+      </GestureDetector>
 
       <View className="bg-surface-sheet px-4 pb-7 pt-3">
         <Pressable

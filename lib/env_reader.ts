@@ -18,6 +18,7 @@ export const SIGN_IN_PHONE_MIN_DIGITS = readEnvInt('EXPO_PUBLIC_SIGN_IN_PHONE_MI
 // New plan sheet
 export const NEW_PLAN_TITLE_MAX = readEnvInt('EXPO_PUBLIC_NEW_PLAN_TITLE_MAX', 80)
 export const NEW_PLAN_DESCRIPTION_MAX = readEnvInt('EXPO_PUBLIC_NEW_PLAN_DESCRIPTION_MAX', 300)
+export const NEW_PLAN_MAX_SPOTS = readEnvInt('EXPO_PUBLIC_NEW_PLAN_MAX_SPOTS', 6)
 
 // Google Places
 export const GOOGLE_PLACES_KEY = readEnvString('EXPO_PUBLIC_GOOGLE_PLACES_KEY', '')
