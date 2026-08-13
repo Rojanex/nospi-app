@@ -6,20 +6,26 @@ import { PlansHeaderSkeleton } from '@/components/plans/PlansHeaderSkeleton'
 import { strings } from '@/constants/strings'
 import { fetchNextJoinedPlan, fetchPlansPage } from '@/lib/plans/api'
 import { joinPlan } from '@/lib/plans/lifecycle'
-import { subscribePlanCreated } from '@/lib/plans/plansEvents'
+import { subscribePlansChanged } from '@/lib/plans/plansEvents'
 import { Plan } from '@/types'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  FlatList,
   ListRenderItemInfo,
   RefreshControl,
   Text,
   View,
 } from 'react-native'
+import Animated, {
+  runOnUI,
+  scrollTo,
+  useAnimatedRef,
+} from 'react-native-reanimated'
 
 export default function IndexScreen() {
   const router = useRouter()
+  const listRef = useAnimatedRef<Animated.FlatList<Plan | string>>()
+  const aboveFeedHeightRef = useRef(0)
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -49,8 +55,8 @@ export default function IndexScreen() {
   }, [fetchInitialData])
 
   useEffect(() => {
-    return subscribePlanCreated(() => {
-      fetchInitialData()
+    return subscribePlansChanged(() => {
+      void fetchInitialData()
     })
   }, [fetchInitialData])
 
@@ -81,7 +87,6 @@ export default function IndexScreen() {
   async function handleJoin(id: string) {
     try {
       await joinPlan(id)
-      await fetchInitialData()
     } catch (err) {
       console.error('[plans feed] join', err)
     }
@@ -94,6 +99,20 @@ export default function IndexScreen() {
     })
   }
 
+  const handleAboveFeedHeightChange = useCallback((height: number) => {
+    aboveFeedHeightRef.current = height
+  }, [])
+
+  const handleScrollToFeed = useCallback(() => {
+    const y = aboveFeedHeightRef.current
+    if (y <= 0) return
+
+    runOnUI(() => {
+      'worklet'
+      scrollTo(listRef, 0, y, true)
+    })()
+  }, [listRef])
+
   const filteredPlans = activeFilter === strings.plansFeed.filterToday
     ? plans.filter(p =>
         p.date_time.toLowerCase().includes(strings.dates.today.toLowerCase()),
@@ -102,21 +121,17 @@ export default function IndexScreen() {
 
   const listData: readonly (Plan | string)[] = loading ? ['sk-1', 'sk-2', 'sk-3', 'sk-4'] : filteredPlans
 
-  const renderListHeader = useCallback(
-    () => (
-      <View>
-        {loading ? (
-          <PlansHeaderSkeleton />
-        ) : (
-          <PlansHeader
-            nextPlan={nextPlan}
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-          />
-        )}
-      </View>
-    ),
-    [loading, nextPlan, activeFilter],
+  const listHeader = loading ? (
+    <PlansHeaderSkeleton />
+  ) : (
+    <PlansHeader
+      nextPlan={nextPlan}
+      activeFilter={activeFilter}
+      onFilterChange={setActiveFilter}
+      onOpenChat={handleOpenChat}
+      onScrollToFeed={handleScrollToFeed}
+      onAboveFeedHeightChange={handleAboveFeedHeightChange}
+    />
   )
 
   const renderItem = useCallback(
@@ -166,11 +181,12 @@ export default function IndexScreen() {
 
   return (
     <TabScreen>
-      <FlatList
+      <Animated.FlatList
+        ref={listRef}
         data={listData}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
-        ListHeaderComponent={renderListHeader}
+        ListHeaderComponent={listHeader}
         ListEmptyComponent={!loading && filteredPlans.length === 0 ? renderEmptyComponent : undefined}
         ListFooterComponent={renderFooter}
         onEndReached={handleLoadMore}

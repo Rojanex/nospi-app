@@ -1,8 +1,10 @@
 type PlanCreatedListener = () => void
 type PlanDeletedListener = (planId: string) => void
+type PlansChangedListener = () => void
 
 const createdListeners = new Set<PlanCreatedListener>()
 const deletedListeners = new Set<PlanDeletedListener>()
+const changedListeners = new Set<PlansChangedListener>()
 
 export function subscribePlanCreated(listener: PlanCreatedListener): () => void {
   createdListeners.add(listener)
@@ -13,6 +15,7 @@ export function subscribePlanCreated(listener: PlanCreatedListener): () => void 
 
 export function notifyPlanCreated(): void {
   createdListeners.forEach(listener => listener())
+  notifyPlansChanged()
 }
 
 export function subscribePlanDeleted(listener: PlanDeletedListener): () => void {
@@ -24,4 +27,16 @@ export function subscribePlanDeleted(listener: PlanDeletedListener): () => void 
 
 export function notifyPlanDeleted(planId: string): void {
   deletedListeners.forEach(listener => listener(planId))
+  notifyPlansChanged()
+}
+
+export function subscribePlansChanged(listener: PlansChangedListener): () => void {
+  changedListeners.add(listener)
+  return () => {
+    changedListeners.delete(listener)
+  }
+}
+
+export function notifyPlansChanged(): void {
+  changedListeners.forEach(listener => listener())
 }

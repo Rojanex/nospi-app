@@ -1,8 +1,11 @@
 import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
 import type { ProfileRecentPlan } from '@/lib/profiles/api'
-import React from 'react'
+import React, { useState } from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
+
+const COLS = 3
+const GAP = 10
 
 type RecentPlansSectionProps = {
   plans: ProfileRecentPlan[]
@@ -26,16 +29,18 @@ function formatTileDate(iso: string): string {
 function PlanTile({
   plan,
   onPress,
+  width,
 }: {
   plan: ProfileRecentPlan
   onPress: () => void
+  width?: number
 }) {
   const meta = getActivityMeta(plan.activity_type)
 
   return (
     <TouchableOpacity
-      className="mb-2.5 overflow-hidden rounded-2xl"
-      style={{ width: '31.5%', backgroundColor: meta.bg }}
+      className="overflow-hidden rounded-2xl"
+      style={{ width, backgroundColor: meta.bg }}
       onPress={onPress}
       activeOpacity={0.85}
     >
@@ -68,7 +73,10 @@ export function RecentPlansSection({
   onEmptyCtaPress,
 }: RecentPlansSectionProps) {
   const tiles = plans.slice(0, 6)
-  const showEmpty = tiles.length < 3
+  const showEmpty = tiles.length === 0
+  const [rowWidth, setRowWidth] = useState(0)
+  const tileWidth =
+    rowWidth > 0 ? (rowWidth - GAP * (COLS - 1)) / COLS : undefined
 
   return (
     <View>
@@ -86,12 +94,14 @@ export function RecentPlansSection({
       {tiles.length > 0 ? (
         <View
           className="flex-row flex-wrap"
-          style={{ justifyContent: 'center', gap: 10 }}
+          style={{ justifyContent: 'center', gap: GAP }}
+          onLayout={e => setRowWidth(e.nativeEvent.layout.width)}
         >
           {tiles.map(plan => (
             <PlanTile
               key={plan.id}
               plan={plan}
+              width={tileWidth}
               onPress={() => onPlanPress(plan.id)}
             />
           ))}

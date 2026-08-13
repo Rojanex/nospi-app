@@ -1,5 +1,6 @@
 import { strings } from '@/constants/strings'
 import { insertSystemMessage } from '@/lib/chats/api'
+import { notifyPlansChanged } from '@/lib/plans/plansEvents'
 import { supabase } from '@/lib/supabase'
 
 async function requireUserId(): Promise<string> {
@@ -51,6 +52,7 @@ export async function joinPlan(planId: string): Promise<void> {
 
   const displayName = await getCurrentDisplayName(userId)
   await insertSystemMessage(planId, strings.systemMessages.joinedPlanSystem(displayName))
+  notifyPlansChanged()
 }
 
 export async function leavePlan(planId: string, isHost: boolean): Promise<void> {
@@ -64,6 +66,7 @@ export async function leavePlan(planId: string, isHost: boolean): Promise<void> 
       console.error('[leavePlan] host rpc', error)
       throw error
     }
+    notifyPlansChanged()
     return
   }
 
@@ -81,4 +84,5 @@ export async function leavePlan(planId: string, isHost: boolean): Promise<void> 
   }
 
   await insertSystemMessage(planId, strings.systemMessages.leftPlanSystem(displayName))
+  notifyPlansChanged()
 }

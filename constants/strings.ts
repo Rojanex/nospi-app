@@ -110,8 +110,8 @@ export const strings = {
     endOfFeed: 'Tus gustos son de nicho, mejor busca a los tuyos',
     soloSpots: (spots: number) => `¡solo ${spots} cupos!`,
     spotsInfo: (going: number, spots: number) => `${going} van · ${spots} cupos`,
-    hostLocal: 'local verificada',
-    hostVisitor: 'turista',
+    hostLocal: 'local',
+    hostVisitor: 'explorer',
     hostPrefix: 'por',
   },
   newPlan: {

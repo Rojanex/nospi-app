@@ -13,10 +13,11 @@ import {
   type ProfileRecentPlan,
   type ProfileWithStats,
 } from '@/lib/profiles/api'
+import { subscribePlansChanged } from '@/lib/plans/plansEvents'
 import { supabase } from '@/lib/supabase'
 import type { Profile } from '@/types'
-import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useFocusEffect, useRouter } from 'expo-router'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Linking,
@@ -46,6 +47,7 @@ function toProfileViewModel(data: ProfileWithStats): Profile {
 
 export default function ProfileScreen() {
   const router = useRouter()
+  const hasLoadedRef = useRef(false)
   const [profileData, setProfileData] = useState<ProfileWithStats | null>(null)
   const [recentPlans, setRecentPlans] = useState<ProfileRecentPlan[]>([])
   const [loading, setLoading] = useState(true)
@@ -56,8 +58,8 @@ export default function ProfileScreen() {
     [profileData],
   )
 
-  const loadProfile = useCallback(async () => {
-    setError(null)
+  const loadProfile = useCallback(async (background = false) => {
+    if (!background) setError(null)
     try {
       const {
         data: { user },
@@ -75,14 +77,30 @@ export default function ProfileScreen() {
 
       setProfileData(nextProfile)
       setRecentPlans(nextPlans)
+      hasLoadedRef.current = true
     } catch (err) {
-      console.error('[profile] load', err)
-      setError(strings.profile.loadError)
+      if (!background) {
+        console.error('[profile] load', err)
+        setError(strings.profile.loadError)
+      }
     }
   }, [])
 
   useEffect(() => {
     loadProfile().finally(() => setLoading(false))
+  }, [loadProfile])
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasLoadedRef.current) return
+      void loadProfile(true)
+    }, [loadProfile]),
+  )
+
+  useEffect(() => {
+    return subscribePlansChanged(() => {
+      void loadProfile(true)
+    })
   }, [loadProfile])
 
   function handleSettingsPress() {

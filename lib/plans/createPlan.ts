@@ -7,10 +7,12 @@ import { ApiResponse, NewPlanFormValues } from '@/types'
 import { PostgrestError } from '@supabase/supabase-js'
 
 function mapCreatePlanError(error: PostgrestError): string {
-  const message = error.message.toLowerCase()
-  if (
-    message.includes('create_limit_reached')
-  ) {
+  const haystack = [error.message, error.details, error.hint, error.code]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+
+  if (haystack.includes('create_limit_reached')) {
     return strings.newPlan.createErrorLimit
   }
   return strings.newPlan.createErrorGeneric

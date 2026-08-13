@@ -150,11 +150,15 @@ export function NewPlanSheet({ onClose }: NewPlanSheetProps) {
             </Text>
           )}
         </Pressable>
-        <Text
-          className={`mt-[7px] text-center text-[10px] ${submitError ? 'text-activity-orange' : 'text-neutral-label'}`}
-        >
-          {submitError ?? strings.newPlan.ctaHint}
-        </Text>
+        {submitError ? (
+          <Text className="mt-2 text-center text-xs font-semibold text-danger">
+            {submitError}
+          </Text>
+        ) : (
+          <Text className="mt-[7px] text-center text-[10px] text-neutral-label">
+            {strings.newPlan.ctaHint}
+          </Text>
+        )}
       </View>
     </View>
   )

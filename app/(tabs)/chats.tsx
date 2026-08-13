@@ -19,8 +19,8 @@ import {
 } from '@/lib/chats/filters'
 import { leavePlan } from '@/lib/plans/lifecycle'
 import {
-  subscribePlanCreated,
   subscribePlanDeleted,
+  subscribePlansChanged,
 } from '@/lib/plans/plansEvents'
 import { supabase } from '@/lib/supabase'
 import { ChatListItem } from '@/types'
@@ -59,17 +59,17 @@ export default function Chats() {
   }, [loadChats])
 
   useEffect(() => {
-    return subscribePlanCreated(() => {
-      loadChats()
-    })
-  }, [loadChats])
-
-  useEffect(() => {
     return subscribePlanDeleted(planId => {
       setChats(current => current.filter(chat => chat.id !== planId))
       setOpenSwipeId(current => (current === planId ? null : current))
     })
   }, [])
+
+  useEffect(() => {
+    return subscribePlansChanged(() => {
+      void loadChats(true)
+    })
+  }, [loadChats])
 
   // Sorted so reordering on new messages does not change the key / re-subscribe.
   const planIdsKey = [...chats.map(chat => chat.id)].sort().join(',')
