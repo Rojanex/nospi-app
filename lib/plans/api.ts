@@ -27,6 +27,7 @@ export async function fetchPlansPage(pageNum: number): Promise<{
     .from('plans')
     .select(PLAN_SELECT)
     .order('date_time', { ascending: true })
+    .eq('status', 'active')
     .range(pageNum * PAGE_SIZE, pageNum * PAGE_SIZE + PAGE_SIZE - 1)
 
   if (error) {

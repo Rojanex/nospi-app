@@ -177,7 +177,7 @@ export function ParticipantsSheet({
     Alert.alert(strings.losMios.leaveConfirmTitle, undefined, [
       { text: 'Cancelar', style: 'cancel' },
       {
-        text: strings.losMios.leaveAction,
+        text: strings.losMios.secondLeaveAction,
         style: 'destructive',
         onPress: onLeave,
       },

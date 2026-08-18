@@ -14,13 +14,15 @@ export function mapRowToPlan(
 ): Plan {
   const memberCount = row.plan_members.length
   const hostName = hostProfile?.display_name ?? strings.common.hostFallback
-  const attendees = row.plan_members.slice(0, 3).map(m => ({
-    user_id: m.user_id,
-    initials: initialsFromName(
-      m.profiles?.display_name ?? strings.common.userFallback,
-    ),
-    avatar_url: m.profiles?.avatar_url ?? null,
-  }))
+  const attendees = row.plan_members.map(m => {
+    const name = m.profiles?.display_name?.trim() || strings.common.userFallback
+    return {
+      user_id: m.user_id,
+      name,
+      initials: initialsFromName(name),
+      avatar_url: m.profiles?.avatar_url ?? null,
+    }
+  })
 
   return {
     id: row.id,

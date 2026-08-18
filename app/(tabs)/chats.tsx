@@ -10,6 +10,7 @@ import {
   formatTimestampLabel,
   getChatListCache,
   prefetchMessages,
+  resolveMessagePreview,
   subscribeToChatPreviews,
 } from '@/lib/chats/api'
 import {
@@ -78,22 +79,30 @@ export default function Chats() {
     const planIds = planIdsKey.length === 0 ? [] : planIdsKey.split(',')
 
     const channel = subscribeToChatPreviews(planIds, message => {
-      setChats(current => {
-        const index = current.findIndex(chat => chat.id === message.plan_id)
-        if (index === -1) return current
+      void (async () => {
+        const previewText = await resolveMessagePreview(message)
+        setChats(current => {
+          const index = current.findIndex(chat => chat.id === message.plan_id)
+          if (index === -1) return current
 
-        const updated: ChatListItem = {
-          ...current[index],
-          previewText: message.content,
-          timeLabel: formatTimestampLabel(message.created_at),
-          lastMessageAt: message.created_at,
-        }
+          const existing = current[index]
+          if (existing.lastMessageAt && existing.lastMessageAt > message.created_at) {
+            return current
+          }
 
-        const next = [...current]
-        next.splice(index, 1)
-        next.unshift(updated)
-        return next
-      })
+          const updated: ChatListItem = {
+            ...existing,
+            previewText,
+            timeLabel: formatTimestampLabel(message.created_at),
+            lastMessageAt: message.created_at,
+          }
+
+          const next = [...current]
+          next.splice(index, 1)
+          next.unshift(updated)
+          return next
+        })
+      })()
     })
 
     return () => {

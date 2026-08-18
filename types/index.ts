@@ -95,7 +95,7 @@ export interface Plan {
   date_time: string
   spots_left: number
   extra_attendees: number
-  attendees: { initials: string; avatar_url: string | null; user_id: string }[]
+  attendees: { initials: string; avatar_url: string | null; user_id: string; name: string }[]
   host_id: string
   host_name: string
   host_initials: string
@@ -129,6 +129,8 @@ export type ChatListItem = {
   status: PlanStatus
   archivedAt?: string | null
 }
+
+export type SystemPayload = Record<string, string | number | undefined>
 
 export type ChatMessage = {
   id: string

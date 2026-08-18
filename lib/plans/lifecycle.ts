@@ -1,6 +1,6 @@
 import { strings } from '@/constants/strings'
 import { insertSystemMessage } from '@/lib/chats/api'
-import { notifyPlansChanged } from '@/lib/plans/plansEvents'
+import { notifyPlanDeleted, notifyPlansChanged } from '@/lib/plans/plansEvents'
 import { supabase } from '@/lib/supabase'
 
 async function requireUserId(): Promise<string> {
@@ -22,13 +22,10 @@ async function getCurrentDisplayName(userId: string): Promise<string> {
 }
 
 export async function deletePlan(planId: string): Promise<void> {
-  const userId = await requireUserId()
-
   const { error } = await supabase
     .from('plans')
     .delete()
     .eq('id', planId)
-    .eq('created_by', userId)
 
   if (error) {
     console.error('[deletePlan]', error)
@@ -45,13 +42,18 @@ export async function joinPlan(planId: string): Promise<void> {
     role: 'member',
   })
 
-  if (error) {
+  if (error && error.code !== '23505') { // 23505 is the code for unique constraint violation
     console.error('[joinPlan]', error)
     throw error
   }
 
-  const displayName = await getCurrentDisplayName(userId)
-  await insertSystemMessage(planId, strings.systemMessages.joinedPlanSystem(displayName))
+  try {
+    const displayName = await getCurrentDisplayName(userId)
+    await insertSystemMessage(planId, strings.systemMessages.joinedPlanSystem({ name: displayName }))
+  } catch (err) {
+    console.error('[joinPlan] system message', err)
+  }
+
   notifyPlansChanged()
 }
 
@@ -66,11 +68,12 @@ export async function leavePlan(planId: string, isHost: boolean): Promise<void> 
       console.error('[leavePlan] host rpc', error)
       throw error
     }
-    notifyPlansChanged()
+    notifyPlanDeleted(planId)
     return
   }
 
   const displayName = await getCurrentDisplayName(userId)
+  await insertSystemMessage(planId, strings.systemMessages.leftPlanSystem({ name: displayName }))
 
   const { error } = await supabase
     .from('plan_members')
@@ -83,6 +86,5 @@ export async function leavePlan(planId: string, isHost: boolean): Promise<void> 
     throw error
   }
 
-  await insertSystemMessage(planId, strings.systemMessages.leftPlanSystem(displayName))
-  notifyPlansChanged()
+  notifyPlanDeleted(planId)
 }

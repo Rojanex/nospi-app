@@ -6,16 +6,21 @@ import {
   MESSAGES_PAGE_SIZE,
 } from '@/lib/env_reader'
 import { avatarColorsForId, initialsFromName } from '@/lib/utils/avatar'
+import { resolveSystemContent, systemPayloadFromName } from '@/lib/chats/systemMessage'
+import { notifyPlansChanged } from '@/lib/plans/plansEvents'
 import { supabase } from '@/lib/supabase'
 import { ChatListItem, ChatMessage, Participant, PlanActivityType, PlanMetaRow } from '@/types'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 type DbPlanStatus = 'active' | 'expired' | 'completed'
 
+type ProfileEmbed = { display_name: string | null; avatar_url: string | null }
+
 type MessagePreviewEmbed = {
   content: string
   created_at: string
   user_id: string | null
+  profiles?: ProfileEmbed | ProfileEmbed[] | null
 }
 
 type PlanEmbed = {
@@ -33,8 +38,6 @@ type MembershipRow = {
   archived_at: string | null
   plans: PlanEmbed | PlanEmbed[] | null
 }
-
-type ProfileEmbed = { display_name: string | null; avatar_url: string | null }
 
 type MessageRow = {
   id: string
@@ -68,6 +71,28 @@ function unwrapProfile(
   return Array.isArray(profiles) ? profiles[0] ?? null : profiles
 }
 
+function previewTextFromMessage(
+  content: string,
+  displayName?: string | null,
+): string {
+  return resolveSystemContent(content, systemPayloadFromName(displayName))
+}
+
+export async function resolveMessagePreview(message: {
+  content: string
+  user_id: string | null
+}): Promise<string> {
+  if (!message.user_id) return previewTextFromMessage(message.content)
+
+  const { data } = await supabase
+    .from('profiles')
+    .select('display_name')
+    .eq('id', message.user_id)
+    .maybeSingle()
+
+  return previewTextFromMessage(message.content, data?.display_name)
+}
+
 export function formatTimestampLabel(iso: string): string {
   const date = new Date(iso)
   return date.toLocaleTimeString('es-CO', {
@@ -81,7 +106,7 @@ export type ThreadMessageInsert = {
   id: string
   plan_id: string
   user_id: string | null
-  content: string
+content: string
   type: string
   created_at: string
 }
@@ -93,10 +118,11 @@ export function mapRealtimeMessageToChatMessage(
 ): ChatMessage {
   const isSystem = row.user_id === null || row.type === 'system'
   if (isSystem) {
+    const name = participants.find(p => p.id === row.user_id)?.name
     return {
       id: row.id,
       type: 'system',
-      content: row.content,
+      content: resolveSystemContent(row.content, systemPayloadFromName(name)),
       createdAt: row.created_at,
       timeLabel: formatTimestampLabel(row.created_at),
     }
@@ -274,6 +300,14 @@ export function clearChatListCache(): void {
   _chatListCache = null
 }
 
+function patchChatListArchivedAt(planId: string, archivedAt: string | null): void {
+  const cached = getChatListCache()
+  if (!cached) return
+  setChatListCache(
+    cached.map(item => (item.id === planId ? { ...item, archivedAt } : item)),
+  )
+}
+
 type MessagesCacheEntry = {
   data: ChatMessage[]
   hasMore: boolean
@@ -330,7 +364,7 @@ export async function fetchPlanMeta(planId: string): Promise<PlanMetaRow | null>
         .maybeSingle(),
       supabase
         .from('messages')
-        .select('content, created_at')
+        .select('content, created_at, user_id, profiles(display_name)')
         .eq('plan_id', planId)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -353,7 +387,12 @@ export async function fetchPlanMeta(planId: string): Promise<PlanMetaRow | null>
     title: plan.title,
     activity_type: plan.activity_type,
     status: plan.status as DbPlanStatus,
-    previewText: lastMsg?.content ?? '',
+    previewText: lastMsg
+      ? previewTextFromMessage(
+          lastMsg.content,
+          unwrapProfile(lastMsg.profiles as ProfileEmbed | ProfileEmbed[] | null)?.display_name,
+        )
+      : '',
     timeLabel: lastMsg ? formatTimestampLabel(lastMsg.created_at) : '',
   }
 }
@@ -374,7 +413,7 @@ export async function fetchChatList(): Promise<ChatListItem[]> {
         activity_type,
         status,
         date_time,
-        messages(content, created_at, user_id)
+        messages(content, created_at, user_id, profiles(display_name))
       )
       `,
     )
@@ -419,7 +458,12 @@ export async function fetchChatList(): Promise<ChatListItem[]> {
         id: plan.id,
         activityType: asActivityType(plan.activity_type),
         title: plan.title,
-        previewText: last?.content ?? '',
+        previewText: last
+          ? previewTextFromMessage(
+              last.content,
+              unwrapProfile(last.profiles)?.display_name,
+            )
+          : '',
         timeLabel: last ? formatTimestampLabel(last.created_at) : '',
         lastMessageAt: last?.created_at ?? null,
         memberCount: memberCounts.get(row.plan_id) ?? 0,
@@ -451,10 +495,11 @@ export type MessagesPage = {
 function mapMessageRow(row: MessageRow, userId: string): ChatMessage {
   const isSystem = row.user_id === null || row.type === 'system'
   if (isSystem) {
+    const name = unwrapProfile(row.profiles)?.display_name
     return {
       id: row.id,
       type: 'system',
-      content: row.content,
+      content: resolveSystemContent(row.content, systemPayloadFromName(name)),
       createdAt: row.created_at,
       timeLabel: formatTimestampLabel(row.created_at),
     }
@@ -623,10 +668,11 @@ export async function insertSystemMessage(planId: string, content: string): Prom
 
 export async function archiveChat(planId: string): Promise<void> {
   const userId = await requireUserId()
+  const archivedAt = new Date().toISOString()
 
   const { error } = await supabase
     .from('plan_members')
-    .update({ archived_at: new Date().toISOString() })
+    .update({ archived_at: archivedAt })
     .eq('plan_id', planId)
     .eq('user_id', userId)
 
@@ -634,6 +680,9 @@ export async function archiveChat(planId: string): Promise<void> {
     console.error('[archiveChat]', error)
     throw error
   }
+
+  patchChatListArchivedAt(planId, archivedAt)
+  notifyPlansChanged()
 }
 
 export async function unarchiveChat(planId: string): Promise<void> {
@@ -649,6 +698,9 @@ export async function unarchiveChat(planId: string): Promise<void> {
     console.error('[unarchiveChat]', error)
     throw error
   }
+
+  patchChatListArchivedAt(planId, null)
+  notifyPlansChanged()
 }
 
 export async function removeMember(
@@ -667,5 +719,5 @@ export async function removeMember(
     throw error
   }
 
-  await insertSystemMessage(planId, strings.systemMessages.removedMemberSystem(targetName))
+  await insertSystemMessage(planId, strings.systemMessages.removedMemberSystem({ name: targetName }))
 }

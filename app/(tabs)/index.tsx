@@ -1,9 +1,14 @@
 import { TabScreen } from '@/components/layout/TabScreen'
 import { PlanCard } from '@/components/plans/PlanCard'
 import { PlanCardSkeleton } from '@/components/plans/PlanCardSkeleton'
+import {
+  PlanDetailModal,
+  PlanDetailModalHandle,
+} from '@/components/plans/PlanDetailModal'
 import { PlansHeader } from '@/components/plans/PlansHeader'
 import { PlansHeaderSkeleton } from '@/components/plans/PlansHeaderSkeleton'
 import { strings } from '@/constants/strings'
+import { fetchChatList, getChatListCache, prefetchMessages } from '@/lib/chats/api'
 import { fetchNextJoinedPlan, fetchPlansPage } from '@/lib/plans/api'
 import { joinPlan } from '@/lib/plans/lifecycle'
 import { subscribePlansChanged } from '@/lib/plans/plansEvents'
@@ -13,6 +18,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ListRenderItemInfo,
   RefreshControl,
+  StyleSheet,
   Text,
   View,
 } from 'react-native'
@@ -22,10 +28,22 @@ import Animated, {
   useAnimatedRef,
 } from 'react-native-reanimated'
 
+function markPlanJoined(plan: Plan): Plan {
+  if (plan.user_joined) return plan
+  return {
+    ...plan,
+    user_joined: true,
+    extra_attendees: plan.extra_attendees + 1,
+    spots_left: Math.max(0, plan.spots_left - 1),
+  }
+}
+
 export default function IndexScreen() {
   const router = useRouter()
   const listRef = useAnimatedRef<Animated.FlatList<Plan | string>>()
   const aboveFeedHeightRef = useRef(0)
+  const peekRef = useRef<PlanDetailModalHandle>(null)
+  const joiningIdsRef = useRef(new Set<string>())
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -34,6 +52,7 @@ export default function IndexScreen() {
   const [page, setPage] = useState(0)
   const [activeFilter, setActiveFilter] = useState(strings.plansFeed.filterAll)
   const [nextPlan, setNextPlan] = useState<Plan | null>(null)
+  const [peekPlan, setPeekPlan] = useState<Plan | null>(null)
 
   const fetchInitialData = useCallback(async () => {
     try {
@@ -60,6 +79,10 @@ export default function IndexScreen() {
     })
   }, [fetchInitialData])
 
+  useEffect(() => {
+    if (!getChatListCache()) void fetchChatList().catch(() => {})
+  }, [])
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true)
     const minDelay = new Promise(resolve => setTimeout(resolve, 600))
@@ -84,20 +107,42 @@ export default function IndexScreen() {
     }
   }
 
-  async function handleJoin(id: string) {
-    try {
-      await joinPlan(id)
-    } catch (err) {
-      console.error('[plans feed] join', err)
-    }
-  }
-
-  function handleOpenChat(id: string) {
+  const handleOpenChat = useCallback((id: string) => {
+    const cached = getChatListCache()?.find(item => item.id === id) ?? null
+    if (cached) prefetchMessages(id)
     router.push({
       pathname: '/chats/[id]',
-      params: { id },
+      params: cached ? { id, chat: JSON.stringify(cached) } : { id },
     })
-  }
+  }, [router])
+
+  const handleJoin = useCallback(async (id: string) => {
+    if (joiningIdsRef.current.has(id)) return
+
+    const current = plans.find(p => p.id === id) ?? (peekPlan?.id === id ? peekPlan : null)
+    if (current?.user_joined) {
+      handleOpenChat(id)
+      return
+    }
+
+    joiningIdsRef.current.add(id)
+    setPlans(prev => prev.map(p => (p.id === id ? markPlanJoined(p) : p)))
+    setPeekPlan(prev => (prev?.id === id ? markPlanJoined(prev) : prev))
+    if (nextPlan?.id === id) setNextPlan(markPlanJoined(nextPlan))
+
+    try {
+      await joinPlan(id)
+      void fetchChatList().catch(() => {})
+      handleOpenChat(id)
+    } catch (err) {
+      console.error('[plans feed] join', err)
+      setPlans(prev => prev.map(p => (p.id === id && current ? current : p)))
+      setPeekPlan(prev => (prev?.id === id ? current : prev))
+      if (nextPlan?.id === id) setNextPlan(current)
+    } finally {
+      joiningIdsRef.current.delete(id)
+    }
+  }, [handleOpenChat, nextPlan, peekPlan, plans])
 
   const handleAboveFeedHeightChange = useCallback((height: number) => {
     aboveFeedHeightRef.current = height
@@ -112,6 +157,19 @@ export default function IndexScreen() {
       scrollTo(listRef, 0, y, true)
     })()
   }, [listRef])
+
+  const handlePeekStart = useCallback((plan: Plan) => {
+    setPeekPlan(plan)
+  }, [])
+
+  const handlePeekEnd = useCallback(() => {
+    if (peekRef.current) {
+      peekRef.current.dismiss()
+      return
+    }
+    // Long-press ended before the overlay mounted — drop it immediately.
+    setPeekPlan(null)
+  }, [])
 
   const filteredPlans = activeFilter === strings.plansFeed.filterToday
     ? plans.filter(p =>
@@ -143,11 +201,12 @@ export default function IndexScreen() {
         <PlanCard
           plan={item}
           onJoin={handleJoin}
-          onOpenChat={handleOpenChat}
+          onPeekStart={handlePeekStart}
+          onPeekEnd={handlePeekEnd}
         />
       )
     },
-    [loading],
+    [loading, handleJoin, handlePeekStart, handlePeekEnd],
   )
 
   const keyExtractor = useCallback(
@@ -181,29 +240,52 @@ export default function IndexScreen() {
 
   return (
     <TabScreen>
-      <Animated.FlatList
-        ref={listRef}
-        data={listData}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        ListHeaderComponent={listHeader}
-        ListEmptyComponent={!loading && filteredPlans.length === 0 ? renderEmptyComponent : undefined}
-        ListFooterComponent={renderFooter}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        refreshControl={
-          !loading ? (
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-            />
-          ) : undefined
-        }
-        extraData={loading ? 'loading' : `${activeFilter}-${refreshing}`}
-        showsVerticalScrollIndicator={false}
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 100 }}
-      />
+      <View style={styles.feedRoot}>
+        <Animated.FlatList
+          ref={listRef}
+          data={listData}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          ListHeaderComponent={listHeader}
+          ListEmptyComponent={!loading && filteredPlans.length === 0 ? renderEmptyComponent : undefined}
+          ListFooterComponent={renderFooter}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          refreshControl={
+            !loading ? (
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            ) : undefined
+          }
+          extraData={
+            loading
+              ? 'loading'
+              : `${activeFilter}-${refreshing}-${plans.filter(p => p.user_joined).map(p => p.id).join(',')}`
+          }
+          showsVerticalScrollIndicator={false}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        />
+        {peekPlan ? (
+          <PlanDetailModal
+            ref={peekRef}
+            visible
+            plan={peekPlan}
+            presentation="hosted"
+            interactive={false}
+            onClose={() => setPeekPlan(null)}
+            onJoin={handleJoin}
+          />
+        ) : null}
+      </View>
     </TabScreen>
   )
 }
+
+const styles = StyleSheet.create({
+  feedRoot: {
+    flex: 1,
+  },
+})

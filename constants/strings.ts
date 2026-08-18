@@ -1,3 +1,5 @@
+import { SystemPayload } from '@/types'
+
 const DATE_TODAY = 'Hoy'
 const DATE_WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const
 const DATE_WEEKDAYS_LONG = [
@@ -108,17 +110,22 @@ export const strings = {
     joinedCta: 'ya voy',
     emptyFeed: 'parece que no hay planes para ti, pero... y si los creas tú?',
     endOfFeed: 'Tus gustos son de nicho, mejor busca a los tuyos',
-    soloSpots: (spots: number) => `¡solo ${spots} cupos!`,
-    spotsInfo: (going: number, spots: number) => `${going} van · ${spots} cupos`,
-    spotsLeft: (spots: number) => `${spots} cupos`,
-    spotsFull: 'Se lleno!',
+    soloSpots: (spots: number) =>
+      spots === 1 ? '¡solo 1 cupo!' : `¡solo ${spots} cupos!`,
+    spotsInfo: (going: number, spots: number) =>
+      `${going} van · ${spots === 1 ? '1 cupo' : `${spots} cupos`}`,
+    spotsLeft: (spots: number) =>
+      spots === 1 ? '1 cupo' : `${spots} cupos`,
+    spotsFull: 'Ya estamos todos!',
     hostLocal: 'local',
     hostVisitor: 'explorer',
     hostPrefix: 'por',
+    hostCreatedByPrefix: 'creado por',
     planDetailMore: 'Ver detalles',
     planDetailClose: 'Cerrar',
     visibilityOpenBadge: 'abierto a todos',
     visibilityLocalBadge: 'solo locales',
+    descriptionTitle: 'DESCRIPCIÓN',
     descriptionEmpty: 'Sin descripción todavía — el host no agregó detalles.',
   },
   newPlan: {
@@ -175,6 +182,7 @@ export const strings = {
     archiveAction: 'Archivar',
     unarchiveAction: 'Desarchivar',
     leaveAction: 'Salirse',
+    secondLeaveAction: 'Salir',
     removeMemberAction: 'Sacar del parche',
     removeMemberConfirmTitle: (name: string) => `¿Sacar a ${name} del parche?`,
     leaveConfirmTitle: '¿Seguro que quieres salir del parche?',
@@ -193,10 +201,11 @@ export const strings = {
   },
   systemMessages: {
     planCreated: 'Se armo el parche',
-    joinedPlanSystem: (name: string) => `${name} se unió al parche`,
-    leftPlanSystem: (name: string) => `${name} salió del parche`,
-    removedMemberSystem: (name: string) => `${name} fue removido del parche`,
-
+    host_transferred: ({ name }: SystemPayload) =>
+      `${name ?? strings.common.someoneFallback} ahora es host`,
+    joinedPlanSystem: ({ name }: SystemPayload) => `${name} se unió al plan`,
+    leftPlanSystem: ({ name }: SystemPayload) => `${name} salió del plan`,
+    removedMemberSystem: ({ name }: SystemPayload) => `${name} fue removido del plan`,
   },
 
   profile: {

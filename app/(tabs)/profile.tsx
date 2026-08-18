@@ -6,6 +6,7 @@ import { ProfileHeader } from '@/components/profile/ProfileHeader'
 import { ProfileScreenHeader } from '@/components/profile/ProfileScreenHeader'
 import { RecentPlansSection } from '@/components/profile/RecentPlansSection'
 import { strings } from '@/constants/strings'
+import { getChatListCache, prefetchMessages } from '@/lib/chats/api'
 import { FOUNDER_TYPEFORM_URL } from '@/lib/env_reader'
 import {
   fetchProfile,
@@ -120,9 +121,11 @@ export default function ProfileScreen() {
   }
 
   function handlePlanPress(planId: string) {
+    const cached = getChatListCache()?.find(item => item.id === planId) ?? null
+    if (cached) prefetchMessages(planId)
     router.push({
       pathname: '/chats/[id]',
-      params: { id: planId },
+      params: cached ? { id: planId, chat: JSON.stringify(cached) } : { id: planId },
     } as never)
   }
 
