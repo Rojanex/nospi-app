@@ -105,7 +105,7 @@ export const strings = {
     filterAll: 'Todos',
     filterToday: DATE_TODAY,
     filterNearby: 'Cerca',
-    filterFree: 'Gratis',
+    filterWeekend: 'Este finde',
     joinCta: 'me apunto',
     joinedCta: 'ya voy',
     emptyFeed: 'parece que no hay planes para ti, pero... y si los creas tú?',

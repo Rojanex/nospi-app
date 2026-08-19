@@ -25,11 +25,13 @@ export function PlansHeaderSkeleton() {
         <Skeleton className="h-6 w-40" />
       </View>
 
-      <View className="mb-4 flex-row gap-2 px-5">
-        <Skeleton className="h-9 w-16 rounded-full" />
-        <Skeleton className="h-9 w-14 rounded-full" />
-        <Skeleton className="h-9 w-20 rounded-full" />
-        <Skeleton className="h-9 w-16 rounded-full" />
+      <View className="mb-4 flex-row items-center gap-2 px-5">
+        <View className="flex-1 flex-row gap-2">
+          <Skeleton className="h-9 w-16 rounded-full" />
+          <Skeleton className="h-9 w-14 rounded-full" />
+          <Skeleton className="h-9 w-20 rounded-full" />
+        </View>
+        <Skeleton className="h-9 w-9 rounded-full" />
       </View>
     </View>
   )

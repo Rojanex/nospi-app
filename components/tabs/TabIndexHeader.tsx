@@ -10,9 +10,6 @@ export function TabIndexHeader() {
       <NospiHorizontalLogo height={28} />
       <View className="tab-header-actions">
         <TouchableOpacity className="tab-icon-btn">
-          <Ionicons name="search-outline" size={22} color={Colors.black[300]} />
-        </TouchableOpacity>
-        <TouchableOpacity className="tab-icon-btn">
           <View>
             <Ionicons name="notifications-outline" size={22} color={Colors.black[300]} />
             <View className="tab-notif-dot" /> 

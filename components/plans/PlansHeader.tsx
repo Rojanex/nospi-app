@@ -3,6 +3,7 @@ import { TabIndexHeader } from '@/components/tabs/TabIndexHeader'
 import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
 import { Plan } from '@/types'
+import { Ionicons } from '@expo/vector-icons'
 import { useRef } from 'react'
 import {
   Pressable,
@@ -14,10 +15,11 @@ import {
 } from 'react-native'
 
 const FILTERS = [
-  strings.plansFeed.filterAll,
   strings.plansFeed.filterToday,
+  strings.plansFeed.filterAll,
+  strings.plansFeed.filterWeekend,
   strings.plansFeed.filterNearby,
-  strings.plansFeed.filterFree,
+
 ]
 
 type PlansHeaderProps = {
@@ -104,25 +106,30 @@ export function PlansHeader({
         <Text className="tab-section-title">{strings.plansFeed.feedHeader}</Text>
       </View>
 
-      <ScrollView
-        horizontal
-        nestedScrollEnabled
-        showsHorizontalScrollIndicator={false}
-        className="mb-4"
-        contentContainerClassName="flex-row gap-2 px-5"
-      >
-        {FILTERS.map(filter => (
-          <Pressable
-            key={filter}
-            style={[styles.chip, activeFilter === filter && styles.chipActive]}
-            onPress={() => onFilterChange(filter)}
-          >
-            <Text style={[styles.chipText, activeFilter === filter && styles.chipTextActive]}>
-              {filter}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
+      <View className="mb-4 flex-row items-center gap-2 px-5">
+        <ScrollView
+          horizontal
+          nestedScrollEnabled
+          showsHorizontalScrollIndicator={false}
+          style={{ flex: 1 }}
+          contentContainerClassName="flex-row gap-2"
+        >
+          {FILTERS.map(filter => (
+            <Pressable
+              key={filter}
+              style={[styles.chip, activeFilter === filter && styles.chipActive]}
+              onPress={() => onFilterChange(filter)}
+            >
+              <Text style={[styles.chipText, activeFilter === filter && styles.chipTextActive]}>
+                {filter}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+        <TouchableOpacity className="tab-icon-btn" hitSlop={8} activeOpacity={0.7}>
+          <Ionicons name="search-outline" size={22} color={Colors.black[300]} />
+        </TouchableOpacity>
+      </View>
     </View>
   )
 }
