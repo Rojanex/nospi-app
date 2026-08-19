@@ -106,6 +106,7 @@ export const strings = {
     filterToday: DATE_TODAY,
     filterNearby: 'Cerca',
     filterWeekend: 'Este finde',
+    nearbyLocationRequired: 'activa tu ubicación para ver parches cerca',
     joinCta: 'me apunto',
     joinedCta: 'ya voy',
     emptyFeed: 'parece que no hay planes para ti, pero... y si los creas tú?',

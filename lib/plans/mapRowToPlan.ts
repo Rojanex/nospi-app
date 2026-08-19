@@ -12,9 +12,9 @@ export function mapRowToPlan(
   currentUserId: string,
   hostProfile?: { display_name: string | null; avatar_url: string | null; role: string },
 ): Plan {
-  const memberCount = row.plan_members.length
+  const memberCount = row.plan_members?.length ?? 0
   const hostName = hostProfile?.display_name ?? strings.common.hostFallback
-  const attendees = row.plan_members.map(m => {
+  const attendees = (row.plan_members ?? []).map(m => {
     const name = m.profiles?.display_name?.trim() || strings.common.userFallback
     return {
       user_id: m.user_id,
@@ -39,7 +39,7 @@ export function mapRowToPlan(
     host_avatar_url: hostProfile?.avatar_url ?? null,
     host_type: hostProfile?.role === 'local' ? 'local' : 'turista',
     posted_ago: formatPostedAgo(row.created_at),
-    user_joined: row.plan_members.some(m => m.user_id === currentUserId),
+    user_joined: (row.plan_members ?? []).some(m => m.user_id === currentUserId),
     visibility: row.visibility as PlanVisibility,
     description: row.description,
   }

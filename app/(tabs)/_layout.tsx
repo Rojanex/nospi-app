@@ -24,6 +24,7 @@ const _Layout = () => {
   const translateY = useSharedValue(SCREEN_HEIGHT)
   const overlayOpacity = useSharedValue(0)
   const scrollOffset = useSharedValue(0)
+  const pickerOpen = useSharedValue(0)
   const touchStartY = useSharedValue(0)
 
   const sheetStyle = useAnimatedStyle(() => ({
@@ -36,6 +37,7 @@ const _Layout = () => {
 
   const openSheet = () => {
     scrollOffset.value = 0
+    pickerOpen.value = 0
     setShowNewPlanSheet(true)
     translateY.value = withSpring(0, { stiffness: 300 })
     overlayOpacity.value = withTiming(1, { duration: 240 })
@@ -64,7 +66,11 @@ const _Layout = () => {
           touchStartY.value = e.allTouches[0]?.absoluteY ?? 0
         })
         .onTouchesMove((e, state) => {
-          // Off-top content is always a scroll gesture, never a dismiss gesture.
+          if (pickerOpen.value === 1) {
+            state.fail()
+            return
+          }
+
           if (scrollOffset.value > SCROLL_TOP_EPSILON) {
             state.fail()
             return
@@ -174,6 +180,7 @@ const _Layout = () => {
               <NewPlanSheet
                 onClose={closeSheet}
                 scrollOffset={scrollOffset}
+                pickerOpen={pickerOpen}
                 nativeScrollGesture={nativeScrollGesture}
               />
             </Animated.View>

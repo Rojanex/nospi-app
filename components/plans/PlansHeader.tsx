@@ -10,22 +10,29 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native'
 
-const FILTERS = [
-  strings.plansFeed.filterToday,
-  strings.plansFeed.filterAll,
-  strings.plansFeed.filterWeekend,
-  strings.plansFeed.filterNearby,
+export type FeedFilter = 'hoy' | 'finde' | 'cerca' | null
 
+const FEED_PILLS: { label: string; value: FeedFilter }[] = [
+  { label: strings.plansFeed.filterToday, value: 'hoy' },
+  { label: strings.plansFeed.filterAll, value: null },
+  { label: strings.plansFeed.filterWeekend, value: 'finde' },
+  { label: strings.plansFeed.filterNearby, value: 'cerca' },
 ]
 
 type PlansHeaderProps = {
   nextPlan: Plan | null
-  activeFilter: string
-  onFilterChange: (filter: string) => void
+  activeFilter: FeedFilter
+  onFilterChange: (filter: FeedFilter) => void
+  locationHint: string | null
+  searchOpen: boolean
+  searchText: string
+  onToggleSearch: () => void
+  onSearchTextChange: (text: string) => void
   onOpenChat: (id: string) => void
   onScrollToFeed: () => void
   onAboveFeedHeightChange: (height: number) => void
@@ -35,6 +42,11 @@ export function PlansHeader({
   nextPlan,
   activeFilter,
   onFilterChange,
+  locationHint,
+  searchOpen,
+  searchText,
+  onToggleSearch,
+  onSearchTextChange,
   onOpenChat,
   onScrollToFeed,
   onAboveFeedHeightChange,
@@ -106,7 +118,7 @@ export function PlansHeader({
         <Text className="tab-section-title">{strings.plansFeed.feedHeader}</Text>
       </View>
 
-      <View className="mb-4 flex-row items-center gap-2 px-5">
+      <View className={`${searchOpen ? 'mb-3' : 'mb-4'} flex-row items-center gap-2 pl-5 pr-4`}>
         <ScrollView
           horizontal
           nestedScrollEnabled
@@ -114,22 +126,61 @@ export function PlansHeader({
           style={{ flex: 1 }}
           contentContainerClassName="flex-row gap-2"
         >
-          {FILTERS.map(filter => (
-            <Pressable
-              key={filter}
-              style={[styles.chip, activeFilter === filter && styles.chipActive]}
-              onPress={() => onFilterChange(filter)}
-            >
-              <Text style={[styles.chipText, activeFilter === filter && styles.chipTextActive]}>
-                {filter}
-              </Text>
-            </Pressable>
-          ))}
+          {FEED_PILLS.map(pill => {
+            const selected = activeFilter === pill.value
+            return (
+              <Pressable
+                key={pill.label}
+                style={[styles.chip, selected && styles.chipActive]}
+                onPress={() => {
+                  if (pill.value === null) {
+                    onFilterChange(null)
+                    return
+                  }
+                  onFilterChange(activeFilter === pill.value ? null : pill.value)
+                }}
+              >
+                <Text style={[styles.chipText, selected && styles.chipTextActive]}>
+                  {pill.label}
+                </Text>
+              </Pressable>
+            )
+          })}
         </ScrollView>
-        <TouchableOpacity className="tab-icon-btn" hitSlop={8} activeOpacity={0.7}>
-          <Ionicons name="search-outline" size={22} color={Colors.black[300]} />
+        <TouchableOpacity
+          className="tab-icon-btn"
+          hitSlop={8}
+          activeOpacity={0.7}
+          onPress={onToggleSearch}
+        >
+          <Ionicons
+            name={searchOpen ? 'close-outline' : 'search-outline'}
+            size={22}
+            color={Colors.black[300]}
+          />
         </TouchableOpacity>
       </View>
+
+      {locationHint ? (
+        <Text className="mb-3 px-5 text-[13px] font-semibold text-neutral-hint">
+          {locationHint}
+        </Text>
+      ) : null}
+
+      {searchOpen ? (
+        <View className="mb-4 px-5">
+          <TextInput
+            autoFocus
+            value={searchText}
+            onChangeText={onSearchTextChange}
+            placeholder="Buscar planes"
+            placeholderTextColor={Colors.neutral.label}
+            returnKeyType="search"
+            autoCorrect={false}
+            style={styles.searchInput}
+          />
+        </View>
+      ) : null}
     </View>
   )
 }
@@ -151,5 +202,14 @@ const styles = StyleSheet.create({
   },
   chipTextActive: {
     color: Colors.white,
+  },
+  searchInput: {
+    backgroundColor: Colors.neutral.gray,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.black[100],
   },
 })

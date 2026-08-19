@@ -5,11 +5,12 @@ import {
   PlanDetailModal,
   PlanDetailModalHandle,
 } from '@/components/plans/PlanDetailModal'
-import { PlansHeader } from '@/components/plans/PlansHeader'
+import { FeedFilter, PlansHeader } from '@/components/plans/PlansHeader'
 import { PlansHeaderSkeleton } from '@/components/plans/PlansHeaderSkeleton'
 import { strings } from '@/constants/strings'
 import { fetchChatList, getChatListCache, prefetchMessages } from '@/lib/chats/api'
-import { fetchNextJoinedPlan, fetchPlansPage } from '@/lib/plans/api'
+import { fetchNextJoinedPlan, fetchPlansPage, NearMeParams } from '@/lib/plans/api'
+import { getFreshDeviceCoords } from '@/lib/plans/deviceLocation'
 import { joinPlan } from '@/lib/plans/lifecycle'
 import { subscribePlansChanged } from '@/lib/plans/plansEvents'
 import { Plan } from '@/types'
@@ -50,27 +51,58 @@ export default function IndexScreen() {
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(0)
-  const [activeFilter, setActiveFilter] = useState(strings.plansFeed.filterAll)
+  const [searchInput, setSearchInput] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [activeDateFilter, setActiveDateFilter] = useState<Exclude<FeedFilter, 'cerca'>>(null)
+  const [nearMe, setNearMe] = useState<NearMeParams | null>(null)
+  const [locationHint, setLocationHint] = useState<string | null>(null)
   const [nextPlan, setNextPlan] = useState<Plan | null>(null)
   const [peekPlan, setPeekPlan] = useState<Plan | null>(null)
+  const feedRequestIdRef = useRef(0)
+  const hasLoadedFeedRef = useRef(false)
+  const [isFiltering, setIsFiltering] = useState(false)
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setSearchQuery(searchInput), 300)
+    return () => clearTimeout(timeout)
+  }, [searchInput])
 
   const fetchInitialData = useCallback(async () => {
+    const requestId = ++feedRequestIdRef.current
+    setPage(0)
     try {
       const [coming, pageResult] = await Promise.all([
         fetchNextJoinedPlan(),
-        fetchPlansPage(0),
+        fetchPlansPage(0, {
+          searchQuery: searchQuery || undefined,
+          dateFilter: activeDateFilter,
+          nearMe,
+        }),
       ])
+      if (requestId !== feedRequestIdRef.current) return
       setNextPlan(coming)
       setPlans(pageResult.plans)
-      setPage(0)
       setHasMore(pageResult.more)
     } catch (err) {
       console.error('[plans feed] load', err)
     }
-  }, [])
+  }, [searchQuery, activeDateFilter, nearMe])
 
   useEffect(() => {
-    fetchInitialData().finally(() => setLoading(false))
+    const isFilterFetch = hasLoadedFeedRef.current
+    if (isFilterFetch) setIsFiltering(true)
+
+    let cancelled = false
+    fetchInitialData().finally(() => {
+      if (cancelled) return
+      hasLoadedFeedRef.current = true
+      setLoading(false)
+      setIsFiltering(false)
+    })
+    return () => {
+      cancelled = true
+    }
   }, [fetchInitialData])
 
   useEffect(() => {
@@ -91,19 +123,25 @@ export default function IndexScreen() {
   }, [fetchInitialData])
 
   async function handleLoadMore() {
-    if (loadingMore || !hasMore || loading || refreshing) return
+    if (loadingMore || !hasMore || loading || refreshing || isFiltering) return
     setLoadingMore(true)
 
+    const requestId = feedRequestIdRef.current
     try {
       const nextPage = page + 1
-      const { plans: newPlans, more } = await fetchPlansPage(nextPage)
+      const { plans: newPlans, more } = await fetchPlansPage(nextPage, {
+        searchQuery: searchQuery || undefined,
+        dateFilter: activeDateFilter,
+        nearMe,
+      })
+      if (requestId !== feedRequestIdRef.current) return
       setPlans(prev => [...prev, ...newPlans])
       setPage(nextPage)
       setHasMore(more)
     } catch (err) {
       console.error('[plans feed] load more', err)
     } finally {
-      setLoadingMore(false)
+      if (requestId === feedRequestIdRef.current) setLoadingMore(false)
     }
   }
 
@@ -171,13 +209,44 @@ export default function IndexScreen() {
     setPeekPlan(null)
   }, [])
 
-  const filteredPlans = activeFilter === strings.plansFeed.filterToday
-    ? plans.filter(p =>
-        p.date_time.toLowerCase().includes(strings.dates.today.toLowerCase()),
-      )
+  const activeFilter: FeedFilter = nearMe ? 'cerca' : activeDateFilter
+
+  const handleFilterChange = useCallback(async (next: FeedFilter) => {
+    setLocationHint(null)
+
+    if (next === 'cerca') {
+      if (nearMe) {
+        setNearMe(null)
+        return
+      }
+      const coords = await getFreshDeviceCoords()
+      if (!coords) {
+        setLocationHint(strings.plansFeed.nearbyLocationRequired)
+        return
+      }
+      setActiveDateFilter(null)
+      setNearMe({ lat: coords.lat, lng: coords.lng })
+      return
+    }
+
+    setNearMe(null)
+    setActiveDateFilter(next)
+  }, [nearMe])
+
+  const showCardSkeletons = loading || isFiltering
+  const listData: readonly (Plan | string)[] = showCardSkeletons
+    ? ['sk-1', 'sk-2', 'sk-3', 'sk-4']
     : plans
 
-  const listData: readonly (Plan | string)[] = loading ? ['sk-1', 'sk-2', 'sk-3', 'sk-4'] : filteredPlans
+  const handleToggleSearch = useCallback(() => {
+    if (searchOpen) {
+      setSearchOpen(false)
+      setSearchInput('')
+      setSearchQuery('')
+      return
+    }
+    setSearchOpen(true)
+  }, [searchOpen])
 
   const listHeader = loading ? (
     <PlansHeaderSkeleton />
@@ -185,7 +254,12 @@ export default function IndexScreen() {
     <PlansHeader
       nextPlan={nextPlan}
       activeFilter={activeFilter}
-      onFilterChange={setActiveFilter}
+      onFilterChange={next => { void handleFilterChange(next) }}
+      locationHint={locationHint}
+      searchOpen={searchOpen}
+      searchText={searchInput}
+      onToggleSearch={handleToggleSearch}
+      onSearchTextChange={setSearchInput}
       onOpenChat={handleOpenChat}
       onScrollToFeed={handleScrollToFeed}
       onAboveFeedHeightChange={handleAboveFeedHeightChange}
@@ -195,7 +269,7 @@ export default function IndexScreen() {
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<Plan | string>) => {
       if (loading || typeof item === 'string') {
-        return <PlanCardSkeleton />
+        return <PlanCardSkeleton pulse={isFiltering} />
       }
       return (
         <PlanCard
@@ -206,7 +280,7 @@ export default function IndexScreen() {
         />
       )
     },
-    [loading, handleJoin, handlePeekStart, handlePeekEnd],
+    [loading, isFiltering, handleJoin, handlePeekStart, handlePeekEnd],
   )
 
   const keyExtractor = useCallback(
@@ -223,6 +297,7 @@ export default function IndexScreen() {
   ), [])
 
   const renderFooter = useCallback(() => {
+    if (isFiltering) return null
     if (loadingMore) {
       return <PlanCardSkeleton />
     }
@@ -236,7 +311,7 @@ export default function IndexScreen() {
       )
     }
     return null
-  }, [loadingMore, hasMore, plans.length])
+  }, [isFiltering, loadingMore, hasMore, plans.length])
 
   return (
     <TabScreen>
@@ -247,7 +322,7 @@ export default function IndexScreen() {
           keyExtractor={keyExtractor}
           renderItem={renderItem}
           ListHeaderComponent={listHeader}
-          ListEmptyComponent={!loading && filteredPlans.length === 0 ? renderEmptyComponent : undefined}
+          ListEmptyComponent={!loading && !isFiltering && plans.length === 0 ? renderEmptyComponent : undefined}
           ListFooterComponent={renderFooter}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
@@ -262,7 +337,7 @@ export default function IndexScreen() {
           extraData={
             loading
               ? 'loading'
-              : `${activeFilter}-${refreshing}-${plans.filter(p => p.user_joined).map(p => p.id).join(',')}`
+              : `${searchQuery}-${activeDateFilter}-${nearMe ? `${nearMe.lat},${nearMe.lng}` : ''}-${searchOpen}-${refreshing}-${isFiltering}-${plans.filter(p => p.user_joined).map(p => p.id).join(',')}`
           }
           showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}

@@ -1,9 +1,37 @@
 import { Skeleton } from '@/components/ui/Skeleton'
+import { useEffect } from 'react'
 import { View } from 'react-native'
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated'
 
-export function PlanCardSkeleton() {
+type PlanCardSkeletonProps = {
+  pulse?: boolean
+}
+
+export function PlanCardSkeleton({ pulse = false }: PlanCardSkeletonProps) {
+  const opacity = useSharedValue(1)
+
+  useEffect(() => {
+    if (!pulse) {
+      opacity.value = 1
+      return
+    }
+    opacity.value = withRepeat(withTiming(0.5, { duration: 800 }), -1, true)
+  }, [opacity, pulse])
+
+  const pulseStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }))
+
   return (
-    <View className="mx-4 mb-3 flex-row overflow-hidden rounded-[18px] bg-white">
+    <Animated.View
+      style={pulse ? pulseStyle : undefined}
+      className="mx-4 mb-3 flex-row overflow-hidden rounded-[18px] bg-white"
+    >
       <Skeleton className="w-[3px] self-stretch rounded-none" />
       <View className="flex-1 p-3.5">
         <View className="flex-row gap-2.5">
@@ -30,6 +58,6 @@ export function PlanCardSkeleton() {
           </View>
         </View>
       </View>
-    </View>
+    </Animated.View>
   )
 }

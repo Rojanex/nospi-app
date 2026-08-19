@@ -27,12 +27,14 @@ import { SharedValue } from 'react-native-reanimated'
 interface NewPlanSheetProps {
   onClose: () => void
   scrollOffset: SharedValue<number>
+  pickerOpen: SharedValue<number>
   nativeScrollGesture: GestureType
 }
 
 export function NewPlanSheet({
   onClose,
   scrollOffset,
+  pickerOpen,
   nativeScrollGesture,
 }: NewPlanSheetProps) {
   const placesRef = useRef<GooglePlacesTextInputRef>(null)
@@ -52,6 +54,7 @@ export function NewPlanSheet({
     Keyboard.dismiss()
     setPickerDraft(picker === 'date' ? (form.date ?? new Date()) : (form.time ?? new Date()))
     setActivePicker(picker)
+    pickerOpen.value = 1
   }
 
   function handlePickerChange(_event: DateTimePickerEvent, selected?: Date) {
@@ -62,6 +65,7 @@ export function NewPlanSheet({
     if (activePicker === 'date') patchForm({ date: pickerDraft })
     if (activePicker === 'time') patchForm({ time: pickerDraft })
     setActivePicker(null)
+    pickerOpen.value = 0
   }
 
   function dismissPickerForOtherInput() {
@@ -105,6 +109,7 @@ export function NewPlanSheet({
 
     setForm(EMPTY_NEW_PLAN_FORM)
     setActivePicker(null)
+    pickerOpen.value = 0
     onClose()
   }
 

@@ -4,7 +4,7 @@ import { strings } from '@/constants/strings'
 import { GOOGLE_PLACES_KEY } from '@/lib/env_reader'
 import { ParsedPlace, parsePlaceSelection } from '@/lib/plans/formatPlace'
 import { Ionicons } from '@expo/vector-icons'
-import React, { forwardRef } from 'react'
+import React, { forwardRef, useState } from 'react'
 import { Platform, Text, View, type TextStyle } from 'react-native'
 import GooglePlacesTextInput, {
   GooglePlacesTextInputRef,
@@ -21,7 +21,10 @@ type LocationFieldProps = {
 
 export const LocationField = forwardRef<GooglePlacesTextInputRef, LocationFieldProps>(
   function LocationField({ value, onPlaceSelect, onTextChange, onFocus }, ref) {
+    const [inputEpoch, setInputEpoch] = useState(0)
+
     function handlePlaceSelect(place: Place) {
+      setInputEpoch(epoch => epoch + 1)
       onPlaceSelect(parsePlaceSelection(place))
     }
 
@@ -35,6 +38,7 @@ export const LocationField = forwardRef<GooglePlacesTextInputRef, LocationFieldP
             {strings.newPlan.locationLabel}
           </Text>
           <GooglePlacesTextInput
+            key={inputEpoch}
             ref={ref}
             apiKey={GOOGLE_PLACES_KEY}
             value={value}
