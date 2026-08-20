@@ -288,13 +288,25 @@ export default function IndexScreen() {
     [],
   )
 
+  const emptyFeedMessage =
+    activeFilter === 'hoy'
+      ? strings.plansFeed.emptyFeedToday
+      : activeFilter === 'finde'
+        ? strings.plansFeed.emptyFeedWeekend
+        : strings.plansFeed.emptyFeed
+
+  const endOfFeedMessage =
+    activeFilter === null
+      ? strings.plansFeed.endOfFeedAll
+      : strings.plansFeed.endOfFeed
+
   const renderEmptyComponent = useCallback(() => (
     <View className="items-center px-6 py-12">
       <Text className="text-[15px] font-semibold text-neutral-hint text-center">
-        {strings.plansFeed.emptyFeed}
+        {emptyFeedMessage}
       </Text>
     </View>
-  ), [])
+  ), [emptyFeedMessage])
 
   const renderFooter = useCallback(() => {
     if (isFiltering) return null
@@ -305,13 +317,13 @@ export default function IndexScreen() {
       return (
         <View className="items-center px-6 py-12">
           <Text className="text-[15px] font-semibold text-neutral-hint text-center">
-            {strings.plansFeed.endOfFeed}
+            {endOfFeedMessage}
           </Text>
         </View>
       )
     }
     return null
-  }, [isFiltering, loadingMore, hasMore, plans.length])
+  }, [isFiltering, loadingMore, hasMore, plans.length, endOfFeedMessage])
 
   return (
     <TabScreen>

@@ -110,7 +110,10 @@ export const strings = {
     joinCta: 'me apunto',
     joinedCta: 'ya voy',
     emptyFeed: 'parece que no hay planes para ti, pero... y si los creas tú?',
+    emptyFeedToday: 'si no hay nada hoy, juntemonos :)',
+    emptyFeedWeekend: 'Tu señal para armar lo que sea',
     endOfFeed: 'Tus gustos son de nicho, mejor busca a los tuyos',
+    endOfFeedAll: 'Llegaste al fin del scroll infinito wow...',
     soloSpots: (spots: number) =>
       spots === 1 ? '¡solo 1 cupo!' : `¡solo ${spots} cupos!`,
     spotsInfo: (going: number, spots: number) =>
