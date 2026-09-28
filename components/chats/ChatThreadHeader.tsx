@@ -2,6 +2,7 @@ import { Colors } from '@/assets/constants/Colors'
 import { ACTIVITY_META } from '@/constants/activityMeta'
 import { isPlanExpired } from '@/constants/planStatus'
 import { strings } from '@/constants/strings'
+import { FontSize } from '@/constants/typography'
 import { ChatListItem } from '@/types'
 import { Ionicons } from '@expo/vector-icons'
 import * as SystemUI from 'expo-system-ui'
@@ -76,12 +77,12 @@ export function ChatThreadHeader({ item, onBack, onPressMembers }: ChatThreadHea
 
           <View style={{ minWidth: 0, flex: 1 }}>
             <Text
-              style={{ fontSize: 16, fontWeight: '700', color: Colors.ink.DEFAULT }}
+              style={{ fontSize: FontSize.lead, fontWeight: '700', color: Colors.ink.DEFAULT }}
               numberOfLines={1}
             >
               {item.title}
             </Text>
-            <Text style={{ marginTop: 2, fontSize: 12, color: Colors.ink[50] }}>
+            <Text style={{ marginTop: 2, fontSize: FontSize.caption, color: Colors.ink[50] }}>
               {strings.losMios.threadSubtitle(item.memberCount, item.timeLabel)}
             </Text>
           </View>
@@ -97,7 +98,7 @@ export function ChatThreadHeader({ item, onBack, onPressMembers }: ChatThreadHea
               paddingVertical: 4,
             }}
           >
-            <Text style={{ fontSize: 10, fontWeight: '700', color: Colors.white }}>
+            <Text style={{ fontSize: FontSize.label, fontWeight: '700', color: Colors.white }}>
               {strings.losMios.hostBadge}
             </Text>
           </View>

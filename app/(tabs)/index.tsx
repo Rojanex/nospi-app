@@ -302,7 +302,7 @@ export default function IndexScreen() {
 
   const renderEmptyComponent = useCallback(() => (
     <View className="items-center px-6 py-12">
-      <Text className="text-[15px] font-semibold text-neutral-hint text-center">
+      <Text className="text-lead font-semibold text-neutral-hint text-center">
         {emptyFeedMessage}
       </Text>
     </View>
@@ -316,7 +316,7 @@ export default function IndexScreen() {
     if (!hasMore && plans.length > 0) {
       return (
         <View className="items-center px-6 py-12">
-          <Text className="text-[15px] font-semibold text-neutral-hint text-center">
+          <Text className="text-lead font-semibold text-neutral-hint text-center">
             {endOfFeedMessage}
           </Text>
         </View>

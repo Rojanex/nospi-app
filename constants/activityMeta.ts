@@ -19,6 +19,7 @@ export const ACTIVITY_META: Record<PlanActivityType, ActivityMeta> = {
   comida:     { emoji: '🍽️', label: 'comida',     accent: '#BA7517', bg: '#FAEEDA', circle: '#F0E1CC' },
   cultura:    { emoji: '🎭', label: 'cultura',    accent: '#534AB7', bg: '#EEEDFE', circle: '#D9D7EF' },
   naturaleza: { emoji: '🌿', label: 'naturaleza', accent: '#3B6D11', bg: '#EAF3DE', circle: '#D4DFCB' },
+  chill:      { emoji: '🛋️', label: 'chill',      accent: '#8E44AD', bg: '#F5ECF9', circle: '#E4D4EC' },
   otro:       { emoji: '✨', label: 'otro',        accent: '#5F5E5A', bg: '#F1EFE8', circle: '#DCDCDB' },
 }
 

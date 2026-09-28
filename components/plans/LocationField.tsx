@@ -1,6 +1,7 @@
 import { Colors } from '@/assets/constants/Colors'
 import { IconSquare } from '@/components/plans/IconSquare'
 import { strings } from '@/constants/strings'
+import { FontSize } from '@/constants/typography'
 import { GOOGLE_PLACES_KEY } from '@/lib/env_reader'
 import { ParsedPlace, parsePlaceSelection } from '@/lib/plans/formatPlace'
 import { Ionicons } from '@expo/vector-icons'
@@ -29,12 +30,12 @@ export const LocationField = forwardRef<GooglePlacesTextInputRef, LocationFieldP
     }
 
     return (
-      <View className="flex-row items-start gap-2.5 px-3.5 py-3">
+      <View className="flex-row items-start gap-3 px-4 py-4">
         <IconSquare className="bg-surface-greenLight">
-          <Ionicons name="location-outline" size={14} color={Colors.activity.green} />
+          <Ionicons name="location-outline" size={18} color={Colors.activity.green} />
         </IconSquare>
         <View className="z-10 flex-1">
-          <Text className="mb-1 text-[10px] font-bold tracking-wide text-neutral-label">
+          <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">
             {strings.newPlan.locationLabel}
           </Text>
           <GooglePlacesTextInput
@@ -55,7 +56,7 @@ export const LocationField = forwardRef<GooglePlacesTextInputRef, LocationFieldP
             nestedScrollEnabled={false}
             showClearButton
             clearElement={
-              <Ionicons name="close" size={16} color={Colors.neutral.label} />
+              <Ionicons name="close" size={18} color={Colors.neutral.label} />
             }
             style={placesTextInputStyles}
             suggestionTextProps={{
@@ -92,7 +93,7 @@ const placesTextInputStyles: GooglePlacesTextInputStyles = {
   },
   input: {
     flex: 1,
-    fontSize: 14,
+    fontSize: FontSize.lead,
     fontWeight: '500',
     color: Colors.ink.DEFAULT,
     backgroundColor: 'transparent',
@@ -110,19 +111,19 @@ const placesTextInputStyles: GooglePlacesTextInputStyles = {
     shadowOpacity: 0.08,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
-    maxHeight: 200,
+    maxHeight: 260,
   },
   suggestionItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   suggestionText: {
     main: {
-      fontSize: 13,
+      fontSize: FontSize.body,
       color: Colors.ink.DEFAULT,
     },
     secondary: {
-      fontSize: 11,
+      fontSize: FontSize.caption,
       color: Colors.black[400],
     },
   },

@@ -11,6 +11,7 @@ export function mapRowToPlan(
   row: PlanRow,
   currentUserId: string,
   hostProfile?: { display_name: string | null; avatar_url: string | null; role: string },
+  likedPlanIds?: ReadonlySet<string> | null,
 ): Plan {
   const memberCount = row.plan_members?.length ?? 0
   const hostName = hostProfile?.display_name ?? strings.common.hostFallback
@@ -40,6 +41,8 @@ export function mapRowToPlan(
     host_type: hostProfile?.role === 'local' ? 'local' : 'turista',
     posted_ago: formatPostedAgo(row.created_at),
     user_joined: (row.plan_members ?? []).some(m => m.user_id === currentUserId),
+    like_count: row.like_count ?? 0,
+    user_liked: likedPlanIds ? likedPlanIds.has(row.id) : null,
     visibility: row.visibility as PlanVisibility,
     description: row.description,
   }

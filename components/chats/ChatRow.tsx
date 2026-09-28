@@ -2,6 +2,7 @@ import { Colors } from '@/assets/constants/Colors'
 import { ACTIVITY_META } from '@/constants/activityMeta'
 import { isChatArchived, isPlanActive, isPlanExpired } from '@/constants/planStatus'
 import { strings } from '@/constants/strings'
+import { FontSize } from '@/constants/typography'
 import { ChatListItem } from '@/types'
 import { Ionicons } from '@expo/vector-icons'
 import React, { useEffect, useRef } from 'react'
@@ -89,23 +90,23 @@ export function ChatRow({
 
           <View className="min-w-0 flex-1">
             <View className="flex-row items-start justify-between gap-2">
-              <Text className="flex-1 text-base font-bold text-ink" numberOfLines={1}>
+              <Text className="flex-1 text-lead font-bold text-ink" numberOfLines={1}>
                 {item.title}
               </Text>
               <View className="flex-row items-center gap-1 pt-0.5">
                 {expired ? (
                   <Ionicons name="lock-closed" size={10} color={Colors.ink[40]} />
                 ) : null}
-                <Text className="text-xs text-ink-40">{item.timeLabel}</Text>
+                <Text className="text-caption text-ink-40">{item.timeLabel}</Text>
               </View>
             </View>
             <View className="mt-0.5 flex-row items-center gap-2">
-              <Text className="min-w-0 flex-1 text-sm text-ink-60" numberOfLines={1}>
+              <Text className="min-w-0 flex-1 text-body text-ink-60" numberOfLines={1}>
                 {item.previewText}
               </Text>
               {item.isHost ? (
                 <View className="shrink-0 rounded-full bg-activity-orangeDark px-2.5 py-1">
-                  <Text className="text-[10px] font-bold text-white">
+                  <Text className="text-label font-bold text-white">
                     {strings.losMios.hostBadge}
                   </Text>
                 </View>
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     color: Colors.white,
-    fontSize: 11,
+    fontSize: FontSize.caption,
     fontWeight: '700',
   },
 })

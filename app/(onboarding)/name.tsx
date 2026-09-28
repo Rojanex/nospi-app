@@ -126,7 +126,7 @@ export default function Name() {
 
             <TextInput
               style={{ marginBottom: 16 }}
-              className="h-14 w-full rounded-2xl bg-white text-[17px] px-5 text-black-100"
+              className="h-14 w-full rounded-2xl bg-white text-title px-5 text-black-100"
               placeholder={strings.onboarding.namePlaceholder}
               placeholderTextColor={Colors.neutral.hint}
               maxLength={30}

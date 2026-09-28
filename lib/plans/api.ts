@@ -1,4 +1,5 @@
 import { getFeedDateRange } from '@/lib/plans/feedDateRange'
+import { loadLikedPlanIds } from '@/lib/plans/likeStore'
 import { mapRowToPlan } from '@/lib/plans/mapRowToPlan'
 import { supabase } from '@/lib/supabase'
 import { Plan, PlanRow } from '@/types'
@@ -96,9 +97,10 @@ async function fetchNearbyPlansPage(
   const rows = hasMembers
     ? (flattened as PlanRow[])
     : await hydratePlanRows(flattened.map(row => row.id).filter(Boolean))
+  const likedPlanIds = await loadLikedPlanIds(rows.map(row => row.id), userId)
 
   return {
-    plans: rows.map(row => mapRowToPlan(row, userId, row.host ?? undefined)),
+    plans: rows.map(row => mapRowToPlan(row, userId, row.host ?? undefined, likedPlanIds)),
     more: rpcRows.length === PAGE_SIZE,
   }
 }
@@ -150,8 +152,9 @@ export async function fetchPlansPage(
   }
 
   const rows = (data as PlanRow[]) ?? []
+  const likedPlanIds = await loadLikedPlanIds(rows.map(row => row.id), userId)
   return {
-    plans: rows.map(row => mapRowToPlan(row, userId, row.host ?? undefined)),
+    plans: rows.map(row => mapRowToPlan(row, userId, row.host ?? undefined, likedPlanIds)),
     more: rows.length === PAGE_SIZE,
   }
 }

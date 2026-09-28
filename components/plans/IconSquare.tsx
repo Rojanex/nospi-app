@@ -9,7 +9,7 @@ type IconSquareProps = {
 export function IconSquare({ className, children }: IconSquareProps) {
   return (
     <View
-      className={`h-[30px] w-[30px] items-center justify-center rounded-[9px] ${className ?? ''}`}
+      className={`h-9 w-9 items-center justify-center rounded-[10px] ${className ?? ''}`}
     >
       {children}
     </View>

@@ -1,9 +1,14 @@
 import { Colors } from '@/assets/constants/Colors'
+import { PlanChatPanel } from '@/components/plans/PlanChatPreview'
 import { PlanDetailModal } from '@/components/plans/PlanDetailModal'
 import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
+import { getPlanGradientTokens } from '@/lib/plans/gradientTokens'
+import { usePlanCardMessagePreview } from '@/lib/plans/usePlanMessagePreview'
+import { usePlanLike } from '@/lib/plans/usePlanLike'
 import { avatarColorsForId } from '@/lib/utils/avatar'
 import { Plan } from '@/types'
+import { Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -32,7 +37,11 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
 
   const primaryType = plan.activity_type.split('|')[0].trim().toLowerCase()
   const meta = getActivityMeta(primaryType)
+  const gradientTokens = getPlanGradientTokens(plan.activity_type)
   const tags = plan.activity_type.split('|').map(t => t.trim().toUpperCase()).join(' · ')
+
+  const like = usePlanLike(plan)
+  const chatPreview = usePlanCardMessagePreview(plan.id)
 
   const statusLine =
     plan.spots_left <= 0
@@ -46,8 +55,6 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
   const statusColor = plan.spots_left <= 2 ? Colors.activity.orange : Colors.black[400]
 
   const joined = plan.user_joined
-  const joinBg = joined ? Colors.black[100] : Colors.buttons.orange
-  const joinLabel = joined ? strings.plansFeed.joinedCta : strings.plansFeed.joinCta
 
   const avatarPeople =
     plan.attendees.length > 0
@@ -94,8 +101,9 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
   }, [onPeekEnd])
 
   const handleJoinPress = useCallback(() => {
+    if (joined) return
     onJoin(plan.id)
-  }, [onJoin, plan.id])
+  }, [joined, onJoin, plan.id])
 
   const joinGesture = useMemo(
     () =>
@@ -105,12 +113,30 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
     [handleJoinPress],
   )
 
+  const { toggle: toggleLike } = like
+  const likeUnknown = like.liked === null
+  const handleLikePress = useCallback(() => {
+    if (likeUnknown) return
+    void Haptics.selectionAsync()
+    toggleLike()
+  }, [likeUnknown, toggleLike])
+
+  const likeGesture = useMemo(
+    () =>
+      Gesture.Tap()
+        .hitSlop(8)
+        .onEnd(() => {
+          scheduleOnRN(handleLikePress)
+        }),
+    [handleLikePress],
+  )
+
   const gesture = useMemo(() => {
     const longPress = Gesture.LongPress()
       .minDuration(350)
       .maxDistance(9999)
       .shouldCancelWhenOutside(false)
-      .requireExternalGestureToFail(joinGesture)
+      .requireExternalGestureToFail(joinGesture, likeGesture)
       .onStart(() => {
         scheduleOnRN(openDetailPeek)
       })
@@ -119,13 +145,13 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
       })
 
     const tap = Gesture.Tap()
-      .requireExternalGestureToFail(joinGesture)
+      .requireExternalGestureToFail(joinGesture, likeGesture)
       .onEnd(() => {
         scheduleOnRN(openDetailSticky)
       })
 
     return Gesture.Exclusive(longPress, tap)
-  }, [endPeek, joinGesture, openDetailPeek, openDetailSticky])
+  }, [endPeek, joinGesture, likeGesture, openDetailPeek, openDetailSticky])
 
   return (
     <View>
@@ -137,6 +163,12 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
           accessible
           accessibilityRole="button"
           accessibilityLabel={strings.plansFeed.planDetailMore}
+          accessibilityActions={
+            likeUnknown ? [] : [{ name: 'like', label: strings.plansFeed.likeA11y(like.count) }]
+          }
+          onAccessibilityAction={e => {
+            if (e.nativeEvent.actionName === 'like') handleLikePress()
+          }}
         >
           <View className="w-[3px]" style={{ backgroundColor: meta.accent }} />
 
@@ -151,13 +183,13 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
                 </View>
                 <View className="flex-1 gap-0.5">
                   <Text
-                    className="text-[10px] font-bold tracking-wide"
+                    className="text-label font-bold tracking-wide"
                     style={{ color: meta.accent }}
                   >
                     {tags}
                   </Text>
-                  <Text className="text-base font-bold text-black-100">{plan.title}</Text>
-                  <Text className="text-xs text-black-400">📍 {plan.location_name}</Text>
+                  <Text className="text-lead font-bold text-black-100">{plan.title}</Text>
+                  <Text className="text-caption text-black-400">📍 {plan.location_name}</Text>
                 </View>
               </View>
             </View>
@@ -167,28 +199,79 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
             <View className="p-3.5">
               <View className="flex-row items-start justify-between">
                 <View>
-                  <Text className="text-[15px] font-bold text-black-100">{plan.date_time}</Text>
-                  <Text className="mt-0.5 text-xs" style={{ color: statusColor }}>
+                  <Text className="text-lead font-bold text-black-100">{plan.date_time}</Text>
+                  <Text className="mt-0.5 text-caption" style={{ color: statusColor }}>
                     {statusLine}
                   </Text>
                 </View>
 
-                <GestureDetector gesture={joinGesture}>
-                  <View
-                    accessibilityRole="button"
-                    accessibilityLabel={joinLabel}
-                    style={{
-                      backgroundColor: joinBg,
-                      borderRadius: 9999,
-                      paddingHorizontal: 18,
-                      paddingVertical: 10,
-                    }}
-                  >
-                    <Text className="text-[13px] font-bold text-white">{joinLabel}</Text>
-                  </View>
-                </GestureDetector>
+                <View className="flex-row items-center gap-2">
+                  <GestureDetector gesture={likeGesture}>
+                    <View
+                      className="flex-row items-center gap-1 rounded-full px-3 py-2.5"
+                      style={{
+                        backgroundColor: Colors.surface.orangeLight,
+                        opacity: likeUnknown ? 0.5 : 1,
+                      }}
+                      accessible
+                      accessibilityRole="button"
+                      accessibilityLabel={strings.plansFeed.likeA11y(like.count)}
+                      accessibilityState={{ selected: like.liked === true, disabled: likeUnknown }}
+                    >
+                      <Ionicons
+                        name={like.liked ? 'heart' : 'heart-outline'}
+                        size={16}
+                        color={Colors.buttons.orange}
+                      />
+                      {like.count > 0 ? (
+                        <Text
+                          className="text-body font-bold"
+                          style={{ color: Colors.buttons.orange }}
+                        >
+                          {like.count}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </GestureDetector>
+
+                  <GestureDetector gesture={joinGesture}>
+                    <View
+                      accessibilityRole="button"
+                      accessibilityLabel={strings.plansFeed.joinCta}
+                      accessibilityState={{ disabled: joined }}
+                      style={{
+                        backgroundColor: joined ? Colors.white : Colors.buttons.orange,
+                        borderColor: joined ? Colors.neutral.border : Colors.buttons.orange,
+                        borderWidth: 1,
+                        borderRadius: 9999,
+                        paddingHorizontal: 18,
+                        paddingVertical: 9,
+                      }}
+                    >
+                      <Text
+                        className="text-body font-bold"
+                        style={{ color: joined ? Colors.neutral.hint : Colors.white }}
+                      >
+                        {strings.plansFeed.joinCta}
+                      </Text>
+                    </View>
+                  </GestureDetector>
+                </View>
               </View>
             </View>
+
+            {chatPreview.failed ? null : (
+              <View className="px-3.5 pb-3.5">
+                <PlanChatPanel
+                  tokens={gradientTokens}
+                  hostId={plan.host_id}
+                  messages={chatPreview.messages}
+                  moreCount={chatPreview.moreCount}
+                  showSeeAll
+                  compact
+                />
+              </View>
+            )}
 
             <View className="flex-row items-center gap-1.5 bg-neutral-softTint px-3.5 py-3">
               <View className="flex-row items-center">
@@ -208,7 +291,7 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
                       className={`h-[22px] w-[22px] items-center justify-center rounded-full ${i > 0 ? '-ml-[10px]' : ''}`}
                       style={{ backgroundColor: colors.bg }}
                     >
-                      <Text className="text-[9px] font-bold" style={{ color: colors.text }}>
+                      <Text className="text-micro font-bold" style={{ color: colors.text }}>
                         {attendee.initials}
                       </Text>
                     </View>
@@ -216,7 +299,7 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
                 })}
                 {overflowCount > 0 && (
                   <View className="-ml-[10px] h-[22px] w-[22px] items-center justify-center rounded-full bg-neutral-tinted">
-                    <Text className="text-[9px] font-bold text-black-500">
+                    <Text className="text-micro font-bold text-black-500">
                       +{overflowCount}
                     </Text>
                   </View>
@@ -226,13 +309,13 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
                 className="h-1.5 w-1.5 rounded-full"
                 style={{ backgroundColor: hostDotColor }}
               />
-              <Text className="flex-1 text-xs text-black-400">
+              <Text className="flex-1 text-caption text-black-400">
                 {strings.plansFeed.hostPrefix} {plan.host_name} ·{' '}
                 {plan.host_type === 'local'
                   ? strings.plansFeed.hostLocal
                   : strings.plansFeed.hostVisitor}
               </Text>
-              <Text className="text-xs text-neutral-hint">{plan.posted_ago}</Text>
+              <Text className="text-caption text-neutral-hint">{plan.posted_ago}</Text>
             </View>
           </View>
         </Animated.View>

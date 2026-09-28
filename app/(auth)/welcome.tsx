@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router'
 import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { strings } from '@/constants/strings'
+import { FontSize } from '@/constants/typography'
 import { Colors } from '@/assets/constants/Colors'
 
 export default function Welcome() {
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: Colors.buttons.orange,
-    fontSize: 12,
+    fontSize: FontSize.caption,
     fontWeight: '700',
     letterSpacing: 2,
     textTransform: 'uppercase',

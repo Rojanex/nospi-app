@@ -1,6 +1,7 @@
 import { Colors } from '@/assets/constants/Colors'
 import { COLOMBIAN_CITIES, type ColombianCity } from '@/constants/colombianCities'
 import { strings } from '@/constants/strings'
+import { FontSize } from '@/constants/typography'
 import { supabase } from '@/lib/supabase'
 import { Ionicons } from '@expo/vector-icons'
 import * as Crypto from 'expo-crypto'
@@ -250,7 +251,7 @@ export default function DniVerify() {
                 }}
               >
                 <Text style={{
-                  fontSize: 13,
+                  fontSize: FontSize.body,
                   fontWeight: '600',
                   color: docType === type ? '#fff' : Colors.neutral.hint,
                 }}>
@@ -263,7 +264,7 @@ export default function DniVerify() {
           <TextInput
             key={docType}
             style={{ marginBottom: 25 }}
-            className="h-14 w-full rounded-2xl bg-white text-[17px] px-5 text-black-100"
+            className="h-14 w-full rounded-2xl bg-white text-title px-5 text-black-100"
             placeholder={strings.onboarding.dniPlaceholder}
             placeholderTextColor={Colors.neutral.hint}
             keyboardType={docType === 'CC' ? 'numeric' : 'default'}
@@ -283,7 +284,7 @@ export default function DniVerify() {
             </Text>
 
             <TextInput
-              className="h-14 w-full rounded-2xl bg-white text-[17px] px-5 text-black-100"
+              className="h-14 w-full rounded-2xl bg-white text-title px-5 text-black-100"
               style={{ marginBottom: showCityOptions ? 8 : 16 }}
               placeholder={strings.onboarding.dniCityPlaceholder}
               placeholderTextColor={Colors.neutral.hint}
@@ -314,7 +315,7 @@ export default function DniVerify() {
                       className="px-5 py-3 w-full"
                       activeOpacity={0.7}
                     >
-                      <Text className="text-[15px] text-black-100">
+                      <Text className="text-lead text-black-100">
                         {c.city}, {c.department}
                       </Text>
                     </TouchableOpacity>
@@ -347,7 +348,7 @@ export default function DniVerify() {
             onPress={() => router.push('/(tabs)/' as never)}
             className="px-3 py-5"
           >
-            <Text className="text-sm text-black-400" style={{ textDecorationLine: 'underline' }}>
+            <Text className="text-body text-black-400" style={{ textDecorationLine: 'underline' }}>
               {strings.onboarding.dniSkip}
             </Text>
           </TouchableOpacity>

@@ -8,6 +8,15 @@ module.exports = {
     presets: [require("nativewind/preset")],
     theme: {
         extend: {
+            // Keep in sync with constants/typography.ts
+            fontSize: {
+                micro: ["11px", { lineHeight: "14px" }],
+                label: ["12px", { lineHeight: "16px" }],
+                caption: ["13px", { lineHeight: "18px" }],
+                body: ["15px", { lineHeight: "21px" }],
+                lead: ["17px", { lineHeight: "23px" }],
+                title: ["19px", { lineHeight: "25px" }],
+            },
             colors: {
                 primary: {
                     100: "#F2AD78",

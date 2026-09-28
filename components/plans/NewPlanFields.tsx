@@ -3,6 +3,7 @@ import { IconSquare } from '@/components/plans/IconSquare'
 import { LocationField } from '@/components/plans/LocationField'
 import { ACTIVITY_META, ActivityType } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
+import { FontSize, LineHeight } from '@/constants/typography'
 import { NEW_PLAN_DESCRIPTION_MAX, NEW_PLAN_MAX_SPOTS, NEW_PLAN_TITLE_MAX } from '@/lib/env_reader'
 import { ParsedPlace } from '@/lib/plans/formatPlace'
 import { formatSheetDate, formatSheetTime } from '@/lib/plans/formatDateTime'
@@ -24,7 +25,9 @@ import { GooglePlacesTextInputRef } from 'react-native-google-places-textinput'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const TITLE_WARN_THRESHOLD = NEW_PLAN_TITLE_MAX - 8
-const CHIP_WIDTH = (SCREEN_WIDTH - 32 - 24) / 4
+const CHIP_COLUMNS = 3
+const CHIP_GAP = 8
+const CHIP_WIDTH = (SCREEN_WIDTH - 32 - CHIP_GAP * (CHIP_COLUMNS - 1)) / CHIP_COLUMNS
 
 export type ActivePicker = 'date' | 'time' | null
 
@@ -87,9 +90,9 @@ function InlinePickerPanel({
       />
       <Pressable
         onPress={onConfirm}
-        className="mt-2 self-end rounded-full border border-neutral-border px-7 py-2"
+        className="mt-2 self-end rounded-full border border-neutral-border px-7 py-2.5"
       >
-        <Text className="text-sm font-bold text-neutral-label">
+        <Text className="text-body font-bold text-neutral-label">
           {strings.newPlan.pickerDone}
         </Text>
       </Pressable>
@@ -121,10 +124,10 @@ export function NewPlanFields({
 
   return (
     <>
-      <Text className="mb-2 mt-4 text-[10px] font-bold uppercase tracking-[0.7px] text-neutral-label">
+      <Text className="mb-2.5 mt-6 text-label font-bold uppercase tracking-[0.7px] text-neutral-label">
         {strings.newPlan.activityTypeSection}
       </Text>
-      <View className="flex-row flex-wrap gap-2">
+      <View className="flex-row flex-wrap" style={{ gap: CHIP_GAP }}>
         {(Object.entries(ACTIVITY_META) as [ActivityType, typeof ACTIVITY_META[ActivityType]][]).map(
           ([key, meta]) => {
             const selected = activityType === key
@@ -145,7 +148,7 @@ export function NewPlanFields({
                   },
                 ]}
               >
-                <Text className="text-[22px]">{meta.emoji}</Text>
+                <Text className="text-[26px]">{meta.emoji}</Text>
                 <Text
                   style={[
                     styles.activityChipLabel,
@@ -160,22 +163,22 @@ export function NewPlanFields({
         )}
       </View>
 
-      <Text className="mb-2 mt-4 text-[10px] font-bold uppercase tracking-[0.7px] text-neutral-label">
+      <Text className="mb-2.5 mt-6 text-label font-bold uppercase tracking-[0.7px] text-neutral-label">
         {strings.newPlan.planSection}
       </Text>
       <View className="rounded-[14px] bg-white">
-        <View className="flex-row items-start gap-2.5 px-3.5 py-3">
+        <View className="flex-row items-start gap-3 px-4 py-4">
           <IconSquare className="bg-surface-orangeLight">
-            <Ionicons name="pencil" size={14} color={Colors.activity.orange} />
+            <Ionicons name="pencil" size={18} color={Colors.activity.orange} />
           </IconSquare>
           <View className="flex-1">
             <View className="flex-row items-center justify-between">
-              <Text className="mb-1 text-[10px] font-bold tracking-wide text-neutral-label">
+              <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">
                 {strings.newPlan.titleLabel}
               </Text>
               {titleFocused && (
                 <Text
-                  className={`text-[10px] ${title.length > TITLE_WARN_THRESHOLD ? 'text-activity-orange' : 'text-neutral-label'}`}
+                  className={`text-label ${title.length > TITLE_WARN_THRESHOLD ? 'text-activity-orange' : 'text-neutral-label'}`}
                 >
                   {title.length}/{NEW_PLAN_TITLE_MAX}
                 </Text>
@@ -194,19 +197,19 @@ export function NewPlanFields({
           </View>
         </View>
 
-        <View className="mx-3.5 h-[0.5px] bg-neutral-divider" />
+        <View className="mx-4 h-[0.5px] bg-neutral-divider" />
 
-        <View className="flex-row items-start gap-2.5 px-3.5 py-3">
+        <View className="flex-row items-start gap-3 px-4 py-4">
           <IconSquare className="bg-surface-orangeLight">
-            <Feather name="align-left" size={14} color={Colors.activity.orange} />
+            <Feather name="align-left" size={18} color={Colors.activity.orange} />
           </IconSquare>
           <View className="flex-1">
             <View className="flex-row items-center justify-between">
-              <Text className="mb-1 text-[10px] font-bold tracking-wide text-neutral-label">
+              <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">
                 {strings.newPlan.descriptionLabel}
               </Text>
               {descriptionFocused && (
-                <Text className="text-[10px] text-neutral-label">
+                <Text className="text-label text-neutral-label">
                   {description.length}/{NEW_PLAN_DESCRIPTION_MAX}
                 </Text>
               )}
@@ -221,14 +224,14 @@ export function NewPlanFields({
               numberOfLines={3}
               onFocus={onDescriptionFocus}
               onBlur={onDescriptionBlur}
-              className="min-h-[60px] p-0 text-[13px] text-neutral-body"
+              className="min-h-[88px] p-0 text-lead text-neutral-body"
               textAlignVertical="top"
             />
           </View>
         </View>
       </View>
 
-      <Text className="mb-2 mt-4 text-[10px] font-bold uppercase tracking-[0.7px] text-neutral-label">
+      <Text className="mb-2.5 mt-6 text-label font-bold uppercase tracking-[0.7px] text-neutral-label">
         {strings.newPlan.whereWhenSection}
       </Text>
       <View className="rounded-[14px] bg-white">
@@ -240,20 +243,20 @@ export function NewPlanFields({
           onFocus={onLocationFocus}
         />
 
-        <View className="mx-3.5 h-[0.5px] bg-neutral-divider" />
+        <View className="mx-4 h-[0.5px] bg-neutral-divider" />
 
         <Pressable
-          className={`flex-row items-start gap-2.5 px-3.5 py-3 ${activePicker === 'date' ? 'bg-primary-200' : ''}`}
+          className={`flex-row items-start gap-3 px-4 py-4 ${activePicker === 'date' ? 'bg-primary-200' : ''}`}
           onPress={() => onOpenPicker('date')}
         >
           <IconSquare className="bg-surface-blueLight">
-            <Ionicons name="calendar-outline" size={14} color={Colors.activity.blue} />
+            <Ionicons name="calendar-outline" size={18} color={Colors.activity.blue} />
           </IconSquare>
           <View className="flex-1">
-            <Text className="mb-1 text-[10px] font-bold tracking-wide text-neutral-label">
+            <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">
               {strings.newPlan.dateLabel}
             </Text>
-            <Text className={`text-sm font-medium ${date ? 'text-ink' : 'text-neutral-label'}`}>
+            <Text className={`text-lead font-medium ${date ? 'text-ink' : 'text-neutral-label'}`}>
               {date ? formatSheetDate(date) : strings.newPlan.datePlaceholder}
             </Text>
           </View>
@@ -269,20 +272,20 @@ export function NewPlanFields({
           />
         )}
 
-        <View className="mx-3.5 h-[0.5px] bg-neutral-divider" />
+        <View className="mx-4 h-[0.5px] bg-neutral-divider" />
 
         <Pressable
-          className={`flex-row items-start gap-2.5 px-3.5 py-3 ${activePicker === 'time' ? 'bg-primary-200' : ''}`}
+          className={`flex-row items-start gap-3 px-4 py-4 ${activePicker === 'time' ? 'bg-primary-200' : ''}`}
           onPress={() => onOpenPicker('time')}
         >
           <IconSquare className="bg-surface-blueLight">
-            <Ionicons name="time-outline" size={14} color={Colors.activity.blue} />
+            <Ionicons name="time-outline" size={18} color={Colors.activity.blue} />
           </IconSquare>
           <View className="flex-1">
-            <Text className="mb-1 text-[10px] font-bold tracking-wide text-neutral-label">
+            <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">
               {strings.newPlan.timeLabel}
             </Text>
-            <Text className={`text-sm font-medium ${time ? 'text-ink' : 'text-neutral-label'}`}>
+            <Text className={`text-lead font-medium ${time ? 'text-ink' : 'text-neutral-label'}`}>
               {time ? formatSheetTime(time) : strings.newPlan.timePlaceholder}
             </Text>
           </View>
@@ -300,35 +303,35 @@ export function NewPlanFields({
 
       {location.isPublic === false && (
         <Text
-          className="mt-1.5 px-3.5 py-1.5 text-[11px] font-semibold"
+          className="mt-2 px-4 py-1.5 text-caption font-semibold"
           style={{ color: Colors.activity.amber }}
         >
           {strings.newPlan.locationPrivateWarning}
         </Text>
       )}
 
-      <Text className="mb-2 mt-4 text-[10px] font-bold uppercase tracking-[0.7px] text-neutral-label">
+      <Text className="mb-2.5 mt-6 text-label font-bold uppercase tracking-[0.7px] text-neutral-label">
         {strings.newPlan.spotsVisibilitySection}
       </Text>
-      <View className="rounded-[14px] bg-white px-3.5 py-3">
+      <View className="rounded-[14px] bg-white px-4 py-4">
         <View className="flex-row items-center justify-between">
-          <View className="flex-1 flex-row items-center gap-2.5">
+          <View className="flex-1 flex-row items-center gap-3">
             <IconSquare className="bg-surface-greenLight">
-              <Ionicons name="people-outline" size={14} color={Colors.activity.green} />
+              <Ionicons name="people-outline" size={18} color={Colors.activity.green} />
             </IconSquare>
             <View className="flex-1">
-              <Text className="mb-1 text-[10px] font-bold tracking-wide text-neutral-label">
+              <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">
                 {strings.newPlan.spotsLabel}
               </Text>
-              <Text className="text-[13px] font-semibold text-ink">
+              <Text className="text-lead font-semibold text-ink">
                 {strings.newPlan.spotsCount(maxSpots)}
               </Text>
-              <Text className="mt-0.5 text-[11px] text-black-400">
+              <Text className="mt-0.5 text-caption text-black-400">
                 {spotsSubtitle(maxSpots)}
               </Text>
             </View>
           </View>
-          <View className="flex-row items-center gap-2">
+          <View className="flex-row items-center gap-3">
             <Pressable
               onPress={() => {
                 Keyboard.dismiss()
@@ -336,11 +339,11 @@ export function NewPlanFields({
                 onPatchForm({ maxSpots: Math.max(2, maxSpots - 1) })
               }}
               disabled={maxSpots === 2}
-              className={`h-[30px] w-[30px] items-center justify-center rounded-full bg-neutral-border ${maxSpots === 2 ? 'opacity-40' : ''}`}
+              className={`h-10 w-10 items-center justify-center rounded-full bg-neutral-border ${maxSpots === 2 ? 'opacity-40' : ''}`}
             >
-              <Text className="text-lg font-semibold leading-5 text-ink">−</Text>
+              <Text className="text-title font-semibold text-ink">−</Text>
             </Pressable>
-            <Text className="min-w-4 text-center text-base font-bold text-ink">
+            <Text className="min-w-6 text-center text-title font-bold text-ink">
               {maxSpots}
             </Text>
             <Pressable
@@ -350,19 +353,19 @@ export function NewPlanFields({
                 onPatchForm({ maxSpots: Math.min(NEW_PLAN_MAX_SPOTS, maxSpots + 1) })
               }}
               disabled={maxSpots === NEW_PLAN_MAX_SPOTS}
-              className={`h-[30px] w-[30px] items-center justify-center rounded-full bg-neutral-border ${maxSpots === NEW_PLAN_MAX_SPOTS ? 'opacity-40' : ''}`}
+              className={`h-10 w-10 items-center justify-center rounded-full bg-neutral-border ${maxSpots === NEW_PLAN_MAX_SPOTS ? 'opacity-40' : ''}`}
             >
-              <Text className="text-lg font-semibold leading-5 text-ink">+</Text>
+              <Text className="text-title font-semibold text-ink">+</Text>
             </Pressable>
           </View>
         </View>
       </View>
 
-      <View className="mt-2 rounded-[14px] bg-white px-3.5 py-3">
-        <Text className="mb-2 text-[10px] font-bold tracking-wide text-neutral-label">
+      <View className="mt-2 rounded-[14px] bg-white px-4 py-4">
+        <Text className="mb-2.5 text-label font-bold tracking-wide text-neutral-label">
           {strings.newPlan.visibilityLabel}
         </Text>
-        <View className="flex-row gap-1.5">
+        <View className="flex-row gap-2">
           {(
             [
               {
@@ -416,10 +419,10 @@ export function NewPlanFields({
 
 const styles = StyleSheet.create({
   titleInput: {
-    fontSize: 14,
+    fontSize: FontSize.lead,
     fontWeight: '500',
-    lineHeight: 20,
-    minHeight: 22,
+    lineHeight: LineHeight.lead,
+    minHeight: LineHeight.lead + 2,
     padding: 0,
     color: Colors.ink.DEFAULT,
     ...(Platform.OS === 'android'
@@ -428,22 +431,22 @@ const styles = StyleSheet.create({
   },
   activityChip: {
     alignItems: 'center',
-    gap: 4,
-    borderRadius: 13,
+    gap: 6,
+    borderRadius: 14,
     borderWidth: 1.5,
-    paddingHorizontal: 3,
-    paddingVertical: 9,
+    paddingHorizontal: 4,
+    paddingVertical: 12,
   },
   activityChipLabel: {
-    fontSize: 9,
+    fontSize: FontSize.label,
     fontWeight: '700',
   },
   visibilityOption: {
     flex: 1,
-    borderRadius: 11,
+    borderRadius: 12,
     borderWidth: 1.5,
-    paddingHorizontal: 8,
-    paddingVertical: 9,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
   visibilityOptionSelected: {
     borderColor: Colors.activity.orangeDark,
@@ -454,7 +457,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   visibilityTitle: {
-    fontSize: 12,
+    fontSize: FontSize.body,
     fontWeight: '700',
   },
   visibilityTitleSelected: {
@@ -464,8 +467,9 @@ const styles = StyleSheet.create({
     color: Colors.ink.DEFAULT,
   },
   visibilitySubtitle: {
-    fontSize: 9,
+    fontSize: FontSize.caption,
+    lineHeight: LineHeight.caption,
     color: Colors.black[400],
-    marginTop: 2,
+    marginTop: 3,
   },
 })

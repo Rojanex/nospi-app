@@ -23,7 +23,7 @@ export function OnboardingBanner({ onPress }: OnboardingBannerProps) {
           <Ionicons name="shield-checkmark-outline" size={16} color={Colors.activity.amber} />
         </View>
         <Text
-          className="flex-1 text-[13px] leading-[18px] font-medium"
+          className="flex-1 text-body font-medium"
           style={{ color: Colors.activity.amber }}
         >
           {strings.profile.onboardingBannerBody}
@@ -35,7 +35,7 @@ export function OnboardingBanner({ onPress }: OnboardingBannerProps) {
         onPress={onPress}
         activeOpacity={0.85}
       >
-        <Text className="text-[13px] font-bold text-white">
+        <Text className="text-body font-bold text-white">
           {strings.profile.onboardingBannerCta}
         </Text>
       </TouchableOpacity>

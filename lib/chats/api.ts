@@ -1,3 +1,4 @@
+import { ACTIVITY_META } from '@/constants/activityMeta'
 import { PlanStatus } from '@/constants/planStatus'
 import { strings } from '@/constants/strings'
 import {
@@ -251,17 +252,7 @@ export function subscribeToThreadParticipants(
 }
 
 export function asActivityType(value: string): PlanActivityType {
-  const allowed: PlanActivityType[] = [
-    'social',
-    'playa',
-    'rumba',
-    'deporte',
-    'comida',
-    'cultura',
-    'naturaleza',
-    'otro',
-  ]
-  return (allowed.includes(value as PlanActivityType) ? value : 'otro') as PlanActivityType
+  return (value in ACTIVITY_META ? value : 'otro') as PlanActivityType
 }
 
 let _cachedUserId: string | null = null

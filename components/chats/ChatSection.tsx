@@ -13,7 +13,7 @@ export function ChatSection({ label, locked = false, children }: ChatSectionProp
   return (
     <View className="gap-2.5">
       <View className="flex-row items-center gap-1.5">
-        <Text className="text-xs font-semibold uppercase tracking-wide text-ink-50">
+        <Text className="text-caption font-semibold uppercase tracking-wide text-ink-50">
           {label}
         </Text>
         {locked ? (

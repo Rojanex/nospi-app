@@ -78,7 +78,7 @@ export default function Selfie() {
               onPress={() => router.push('/(tabs)/' as never)}
               className="px-3 py-5"
             >
-              <Text className="text-sm text-black-400" style={{ textDecorationLine: 'underline' }}>
+              <Text className="text-body text-black-400" style={{ textDecorationLine: 'underline' }}>
                 {strings.onboarding.dniSkip}
               </Text>
             </TouchableOpacity>

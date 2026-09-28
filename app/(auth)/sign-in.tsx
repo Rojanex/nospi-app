@@ -92,11 +92,11 @@ export default function SignIn() {
                     setCallingCode(country.callingCode[0])
                   }}
                 />
-                <Text className="ml-2 font-semibold text-base text-black-100">+{callingCode}</Text>
+                <Text className="ml-2 font-semibold text-lead text-black-100">+{callingCode}</Text>
               </TouchableOpacity>
 
               <TextInput
-                className="h-14 flex-1 rounded-2xl bg-white text-[17px] px-5 text-black-100"
+                className="h-14 flex-1 rounded-2xl bg-white text-title px-5 text-black-100"
                 placeholder="300 000 0000"
                 placeholderTextColor={Colors.neutral.hint}
                 keyboardType="phone-pad"

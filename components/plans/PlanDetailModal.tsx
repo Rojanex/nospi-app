@@ -1,6 +1,9 @@
 import { Colors } from '@/assets/constants/Colors'
+import { PlanChatPanel } from '@/components/plans/PlanChatPreview'
 import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
+import { getPlanGradientTokens } from '@/lib/plans/gradientTokens'
+import { usePlanModalMessagePreview } from '@/lib/plans/usePlanMessagePreview'
 import { avatarColorsForId } from '@/lib/utils/avatar'
 import { Plan } from '@/types'
 import { Ionicons } from '@expo/vector-icons'
@@ -55,6 +58,8 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
   ) {
     const primaryType = plan.activity_type.split('|')[0].trim().toLowerCase()
     const meta = getActivityMeta(primaryType)
+    const gradientTokens = getPlanGradientTokens(plan.activity_type)
+    const chatPreview = usePlanModalMessagePreview(plan.id, visible)
     const tags = plan.activity_type
       .split('|')
       .map(t => t.trim().toUpperCase())
@@ -88,9 +93,6 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
     const backdropOpacity = useSharedValue(0)
     const cardOpacity = useSharedValue(0)
     const cardScale = useSharedValue(0.94)
-
-    const joinBg = joined ? Colors.black[100] : Colors.buttons.orange
-    const joinLabel = joined ? strings.plansFeed.joinedCta : strings.plansFeed.joinCta
 
     useEffect(() => {
       setJoined(plan.user_joined)
@@ -136,7 +138,8 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
     useImperativeHandle(ref, () => ({ dismiss }))
 
     function handleJoinPress() {
-      if (!joined) setJoined(true)
+      if (joined) return
+      setJoined(true)
       onJoin(plan.id)
       dismiss()
     }
@@ -188,22 +191,22 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
               </View>
               <View className="flex-1 gap-0.5">
                 <Text
-                  className="text-[10px] font-bold tracking-wide"
+                  className="text-label font-bold tracking-wide"
                   style={{ color: meta.accent }}
                 >
                   {tags}
                 </Text>
-                <Text className="text-base font-bold text-black-100">{plan.title}</Text>
+                <Text className="text-lead font-bold text-black-100">{plan.title}</Text>
               </View>
             </View>
 
             <View className="mb-3 flex-row items-center gap-1.5">
               <Ionicons name="location-sharp" size={14} color={Colors.black[300]} />
-              <Text className="flex-1 text-xs text-black-400">{plan.location_name}</Text>
+              <Text className="flex-1 text-caption text-black-400">{plan.location_name}</Text>
             </View>
 
-            <Text className="text-[15px] font-bold text-black-100">{plan.date_time}</Text>
-            <Text className="mt-0.5 text-xs" style={{ color: statusColor }}>
+            <Text className="text-lead font-bold text-black-100">{plan.date_time}</Text>
+            <Text className="mt-0.5 text-caption" style={{ color: statusColor }}>
               {statusLine}
             </Text>
 
@@ -216,7 +219,7 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
               }}
             >
               <Text
-                className="text-[11px] font-bold"
+                className="text-caption font-bold"
                 style={{
                   color: isLocalsOnly ? Colors.activity.amber : Colors.activity.green,
                 }}
@@ -228,15 +231,25 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
             </View>
 
             <View className="mt-4 rounded-[14px] bg-neutral-softTint px-3.5 py-3">
-              <Text className="mb-1 text-[10px] font-bold tracking-wide text-neutral-label">
+              <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">
                 {strings.plansFeed.descriptionTitle}
               </Text>
               <Text
-                className={`text-[13px] leading-5 ${description ? 'text-black-100' : 'text-black-400'}`}
+                className={`text-body ${description ? 'text-black-100' : 'text-black-400'}`}
               >
                 {description || strings.plansFeed.descriptionEmpty}
               </Text>
             </View>
+
+            {chatPreview.failed ? null : (
+              <View className="mt-4">
+                <PlanChatPanel
+                  tokens={gradientTokens}
+                  hostId={plan.host_id}
+                  messages={chatPreview.messages}
+                />
+              </View>
+            )}
 
             <View className="mt-4 gap-2.5">
               {people.map(person => {
@@ -255,12 +268,12 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
                         className="h-7 w-7 items-center justify-center rounded-full"
                         style={{ backgroundColor: colors.bg }}
                       >
-                        <Text className="text-[9px] font-bold" style={{ color: colors.text }}>
+                        <Text className="text-micro font-bold" style={{ color: colors.text }}>
                           {person.initials}
                         </Text>
                       </View>
                     )}
-                    <Text className="flex-1 text-[13px] font-medium text-black-100" numberOfLines={1}>
+                    <Text className="flex-1 text-body font-medium text-black-100" numberOfLines={1}>
                       {person.name}
                     </Text>
                   </View>
@@ -268,7 +281,7 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
               })}
             </View>
 
-            <Text className="mt-3 text-xs text-black-400" numberOfLines={1}>
+            <Text className="mt-3 text-caption text-black-400" numberOfLines={1}>
               {strings.plansFeed.hostCreatedByPrefix} {plan.host_name} ·{' '}
               {plan.host_type === 'local'
                 ? strings.plansFeed.hostLocal
@@ -277,11 +290,22 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
 
             {interactive ? (
               <Pressable
-                className="mt-5 items-center rounded-full py-3"
-                style={{ backgroundColor: joinBg }}
+                className="mt-5 items-center rounded-full border py-3"
+                style={{
+                  backgroundColor: joined ? Colors.white : Colors.buttons.orange,
+                  borderColor: joined ? Colors.neutral.border : Colors.buttons.orange,
+                }}
                 onPress={handleJoinPress}
+                disabled={joined}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: joined }}
               >
-                <Text className="text-[13px] font-bold text-white">{joinLabel}</Text>
+                <Text
+                  className="text-body font-bold"
+                  style={{ color: joined ? Colors.neutral.hint : Colors.white }}
+                >
+                  {strings.plansFeed.joinCta}
+                </Text>
               </Pressable>
             ) : null}
           </ScrollView>

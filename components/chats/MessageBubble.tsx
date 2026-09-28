@@ -30,7 +30,7 @@ export function MessageBubble({
           className="rounded-full px-3 py-1.5"
           style={{ backgroundColor: Colors.neutral.tinted }}
         >
-          <Text className="text-sm text-ink-50">{message.content}</Text>
+          <Text className="text-body text-ink-50">{message.content}</Text>
         </View>
       </View>
     )
@@ -47,7 +47,7 @@ export function MessageBubble({
             borderBottomRightRadius: isLastInGroup ? 16 : 6,
           }}
         >
-          <Text className="text-lg text-white">{message.content}</Text>
+          <Text className="text-title text-white">{message.content}</Text>
         </View>
       </View>
     )
@@ -61,7 +61,7 @@ export function MessageBubble({
           style={{ backgroundColor: message.sender!.bg }}
         >
           <Text
-            className="text-[10px] font-bold"
+            className="text-label font-bold"
             style={{ color: message.sender!.text }}
           >
             {message.sender!.initials}
@@ -73,7 +73,7 @@ export function MessageBubble({
 
       <View className="max-w-[72%]">
         {isFirstInGroup ? (
-          <Text className="mb-1 text-[11px] text-ink-40">{message.sender!.name}</Text>
+          <Text className="mb-1 text-caption text-ink-40">{message.sender!.name}</Text>
         ) : null}
         <View
           className="rounded-2xl bg-white px-3.5 py-2.5"
@@ -82,7 +82,7 @@ export function MessageBubble({
             borderTopLeftRadius: isFirstInGroup ? 16 : 6,
           }}
         >
-          <Text className="text-lg text-ink">{message.content}</Text>
+          <Text className="text-title text-ink">{message.content}</Text>
         </View>
       </View>
     </View>

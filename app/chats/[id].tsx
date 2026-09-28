@@ -398,7 +398,7 @@ export default function ChatThread() {
     return (
       <TabScreen>
         <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-center text-sm text-ink-50">{error}</Text>
+          <Text className="text-center text-body text-ink-50">{error}</Text>
         </View>
       </TabScreen>
     )
@@ -408,7 +408,7 @@ export default function ChatThread() {
     return (
       <TabScreen>
         <View className="flex-1 items-center justify-center">
-          <Text className="text-sm text-ink-50">{strings.losMios.notFoundChat}</Text>
+          <Text className="text-body text-ink-50">{strings.losMios.notFoundChat}</Text>
         </View>
       </TabScreen>
     )
@@ -525,7 +525,7 @@ export default function ChatThread() {
     >
       <View style={{ flex: 1 }}>
         {error ? (
-          <Text className="px-4 pt-2 text-sm text-ink-50">{error}</Text>
+          <Text className="px-4 pt-2 text-body text-ink-50">{error}</Text>
         ) : null}
 
         {messagesLoading ? (
@@ -534,7 +534,7 @@ export default function ChatThread() {
           </View>
         ) : messages.length === 0 ? (
           <View className="flex-1 items-center justify-center py-12">
-            <Text className="text-sm text-ink-40">{strings.losMios.emptyMessages}</Text>
+            <Text className="text-body text-ink-40">{strings.losMios.emptyMessages}</Text>
           </View>
         ) : (
           <View style={{ flex: 1 }}>
@@ -604,7 +604,7 @@ export default function ChatThread() {
                   }}
                 >
                   <Text
-                    className="text-sm font-semibold"
+                    className="text-body font-semibold"
                     style={{ color: Colors.buttons.orange }}
                   >
                     {strings.losMios.newMessagesBadge(unreadCount)}

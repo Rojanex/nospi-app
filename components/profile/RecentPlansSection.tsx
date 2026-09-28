@@ -49,16 +49,16 @@ function PlanTile({
           className="mb-2 h-10 w-10 items-center justify-center rounded-full"
           style={{ backgroundColor: meta.circle }}
         >
-          <Text className="text-lg">{meta.emoji}</Text>
+          <Text className="text-title">{meta.emoji}</Text>
         </View>
         <Text
-          className="mb-0.5 text-center text-[12px] font-bold leading-4"
+          className="mb-0.5 text-center text-caption font-bold leading-[17px]"
           style={{ color: meta.accent }}
           numberOfLines={2}
         >
           {plan.title}
         </Text>
-        <Text className="text-center text-[10px] font-medium text-black-400">
+        <Text className="text-center text-label font-medium text-black-400">
           {formatTileDate(plan.date_time)}
         </Text>
       </View>
@@ -81,11 +81,11 @@ export function RecentPlansSection({
   return (
     <View>
       <View className="mb-3 flex-row items-end justify-between">
-        <Text className="text-base font-bold text-ink">
+        <Text className="text-lead font-bold text-ink">
           {strings.profile.recentPlansTitle}
         </Text>
         <TouchableOpacity onPress={onSeeAll} hitSlop={8}>
-          <Text className="pb-0.5 text-sm font-semibold text-buttons-orange">
+          <Text className="pb-0.5 text-body font-semibold text-buttons-orange">
             {strings.profile.seeAll}
           </Text>
         </TouchableOpacity>
@@ -110,12 +110,12 @@ export function RecentPlansSection({
 
       {showEmpty ? (
         <View className="mt-2 items-center rounded-2xl bg-white px-5 py-6">
-          <Text className="mb-3 text-center text-sm text-black-400">
+          <Text className="mb-3 text-center text-body text-black-400">
             {strings.profile.emptyPlans}
           </Text>
           <TouchableOpacity onPress={onEmptyCtaPress} hitSlop={8} activeOpacity={0.7}>
             <Text
-              className="text-sm font-semibold text-primary-100"
+              className="text-body font-semibold text-primary-100"
               style={{ textDecorationLine: 'underline' }}
             >
               {strings.profile.emptyPlansCta}

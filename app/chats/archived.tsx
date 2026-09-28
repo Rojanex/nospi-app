@@ -80,7 +80,7 @@ export default function ArchivedChats() {
     return (
       <TabScreen>
         <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-center text-sm text-ink-50">{error}</Text>
+          <Text className="text-center text-body text-ink-50">{error}</Text>
         </View>
       </TabScreen>
     )
@@ -105,12 +105,12 @@ export default function ArchivedChats() {
         showsVerticalScrollIndicator={false}
       >
         {error ? (
-          <Text className="mb-4 text-sm text-ink-50">{error}</Text>
+          <Text className="mb-4 text-body text-ink-50">{error}</Text>
         ) : null}
 
         {archivedChats.length === 0 ? (
           <View className="items-center py-12">
-            <Text className="text-sm text-ink-40">{strings.losMios.emptyArchived}</Text>
+            <Text className="text-body text-ink-40">{strings.losMios.emptyArchived}</Text>
           </View>
         ) : (
           <ChatSection label={strings.losMios.archivedSection} locked>

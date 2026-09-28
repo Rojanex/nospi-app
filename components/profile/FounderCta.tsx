@@ -13,7 +13,7 @@ export function FounderCta({ onPress }: FounderCtaProps) {
       onPress={onPress}
       activeOpacity={0.85}
     >
-      <Text className="text-[13px] font-bold text-ink">
+      <Text className="text-body font-bold text-ink">
         {strings.profile.founderCta}
       </Text>
     </TouchableOpacity>

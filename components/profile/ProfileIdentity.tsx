@@ -69,19 +69,19 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
         <Text className="text-xl font-bold text-ink">{name}</Text>
         {profile.is_founder ? (
           <View className="rounded-full bg-surface-orangeLight px-2.5 py-1">
-            <Text className="text-[11px] font-bold text-buttons-orange">
+            <Text className="text-caption font-bold text-buttons-orange">
               {strings.profile.founderPill}
             </Text>
           </View>
         ) : null}
       </View>
 
-      <Text className="mb-2 text-sm font-medium text-black-400">{statusLabel}</Text>
+      <Text className="mb-2 text-body font-medium text-black-400">{statusLabel}</Text>
 
       {profile.home_city?.trim() ? (
         <View className="flex-row items-center gap-1">
           <Ionicons name="location-sharp" size={14} color={Colors.black[300]} />
-          <Text className="text-sm text-black-300">{profile.home_city.trim()}</Text>
+          <Text className="text-body text-black-300">{profile.home_city.trim()}</Text>
         </View>
       ) : null}
     </View>

@@ -187,7 +187,7 @@ export default function Chats() {
     return (
       <TabScreen>
         <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-center text-sm text-ink-50">{error}</Text>
+          <Text className="text-center text-body text-ink-50">{error}</Text>
         </View>
       </TabScreen>
     )
@@ -207,13 +207,13 @@ export default function Chats() {
           <Text className="text-3xl font-extrabold text-ink">
             {strings.losMios.title}
           </Text>
-          <Text className="pb-1 text-sm font-semibold text-buttons-orange">
+          <Text className="pb-1 text-body font-semibold text-buttons-orange">
             {strings.losMios.activeCount(activeChats.length)}
           </Text>
         </View>
 
         {error ? (
-          <Text className="mb-4 text-sm text-ink-50">{error}</Text>
+          <Text className="mb-4 text-body text-ink-50">{error}</Text>
         ) : null}
 
         <View className="gap-7">

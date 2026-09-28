@@ -24,7 +24,7 @@ export function ChatComposer({
     return (
       <View className="flex-row items-center justify-center gap-2 border-t border-neutral-border px-5 py-3.5">
         <Ionicons name="lock-closed" size={14} color={Colors.ink[40]} />
-        <Text className="text-sm text-ink-50">{strings.losMios.readOnlyBanner}</Text>
+        <Text className="text-body text-ink-50">{strings.losMios.readOnlyBanner}</Text>
       </View>
     )
   }
@@ -32,7 +32,7 @@ export function ChatComposer({
   return (
     <View className="flex-row items-center gap-2.5 border-t border-neutral-border px-4 py-3">
       <TextInput
-        className="flex-1 rounded-full bg-neutral-softTint px-4 py-2.5 text-sm text-ink"
+        className="flex-1 rounded-full bg-neutral-softTint px-4 py-2.5 text-body text-ink"
         placeholder={strings.losMios.messagePlaceholder}
         placeholderTextColor={Colors.ink[25]}
         value={value}

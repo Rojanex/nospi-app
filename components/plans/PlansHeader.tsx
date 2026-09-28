@@ -2,6 +2,7 @@ import { Colors } from '@/assets/constants/Colors'
 import { TabIndexHeader } from '@/components/tabs/TabIndexHeader'
 import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
+import { FontSize } from '@/constants/typography'
 import { Plan } from '@/types'
 import { Ionicons } from '@expo/vector-icons'
 import { useRef } from 'react'
@@ -81,24 +82,24 @@ export function PlansHeader({
                 </Text>
               </View>
               <View className="flex-1 gap-0.5">
-                <Text className="text-[10px] font-bold tracking-[1px] text-buttons-orange">
+                <Text className="text-label font-bold tracking-[1px] text-buttons-orange">
                   {strings.plansFeed.nextPlanLabel}
                 </Text>
-                <Text className="text-[15px] font-bold text-white">
+                <Text className="text-lead font-bold text-white">
                   {nextPlan.title}
                 </Text>
-                <Text className="text-xs text-white/55">
+                <Text className="text-caption text-white/55">
                   {nextPlan.date_time} · {nextPlan.location_name}
                 </Text>
               </View>
               <View className="h-9 w-9 items-center justify-center rounded-full bg-buttons-orange">
-                <Text className="text-base font-bold text-white">→</Text>
+                <Text className="text-lead font-bold text-white">→</Text>
               </View>
             </View>
           </TouchableOpacity>
         ) : (
           <View className="mx-4 mb-5 gap-2 rounded-[18px] bg-neutral-gray p-[18px]">
-            <Text className="text-[15px] font-semibold text-black-100">
+            <Text className="text-lead font-semibold text-black-100">
               {strings.plansFeed.noNextPlan}
             </Text>
             <TouchableOpacity
@@ -106,7 +107,7 @@ export function PlansHeader({
               activeOpacity={0.7}
               hitSlop={8}
             >
-              <Text className="text-sm font-bold text-buttons-orange">
+              <Text className="text-body font-bold text-buttons-orange">
                 {strings.plansFeed.noNextPlanCta}
               </Text>
             </TouchableOpacity>
@@ -162,7 +163,7 @@ export function PlansHeader({
       </View>
 
       {locationHint ? (
-        <Text className="mb-3 px-5 text-[13px] font-semibold text-neutral-hint">
+        <Text className="mb-3 px-5 text-body font-semibold text-neutral-hint">
           {locationHint}
         </Text>
       ) : null}
@@ -187,7 +188,7 @@ export function PlansHeader({
 
 const styles = StyleSheet.create({
   chipText: {
-    fontSize: 13,
+    fontSize: FontSize.body,
     fontWeight: '700',
     color: Colors.black[400],
   },
@@ -207,8 +208,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.neutral.gray,
     borderRadius: 12,
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 15,
+    paddingVertical: 12,
+    fontSize: FontSize.lead,
     fontWeight: '600',
     color: Colors.black[100],
   },

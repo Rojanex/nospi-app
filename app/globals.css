@@ -24,11 +24,11 @@
   }
 
   .auth-subtitle {
-    @apply text-black-400 text-[15px] leading-[22px];
+    @apply text-black-400 text-lead leading-[24px];
   }
 
   .form-error-text {
-    @apply text-form-error text-[13px] text-center mb-2;
+    @apply text-form-error text-body text-center mb-2;
   }
 
   .btn-primary {
@@ -40,7 +40,7 @@
   }
 
   .btn-primary-text {
-    @apply text-white font-bold text-[15px];
+    @apply text-white font-bold text-lead;
   }
 
   .btn-secondary {
@@ -72,6 +72,6 @@
   }
 
   .tab-section-subtitle {
-    @apply text-black-300 text-sm;
+    @apply text-black-300 text-body;
   }
 }

@@ -232,13 +232,13 @@ export function ParticipantsSheet({
                   <Text className="text-xl font-extrabold text-ink" numberOfLines={1}>
                     {chat.title}
                   </Text>
-                  <Text className="mt-0.5 text-sm text-ink-50">
+                  <Text className="mt-0.5 text-body text-ink-50">
                     {participants.length} personas
                   </Text>
                   {!canManage ? (
                     <View className="mt-3 flex-row items-center justify-center gap-2 rounded-2xl bg-neutral-softTint px-3 py-2.5">
                       <Ionicons name="lock-closed" size={14} color={Colors.ink[40]} />
-                      <Text className="text-sm text-ink-50">
+                      <Text className="text-body text-ink-50">
                         {strings.losMios.readOnlyBanner}
                       </Text>
                     </View>
@@ -272,7 +272,7 @@ export function ParticipantsSheet({
                             style={{ backgroundColor: participant.avatarBg }}
                           >
                             <Text
-                              className="text-sm font-bold"
+                              className="text-body font-bold"
                               style={{ color: participant.avatarText }}
                             >
                               {participant.initials}
@@ -281,7 +281,7 @@ export function ParticipantsSheet({
 
                           <View className="min-w-0 flex-1 flex-row items-center gap-2">
                             <Text
-                              className="shrink text-base font-semibold text-ink"
+                              className="shrink text-lead font-semibold text-ink"
                               numberOfLines={1}
                             >
                               {participant.isSelf
@@ -290,7 +290,7 @@ export function ParticipantsSheet({
                             </Text>
                             {participant.role === 'host' ? (
                               <View className="shrink-0 rounded-full bg-activity-orangeDark px-2.5 py-1">
-                                <Text className="text-[10px] font-bold text-white">
+                                <Text className="text-label font-bold text-white">
                                   {strings.losMios.hostBadge}
                                 </Text>
                               </View>
@@ -303,7 +303,7 @@ export function ParticipantsSheet({
                                 onPress={() => confirmRemove(participant)}
                                 hitSlop={8}
                               >
-                                <Text className="text-sm font-semibold text-danger">
+                                <Text className="text-body font-semibold text-danger">
                                   {strings.losMios.removeMemberAction}
                                 </Text>
                               </Pressable>
@@ -336,7 +336,7 @@ export function ParticipantsSheet({
                       }}
                       className="w-full items-center rounded-full bg-danger py-[15px]"
                     >
-                      <Text className="text-sm font-bold text-white">
+                      <Text className="text-body font-bold text-white">
                         {strings.losMios.deletePlanAction}
                       </Text>
                     </Pressable>
@@ -350,7 +350,7 @@ export function ParticipantsSheet({
                       }}
                       className="w-full items-center rounded-full bg-buttons-brown py-[15px]"
                     >
-                      <Text className="text-sm font-bold text-white">
+                      <Text className="text-body font-bold text-white">
                         {strings.losMios.leaveAction}
                       </Text>
                     </Pressable>
@@ -388,7 +388,7 @@ export function ParticipantsSheet({
                     </View>
                   ) : profileError ? (
                     <View className="items-center py-10">
-                      <Text className="text-center text-sm text-ink-50">{profileError}</Text>
+                      <Text className="text-center text-body text-ink-50">{profileError}</Text>
                     </View>
                   ) : publicProfile ? (
                     <>

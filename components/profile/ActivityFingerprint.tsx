@@ -21,7 +21,7 @@ export function ActivityFingerprint({ fingerprint }: ActivityFingerprintProps) {
 
   return (
     <View className="mb-5">
-      <Text className="mb-3 text-base font-bold text-ink">
+      <Text className="mb-3 text-lead font-bold text-ink">
         {strings.profile.activityFingerprintLabel}
       </Text>
       <View className="flex-row flex-wrap" style={{ gap: 8 }}>
@@ -33,8 +33,8 @@ export function ActivityFingerprint({ fingerprint }: ActivityFingerprintProps) {
               className="flex-row items-center rounded-full px-3 py-1.5"
               style={{ backgroundColor: meta.bg }}
             >
-              <Text className="mr-1.5 text-sm">{meta.emoji}</Text>
-              <Text className="text-sm font-semibold" style={{ color: meta.accent }}>
+              <Text className="mr-1.5 text-body">{meta.emoji}</Text>
+              <Text className="text-body font-semibold" style={{ color: meta.accent }}>
                 {meta.label} · {item.count}
               </Text>
             </View>

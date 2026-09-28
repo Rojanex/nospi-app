@@ -147,9 +147,9 @@ export default function ProfileScreen() {
     return (
       <TabScreen>
         <View className="flex-1 items-center justify-center px-6">
-          <Text className="mb-4 text-center text-sm text-ink-50">{error}</Text>
+          <Text className="mb-4 text-center text-body text-ink-50">{error}</Text>
           <TouchableOpacity onPress={() => loadProfile()} hitSlop={8}>
-            <Text className="text-sm font-semibold text-buttons-orange">
+            <Text className="text-body font-semibold text-buttons-orange">
               {strings.profile.retry}
             </Text>
           </TouchableOpacity>
@@ -173,9 +173,9 @@ export default function ProfileScreen() {
 
         {error ? (
           <View className="mb-4 items-center">
-            <Text className="mb-2 text-center text-sm text-ink-50">{error}</Text>
+            <Text className="mb-2 text-center text-body text-ink-50">{error}</Text>
             <TouchableOpacity onPress={() => loadProfile()} hitSlop={8}>
-              <Text className="text-sm font-semibold text-buttons-orange">
+              <Text className="text-body font-semibold text-buttons-orange">
                 {strings.profile.retry}
               </Text>
             </TouchableOpacity>

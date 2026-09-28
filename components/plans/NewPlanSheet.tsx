@@ -183,17 +183,17 @@ export function NewPlanSheet({
           {submitting ? (
             <ActivityIndicator color="#ffffff" />
           ) : (
-            <Text className="text-sm font-bold text-white ">
+            <Text className="text-lead font-bold text-white">
               {strings.newPlan.addButton}
             </Text>
           )}
         </Pressable>
         {submitError ? (
-          <Text className="mt-2 text-center text-xs font-semibold text-danger">
+          <Text className="mt-2 text-center text-caption font-semibold text-danger">
             {submitError}
           </Text>
         ) : (
-          <Text className="mt-[7px] text-center text-[10px] text-neutral-label">
+          <Text className="mt-2 text-center text-label text-neutral-label">
             {strings.newPlan.ctaHint}
           </Text>
         )}

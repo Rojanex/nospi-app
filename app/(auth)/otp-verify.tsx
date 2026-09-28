@@ -147,13 +147,13 @@ export default function OtpVerify() {
             {otp.slice(OTP_FIRST_HALF, OTP_LENGTH).map((digit, i) => renderBox(digit, i + OTP_FIRST_HALF))}
           </View>
 
-          <Text className="mb-4 text-center text-[13px] text-neutral-hint">
+          <Text className="mb-4 text-center text-body text-neutral-hint">
             {strings.onboarding.verifyExplanation}
           </Text>
 
           <View className="mb-5 items-center gap-2">
             {secondsLeft > 0 ? (
-              <Text className="text-sm text-black-400">
+              <Text className="text-body text-black-400">
                 {strings.onboarding.verifyResendIn} {formatCountdown(secondsLeft)}
               </Text>
             ) : (
@@ -165,7 +165,7 @@ export default function OtpVerify() {
                 {resendLoading ? (
                   <ActivityIndicator color={Colors.buttons.orange} size="small" />
                 ) : (
-                  <Text className="text-[15px] font-semibold text-buttons-orange">
+                  <Text className="text-lead font-semibold text-buttons-orange">
                     {strings.onboarding.verifyResendCode}
                   </Text>
                 )}

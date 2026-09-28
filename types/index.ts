@@ -27,7 +27,7 @@ export interface ApiResponse<T> {
 
 export type PlanActivityType =
   | 'social' | 'playa' | 'rumba' | 'deporte'
-  | 'comida' | 'cultura' | 'naturaleza' | 'otro'
+  | 'comida' | 'cultura' | 'naturaleza' | 'chill' | 'otro'
 
 export type PlanVisibility = 'open' | 'locals'
 
@@ -84,6 +84,7 @@ export interface PlanRow {
     user_id: string
     profiles: { display_name: string | null; avatar_url: string | null } | null
   }[]
+  like_count?: number | null
   host: { display_name: string | null; avatar_url: string | null; role: string } | null
 }
 
@@ -103,8 +104,21 @@ export interface Plan {
   host_type: 'local' | 'turista'
   posted_ago: string
   user_joined: boolean
+  like_count: number
+  /** As of this fetch; `null` when the liked state couldn't be loaded. */
+  user_liked: boolean | null
   visibility: PlanVisibility
   description: string | null
+}
+
+export type PlanMessagePreview = {
+  id: string
+  content: string
+  createdAt: string
+  /** null for system messages */
+  userId: string | null
+  senderName: string
+  avatarUrl: string | null
 }
 
 export type PlanMetaRow = {
