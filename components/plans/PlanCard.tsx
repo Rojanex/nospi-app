@@ -3,6 +3,7 @@ import { PlanChatPanel } from '@/components/plans/PlanChatPreview'
 import { PlanDetailModal } from '@/components/plans/PlanDetailModal'
 import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
+import { VERIFICATION_ENABLED } from '@/lib/env_reader'
 import { getPlanGradientTokens } from '@/lib/plans/gradientTokens'
 import { usePlanCardMessagePreview } from '@/lib/plans/usePlanMessagePreview'
 import { usePlanLike } from '@/lib/plans/usePlanLike'
@@ -68,8 +69,11 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
           },
         ]
   const overflowCount = Math.max(0, plan.extra_attendees - avatarPeople.length)
-  const hostDotColor =
-    plan.host_type === 'local' ? Colors.buttons.orange : Colors.primary[100]
+  const hostDotColor = !VERIFICATION_ENABLED
+    ? Colors.neutral.hint
+    : plan.host_type === 'local'
+      ? Colors.buttons.orange
+      : Colors.primary[100]
 
   const cardPressStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: pressY.value }, { scale: pressScale.value }],
@@ -310,10 +314,10 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
                 style={{ backgroundColor: hostDotColor }}
               />
               <Text className="flex-1 text-caption text-black-400">
-                {strings.plansFeed.hostPrefix} {plan.host_name} ·{' '}
-                {plan.host_type === 'local'
-                  ? strings.plansFeed.hostLocal
-                  : strings.plansFeed.hostVisitor}
+                {strings.plansFeed.hostPrefix} {plan.host_name}
+                {VERIFICATION_ENABLED
+                  ? ` · ${plan.host_type === 'local' ? strings.plansFeed.hostLocal : strings.plansFeed.hostVisitor}`
+                  : null}
               </Text>
               <Text className="text-caption text-neutral-hint">{plan.posted_ago}</Text>
             </View>

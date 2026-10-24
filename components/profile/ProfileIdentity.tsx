@@ -31,6 +31,7 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
   const colors = avatarColorsForId(profile.id)
   const badge = verificationBadgeForRole(profile.role)
   const statusLabel = verificationLabelForRole(profile.role)
+  const homeCity = profile.home_city?.trim()
 
   return (
     <View className="mb-6 items-center">
@@ -53,35 +54,44 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
           </View>
         )}
 
-        <View
-          className="absolute bottom-0 right-0 h-7 w-7 items-center justify-center rounded-full border-2 border-primary-300"
-          style={{ backgroundColor: badge.bg }}
-        >
-          {badge.kind === 'cowboy' ? (
-            <HatCowboySide size={12} color={Colors.white} />
-          ) : (
-            <Ionicons name="checkmark" size={14} color={Colors.white} />
-          )}
-        </View>
-      </View>
-
-      <View className="mb-1 flex-row items-center justify-center gap-2">
-        <Text className="text-xl font-bold text-ink">{name}</Text>
-        {profile.is_founder ? (
-          <View className="rounded-full bg-surface-orangeLight px-2.5 py-1">
-            <Text className="text-caption font-bold text-buttons-orange">
-              {strings.profile.founderPill}
-            </Text>
+        {badge ? (
+          <View
+            className="absolute bottom-0 right-0 h-7 w-7 items-center justify-center rounded-full border-2 border-primary-300"
+            style={{ backgroundColor: badge.bg }}
+          >
+            {badge.kind === 'cowboy' ? (
+              <HatCowboySide size={12} color={Colors.white} />
+            ) : (
+              <Ionicons name="checkmark" size={14} color={Colors.white} />
+            )}
           </View>
         ) : null}
       </View>
 
-      <Text className="mb-2 text-body font-medium text-black-400">{statusLabel}</Text>
+      <Text className="mb-1 text-xl font-bold text-ink">{name}</Text>
 
-      {profile.home_city?.trim() ? (
-        <View className="flex-row items-center gap-1">
-          <Ionicons name="location-sharp" size={14} color={Colors.black[300]} />
-          <Text className="text-body text-black-300">{profile.home_city.trim()}</Text>
+      {statusLabel ? (
+        <Text className="mb-2 text-body font-medium text-black-400">{statusLabel}</Text>
+      ) : null}
+
+      {homeCity || profile.is_founder ? (
+        <View className="flex-row items-center justify-center gap-3">
+          {homeCity ? (
+            <View className="flex-row items-center gap-1">
+              <Ionicons name="location-sharp" size={14} color={Colors.black[300]} />
+              <Text className="text-body text-black-300">{homeCity}</Text>
+            </View>
+          ) : null}
+          {homeCity && profile.is_founder ? (
+            <View className="h-3.5 w-px bg-neutral-hint" />
+          ) : null}
+          {profile.is_founder ? (
+            <View className="rounded-full bg-black-100 px-3 py-1">
+              <Text className="text-caption font-bold tracking-[0.5px] text-white">
+                {strings.profile.founderPill}
+              </Text>
+            </View>
+          ) : null}
         </View>
       ) : null}
     </View>

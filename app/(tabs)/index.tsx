@@ -11,7 +11,7 @@ import { strings } from '@/constants/strings'
 import { fetchChatList, getChatListCache, prefetchMessages } from '@/lib/chats/api'
 import { fetchNextJoinedPlan, fetchPlansPage, NearMeParams } from '@/lib/plans/api'
 import { getFreshDeviceCoords } from '@/lib/plans/deviceLocation'
-import { joinPlan } from '@/lib/plans/lifecycle'
+import { joinPlan, markPlanJoined } from '@/lib/plans/lifecycle'
 import { subscribePlansChanged } from '@/lib/plans/plansEvents'
 import { Plan } from '@/types'
 import { useRouter } from 'expo-router'
@@ -28,16 +28,6 @@ import Animated, {
   scrollTo,
   useAnimatedRef,
 } from 'react-native-reanimated'
-
-function markPlanJoined(plan: Plan): Plan {
-  if (plan.user_joined) return plan
-  return {
-    ...plan,
-    user_joined: true,
-    extra_attendees: plan.extra_attendees + 1,
-    spots_left: Math.max(0, plan.spots_left - 1),
-  }
-}
 
 export default function IndexScreen() {
   const router = useRouter()

@@ -2,6 +2,7 @@ import { strings } from '@/constants/strings'
 import { insertSystemMessage } from '@/lib/chats/api'
 import { notifyPlanDeleted, notifyPlansChanged } from '@/lib/plans/plansEvents'
 import { supabase } from '@/lib/supabase'
+import { Plan } from '@/types'
 
 async function requireUserId(): Promise<string> {
   const { data, error } = await supabase.auth.getSession()
@@ -30,6 +31,17 @@ export async function deletePlan(planId: string): Promise<void> {
   if (error) {
     console.error('[deletePlan]', error)
     throw error
+  }
+}
+
+/** Optimistic local copy of a plan after the current user joins it. */
+export function markPlanJoined(plan: Plan): Plan {
+  if (plan.user_joined) return plan
+  return {
+    ...plan,
+    user_joined: true,
+    extra_attendees: plan.extra_attendees + 1,
+    spots_left: Math.max(0, plan.spots_left - 1),
   }
 }
 

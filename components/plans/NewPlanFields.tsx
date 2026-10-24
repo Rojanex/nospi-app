@@ -4,7 +4,12 @@ import { LocationField } from '@/components/plans/LocationField'
 import { ACTIVITY_META, ActivityType } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
 import { FontSize, LineHeight } from '@/constants/typography'
-import { NEW_PLAN_DESCRIPTION_MAX, NEW_PLAN_MAX_SPOTS, NEW_PLAN_TITLE_MAX } from '@/lib/env_reader'
+import {
+  NEW_PLAN_DESCRIPTION_MAX,
+  NEW_PLAN_MAX_SPOTS,
+  NEW_PLAN_TITLE_MAX,
+  VERIFICATION_ENABLED,
+} from '@/lib/env_reader'
 import { ParsedPlace } from '@/lib/plans/formatPlace'
 import { formatSheetDate, formatSheetTime } from '@/lib/plans/formatDateTime'
 import { NewPlanFormValues, PlanVisibility } from '@/types'
@@ -311,7 +316,9 @@ export function NewPlanFields({
       )}
 
       <Text className="mb-2.5 mt-6 text-label font-bold uppercase tracking-[0.7px] text-neutral-label">
-        {strings.newPlan.spotsVisibilitySection}
+        {VERIFICATION_ENABLED
+          ? strings.newPlan.spotsVisibilitySection
+          : strings.newPlan.spotsSection}
       </Text>
       <View className="rounded-[14px] bg-white px-4 py-4">
         <View className="flex-row items-center justify-between">
@@ -361,58 +368,60 @@ export function NewPlanFields({
         </View>
       </View>
 
-      <View className="mt-2 rounded-[14px] bg-white px-4 py-4">
-        <Text className="mb-2.5 text-label font-bold tracking-wide text-neutral-label">
-          {strings.newPlan.visibilityLabel}
-        </Text>
-        <View className="flex-row gap-2">
-          {(
-            [
-              {
-                key: 'open' as const,
-                title: strings.newPlan.visibilityOpenTitle,
-                subtitle: strings.newPlan.visibilityOpenSubtitle,
-              },
-              {
-                key: 'locals' as const,
-                title: strings.newPlan.visibilityLocalTitle,
-                subtitle: strings.newPlan.visibilityLocalSubtitle,
-              },
-            ] as const
-          ).map((option) => {
-            const selected = visibility === option.key
-            return (
-              <Pressable
-                key={option.key}
-                onPress={() => {
-                  Keyboard.dismiss()
-                  onPatchForm({ visibility: option.key as PlanVisibility })
-                }}
-                style={[
-                  styles.visibilityOption,
-                  selected
-                    ? styles.visibilityOptionSelected
-                    : styles.visibilityOptionDefault,
-                ]}
-              >
-                <Text
+      {VERIFICATION_ENABLED ? (
+        <View className="mt-2 rounded-[14px] bg-white px-4 py-4">
+          <Text className="mb-2.5 text-label font-bold tracking-wide text-neutral-label">
+            {strings.newPlan.visibilityLabel}
+          </Text>
+          <View className="flex-row gap-2">
+            {(
+              [
+                {
+                  key: 'open' as const,
+                  title: strings.newPlan.visibilityOpenTitle,
+                  subtitle: strings.newPlan.visibilityOpenSubtitle,
+                },
+                {
+                  key: 'locals' as const,
+                  title: strings.newPlan.visibilityLocalTitle,
+                  subtitle: strings.newPlan.visibilityLocalSubtitle,
+                },
+              ] as const
+            ).map((option) => {
+              const selected = visibility === option.key
+              return (
+                <Pressable
+                  key={option.key}
+                  onPress={() => {
+                    Keyboard.dismiss()
+                    onPatchForm({ visibility: option.key as PlanVisibility })
+                  }}
                   style={[
-                    styles.visibilityTitle,
+                    styles.visibilityOption,
                     selected
-                      ? styles.visibilityTitleSelected
-                      : styles.visibilityTitleDefault,
+                      ? styles.visibilityOptionSelected
+                      : styles.visibilityOptionDefault,
                   ]}
                 >
-                  {option.title}
-                </Text>
-                <Text style={styles.visibilitySubtitle}>
-                  {option.subtitle}
-                </Text>
-              </Pressable>
-            )
-          })}
+                  <Text
+                    style={[
+                      styles.visibilityTitle,
+                      selected
+                        ? styles.visibilityTitleSelected
+                        : styles.visibilityTitleDefault,
+                    ]}
+                  >
+                    {option.title}
+                  </Text>
+                  <Text style={styles.visibilitySubtitle}>
+                    {option.subtitle}
+                  </Text>
+                </Pressable>
+              )
+            })}
+          </View>
         </View>
-      </View>
+      ) : null}
     </>
   )
 }

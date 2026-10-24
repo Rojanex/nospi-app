@@ -2,6 +2,7 @@ import { Colors } from '@/assets/constants/Colors'
 import { PlanChatPanel } from '@/components/plans/PlanChatPreview'
 import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
+import { VERIFICATION_ENABLED } from '@/lib/env_reader'
 import { getPlanGradientTokens } from '@/lib/plans/gradientTokens'
 import { usePlanModalMessagePreview } from '@/lib/plans/usePlanMessagePreview'
 import { avatarColorsForId } from '@/lib/utils/avatar'
@@ -210,25 +211,27 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
               {statusLine}
             </Text>
 
-            <View
-              className="mt-4 self-start rounded-full px-2.5 py-1"
-              style={{
-                backgroundColor: isLocalsOnly
-                  ? Colors.surface.orangeLight
-                  : Colors.surface.greenLight,
-              }}
-            >
-              <Text
-                className="text-caption font-bold"
+            {VERIFICATION_ENABLED ? (
+              <View
+                className="mt-4 self-start rounded-full px-2.5 py-1"
                 style={{
-                  color: isLocalsOnly ? Colors.activity.amber : Colors.activity.green,
+                  backgroundColor: isLocalsOnly
+                    ? Colors.surface.orangeLight
+                    : Colors.surface.greenLight,
                 }}
               >
-                {isLocalsOnly
-                  ? strings.plansFeed.visibilityLocalBadge
-                  : strings.plansFeed.visibilityOpenBadge}
-              </Text>
-            </View>
+                <Text
+                  className="text-caption font-bold"
+                  style={{
+                    color: isLocalsOnly ? Colors.activity.amber : Colors.activity.green,
+                  }}
+                >
+                  {isLocalsOnly
+                    ? strings.plansFeed.visibilityLocalBadge
+                    : strings.plansFeed.visibilityOpenBadge}
+                </Text>
+              </View>
+            ) : null}
 
             <View className="mt-4 rounded-[14px] bg-neutral-softTint px-3.5 py-3">
               <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">
@@ -282,10 +285,10 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
             </View>
 
             <Text className="mt-3 text-caption text-black-400" numberOfLines={1}>
-              {strings.plansFeed.hostCreatedByPrefix} {plan.host_name} ·{' '}
-              {plan.host_type === 'local'
-                ? strings.plansFeed.hostLocal
-                : strings.plansFeed.hostVisitor}
+              {strings.plansFeed.hostCreatedByPrefix} {plan.host_name}
+              {VERIFICATION_ENABLED
+                ? ` · ${plan.host_type === 'local' ? strings.plansFeed.hostLocal : strings.plansFeed.hostVisitor}`
+                : null}
             </Text>
 
             {interactive ? (

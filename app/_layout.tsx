@@ -6,6 +6,7 @@ import {
   clearUserIdCache,
   setCachedUserId,
 } from '@/lib/chats/api'
+import { VERIFICATION_ENABLED } from '@/lib/env_reader'
 import {
   profileNeedsOnboarding,
   subscribeAppUnlocked,
@@ -108,7 +109,9 @@ export default function RootLayout() {
           <Stack.Screen name="chats/archived" options={{ headerShown: false }} />
         </Stack.Protected>
 
-        <Stack.Protected guard={!!session}>
+        {/* Without identity verification, onboarding ends at the name step: closing this
+            guard once the app unlocks redirects straight into (tabs). */}
+        <Stack.Protected guard={!!session && (VERIFICATION_ENABLED || !allowApp)}>
           <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
         </Stack.Protected>
 

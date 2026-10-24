@@ -12,9 +12,16 @@ type LikeEntry = {
 
 const entries = new Map<string, LikeEntry>()
 const listeners = new Set<() => void>()
+let version = 0
 
 function emit() {
+  version += 1
   listeners.forEach(listener => listener())
+}
+
+/** Changes whenever any like changes; lets list views re-filter via useSyncExternalStore. */
+export function getLikesVersion(): number {
+  return version
 }
 
 export function subscribeLikes(listener: () => void): () => void {
@@ -28,7 +35,8 @@ export function getStoredLike(planId: string): boolean | undefined {
   return entries.get(planId)?.liked
 }
 
-function recordFetchedLikes(
+/** `fetchedAt` must be taken before the query starts so in-flight toggles aren't overwritten. */
+export function recordFetchedLikes(
   planIds: string[],
   likedPlanIds: ReadonlySet<string>,
   fetchedAt: number,

@@ -1,5 +1,5 @@
 import { getFeedDateRange } from '@/lib/plans/feedDateRange'
-import { loadLikedPlanIds } from '@/lib/plans/likeStore'
+import { loadLikedPlanIds, recordFetchedLikes } from '@/lib/plans/likeStore'
 import { mapRowToPlan } from '@/lib/plans/mapRowToPlan'
 import { supabase } from '@/lib/supabase'
 import { Plan, PlanRow } from '@/types'
@@ -180,4 +180,31 @@ export async function fetchNextJoinedPlan(): Promise<Plan | null> {
   const row = data?.[0] as PlanRow | undefined
   if (!row) return null
   return mapRowToPlan(row, userId, row.host ?? undefined)
+}
+
+/** Upcoming active plans the current user liked, soonest first. */
+export async function fetchLikedPlans(): Promise<Plan[]> {
+  const userId = await requireUserId()
+  const fetchedAt = Date.now()
+
+  const { data, error } = await supabase
+    .from('plan_likes')
+    .select(`plan:plans!inner(${PLAN_SELECT})`)
+    .eq('user_id', userId)
+    .eq('plan.status', 'active')
+    .gt('plan.date_time', new Date().toISOString())
+
+  if (error) {
+    console.error('[fetchLikedPlans]', error)
+    throw error
+  }
+
+  const rows = ((data as unknown as { plan: PlanRow | null }[] | null) ?? [])
+    .map(like => like.plan)
+    .filter((row): row is PlanRow => row !== null)
+    .sort((a, b) => a.date_time.localeCompare(b.date_time))
+
+  const likedPlanIds = new Set(rows.map(row => row.id))
+  recordFetchedLikes([...likedPlanIds], likedPlanIds, fetchedAt)
+  return rows.map(row => mapRowToPlan(row, userId, row.host ?? undefined, likedPlanIds))
 }

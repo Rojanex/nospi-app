@@ -1,4 +1,9 @@
-import { NEW_PLAN_DESCRIPTION_MAX, NEW_PLAN_MAX_SPOTS, NEW_PLAN_TITLE_MAX } from '@/lib/env_reader'
+import {
+  NEW_PLAN_DESCRIPTION_MAX,
+  NEW_PLAN_MAX_SPOTS,
+  NEW_PLAN_TITLE_MAX,
+  VERIFICATION_ENABLED,
+} from '@/lib/env_reader'
 import { NewPlanFormValues, NewPlanLocation, PlanInsertRow } from '@/types'
 
 export const EMPTY_NEW_PLAN_LOCATION: NewPlanLocation = {
@@ -66,6 +71,7 @@ export function buildPlanInsert(form: NewPlanFormValues, userId: string): PlanIn
     location_lng: form.location.lng!,
     date_time: mergePlanDateTime(form.date!, form.time!),
     max_spots: form.maxSpots,
-    visibility: form.visibility,
+    // Nobody can be a verified local without identity verification, so every plan is open.
+    visibility: VERIFICATION_ENABLED ? form.visibility : 'open',
   }
 }

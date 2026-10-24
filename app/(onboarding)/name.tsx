@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { VERIFICATION_ENABLED } from '@/lib/env_reader'
 import { unlockAppAfterDisplayName } from '@/lib/profiles/onboarding'
 import { strings } from '@/constants/strings'
 import { Colors } from '@/assets/constants/Colors'
@@ -70,7 +71,7 @@ export default function Name() {
 
     unlockAppAfterDisplayName()
     setLoading(false)
-    router.push('/(onboarding)/dni-verify')
+    if (VERIFICATION_ENABLED) router.push('/(onboarding)/dni-verify')
   }
 
   const isDisabled = name.trim().length < 2 || loading

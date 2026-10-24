@@ -1,22 +1,26 @@
 import { Colors } from '@/assets/constants/Colors'
 import { TabScreen } from '@/components/layout/TabScreen'
+import { PlanDetailModal } from '@/components/plans/PlanDetailModal'
 import { FounderCta } from '@/components/profile/FounderCta'
+import { LikedPlansSection } from '@/components/profile/LikedPlansSection'
 import { OnboardingBanner } from '@/components/profile/OnboardingBanner'
 import { ProfileHeader } from '@/components/profile/ProfileHeader'
 import { ProfileScreenHeader } from '@/components/profile/ProfileScreenHeader'
 import { RecentPlansSection } from '@/components/profile/RecentPlansSection'
 import { strings } from '@/constants/strings'
-import { getChatListCache, prefetchMessages } from '@/lib/chats/api'
-import { FOUNDER_TYPEFORM_URL } from '@/lib/env_reader'
+import { fetchChatList, getChatListCache, prefetchMessages } from '@/lib/chats/api'
+import { FOUNDER_TYPEFORM_URL, VERIFICATION_ENABLED } from '@/lib/env_reader'
 import {
   fetchProfile,
   fetchRecentJoinedPlans,
   type ProfileRecentPlan,
   type ProfileWithStats,
 } from '@/lib/profiles/api'
+import { fetchLikedPlans } from '@/lib/plans/api'
+import { joinPlan, markPlanJoined } from '@/lib/plans/lifecycle'
 import { subscribePlansChanged } from '@/lib/plans/plansEvents'
 import { supabase } from '@/lib/supabase'
-import type { Profile } from '@/types'
+import type { Plan, Profile } from '@/types'
 import { useFocusEffect, useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -51,6 +55,9 @@ export default function ProfileScreen() {
   const hasLoadedRef = useRef(false)
   const [profileData, setProfileData] = useState<ProfileWithStats | null>(null)
   const [recentPlans, setRecentPlans] = useState<ProfileRecentPlan[]>([])
+  const [likedPlans, setLikedPlans] = useState<Plan[]>([])
+  const [detailPlan, setDetailPlan] = useState<Plan | null>(null)
+  const [detailVisible, setDetailVisible] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -71,13 +78,16 @@ export default function ProfileScreen() {
         throw authError ?? new Error('Not authenticated')
       }
 
-      const [nextProfile, nextPlans] = await Promise.all([
+      const [nextProfile, nextPlans, nextLikedPlans] = await Promise.all([
         fetchProfile(user.id),
         fetchRecentJoinedPlans(user.id),
+        // Secondary section: a failure here must not block the profile.
+        fetchLikedPlans().catch(() => null),
       ])
 
       setProfileData(nextProfile)
       setRecentPlans(nextPlans)
+      if (nextLikedPlans) setLikedPlans(nextLikedPlans)
       hasLoadedRef.current = true
     } catch (err) {
       if (!background) {
@@ -131,6 +141,33 @@ export default function ProfileScreen() {
 
   function handleEmptyCtaPress() {
     router.push('/(tabs)/' as never)
+  }
+
+  function handleLikedPlanPress(plan: Plan) {
+    setDetailPlan(plan)
+    setDetailVisible(true)
+  }
+
+  async function handleJoinLikedPlan(planId: string) {
+    const current = likedPlans.find(plan => plan.id === planId)
+    if (!current) return
+    if (current.user_joined) {
+      handlePlanPress(planId)
+      return
+    }
+
+    const joined = markPlanJoined(current)
+    setLikedPlans(prev => prev.map(plan => (plan.id === planId ? joined : plan)))
+    setDetailPlan(prev => (prev?.id === planId ? joined : prev))
+    try {
+      await joinPlan(planId)
+      void fetchChatList().catch(() => {})
+      handlePlanPress(planId)
+    } catch (err) {
+      console.error('[profile] join liked plan', err)
+      setLikedPlans(prev => prev.map(plan => (plan.id === planId ? current : plan)))
+      setDetailPlan(prev => (prev?.id === planId ? current : prev))
+    }
   }
 
   if (loading) {
@@ -188,7 +225,7 @@ export default function ProfileScreen() {
           plansJoined={profile.plans_joined_this_week}
         />
 
-        {!profile.onboarding_completed ? (
+        {VERIFICATION_ENABLED && !profile.onboarding_completed ? (
           <OnboardingBanner onPress={handleOnboardingPress} />
         ) : null}
 
@@ -202,7 +239,18 @@ export default function ProfileScreen() {
           onPlanPress={handlePlanPress}
           onEmptyCtaPress={handleEmptyCtaPress}
         />
+
+        <LikedPlansSection plans={likedPlans} onPlanPress={handleLikedPlanPress} />
       </ScrollView>
+
+      {detailPlan ? (
+        <PlanDetailModal
+          visible={detailVisible}
+          plan={detailPlan}
+          onClose={() => setDetailVisible(false)}
+          onJoin={id => void handleJoinLikedPlan(id)}
+        />
+      ) : null}
     </TabScreen>
   )
 }
