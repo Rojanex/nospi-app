@@ -46,8 +46,8 @@ export function ChatRow({
 }: ChatRowProps) {
   const meta = ACTIVITY_META[item.activityType]
   const expired = isPlanExpired(item.status)
-  const cardBg = expired ? Colors.neutral.gray : meta.bg
-  const circleBg = expired ? Colors.neutral.tinted : meta.circle
+  const cardBg = expired ? Colors.neutral.gray : meta.surface
+  const circleBg = expired ? Colors.neutral.tinted : meta.surfaceStrong
 
   const swipeAction: SwipeAction = isPlanActive(item.status)
     ? {
@@ -63,7 +63,7 @@ export function ChatRow({
         }
       : {
           label: strings.losMios.archiveAction,
-          backgroundColor: Colors.activity.orangeDark,
+          backgroundColor: Colors.tone.orangeDark,
           onPress: onArchive,
         }
 
@@ -105,7 +105,7 @@ export function ChatRow({
                 {item.previewText}
               </Text>
               {item.isHost ? (
-                <View className="shrink-0 rounded-full bg-activity-orangeDark px-2.5 py-1">
+                <View className="shrink-0 rounded-full bg-tone-orangeDark px-2.5 py-1">
                   <Text className="text-label font-bold text-white">
                     {strings.losMios.hostBadge}
                   </Text>

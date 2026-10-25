@@ -28,7 +28,7 @@ import { scheduleOnRN } from 'react-native-worklets'
 
 const ENTER_MS = 200
 const EXIT_MS = 160
-const BACKDROP = 'rgba(28, 27, 25, 0.45)'
+const BACKDROP = Colors.overlay.backdrop
 
 export type PlanDetailModalHandle = {
   dismiss: () => void
@@ -72,7 +72,7 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
         : plan.spots_left <= 2
           ? strings.plansFeed.soloSpots(plan.spots_left)
           : strings.plansFeed.spotsLeft(plan.spots_left)
-    const statusColor = plan.spots_left <= 2 ? Colors.activity.orange : Colors.black[400]
+    const statusColor = plan.spots_left <= 2 ? Colors.tone.orange : Colors.black[400]
 
     const description = plan.description?.trim()
     const isLocalsOnly = plan.visibility === 'locals'
@@ -186,7 +186,7 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
             <View className={`mb-4 flex-row items-start gap-2.5 ${interactive ? 'pr-8' : ''}`}>
               <View
                 className="h-11 w-11 items-center justify-center rounded-xl"
-                style={{ backgroundColor: meta.bg }}
+                style={{ backgroundColor: meta.surface }}
               >
                 <Text className="text-[22px]">{meta.emoji}</Text>
               </View>
@@ -223,7 +223,7 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
                 <Text
                   className="text-caption font-bold"
                   style={{
-                    color: isLocalsOnly ? Colors.activity.amber : Colors.activity.green,
+                    color: isLocalsOnly ? Colors.tone.amber : Colors.tone.green,
                   }}
                 >
                   {isLocalsOnly

@@ -1,10 +1,10 @@
-const AVATAR_PALETTE = [
-  { bg: '#E1F5EE', text: '#0F6E56' },
-  { bg: '#FBEAF0', text: '#993556' },
-  { bg: '#E6F1FB', text: '#185FA5' },
-  { bg: '#FAEEDA', text: '#BA7517' },
-  { bg: '#EEEDFE', text: '#534AB7' },
-] as const
+import { Colors } from '@/assets/constants/Colors'
+
+/** Avatar colors reuse activity tones so they stay in sync with the palette */
+const AVATAR_PALETTE = (['social', 'rumba', 'deporte', 'comida', 'cultura'] as const).map((key) => ({
+  bg: Colors.activity[key].surface,
+  text: Colors.activity[key].accent,
+}))
 
 export function avatarColorsForIndex(index: number) {
   return AVATAR_PALETTE[index % AVATAR_PALETTE.length]

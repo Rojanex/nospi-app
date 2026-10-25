@@ -179,7 +179,7 @@ export default function OtpVerify() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={Colors.white} />
             ) : (
               <Text className="btn-primary-text">{strings.onboarding.verifyButton}</Text>
             )}

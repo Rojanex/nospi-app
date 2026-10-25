@@ -31,7 +31,7 @@ export function ActivityFingerprint({ fingerprint }: ActivityFingerprintProps) {
             <View
               key={item.activity_type}
               className="flex-row items-center rounded-full px-3 py-1.5"
-              style={{ backgroundColor: meta.bg }}
+              style={{ backgroundColor: meta.surface }}
             >
               <Text className="mr-1.5 text-body">{meta.emoji}</Text>
               <Text className="text-body font-semibold" style={{ color: meta.accent }}>

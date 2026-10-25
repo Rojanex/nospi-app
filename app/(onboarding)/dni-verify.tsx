@@ -253,7 +253,7 @@ export default function DniVerify() {
                 <Text style={{
                   fontSize: FontSize.body,
                   fontWeight: '600',
-                  color: docType === type ? '#fff' : Colors.neutral.hint,
+                  color: docType === type ? Colors.white : Colors.neutral.hint,
                 }}>
                   {type === 'CC' ? strings.onboarding.dniPillCC : strings.onboarding.dniPillInternational}
                 </Text>

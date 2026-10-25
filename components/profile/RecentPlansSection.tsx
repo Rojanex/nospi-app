@@ -40,14 +40,14 @@ function PlanTile({
   return (
     <TouchableOpacity
       className="overflow-hidden rounded-2xl"
-      style={{ width, backgroundColor: meta.bg }}
+      style={{ width, backgroundColor: meta.surface }}
       onPress={onPress}
       activeOpacity={0.85}
     >
       <View className="items-center px-2 pb-2.5 pt-3">
         <View
           className="mb-2 h-10 w-10 items-center justify-center rounded-full"
-          style={{ backgroundColor: meta.circle }}
+          style={{ backgroundColor: meta.surfaceStrong }}
         >
           <Text className="text-title">{meta.emoji}</Text>
         </View>

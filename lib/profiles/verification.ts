@@ -14,7 +14,7 @@ export function verificationBadgeForRole(role: UserRole): VerificationBadge | nu
   if (!VERIFICATION_ENABLED) return null
   switch (role) {
     case 'visitor':
-      return { bg: Colors.activity.blue, kind: 'check' }
+      return { bg: Colors.tone.blue, kind: 'check' }
     case 'local':
       return { bg: Colors.buttons.orange, kind: 'check' }
     case 'explorer':

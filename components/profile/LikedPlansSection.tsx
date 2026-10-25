@@ -24,7 +24,7 @@ function LikedPlanRow({ plan, onPress }: { plan: Plan; onPress: () => void }) {
     >
       <View
         className="h-10 w-10 items-center justify-center rounded-xl"
-        style={{ backgroundColor: meta.bg }}
+        style={{ backgroundColor: meta.surface }}
       >
         <Text className="text-title">{meta.emoji}</Text>
       </View>

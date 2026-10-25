@@ -32,7 +32,7 @@ export const LocationField = forwardRef<GooglePlacesTextInputRef, LocationFieldP
     return (
       <View className="flex-row items-start gap-3 px-4 py-4">
         <IconSquare className="bg-surface-greenLight">
-          <Ionicons name="location-outline" size={18} color={Colors.activity.green} />
+          <Ionicons name="location-outline" size={18} color={Colors.tone.green} />
         </IconSquare>
         <View className="z-10 flex-1">
           <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">

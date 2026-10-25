@@ -81,7 +81,17 @@ export default function SignIn() {
             <View className="z-[999] mb-10 flex-row gap-4">
               <TouchableOpacity className="z-[999] h-14 flex-row items-center overflow-visible rounded-2xl bg-white px-4">
                 <CountryPicker
-                  theme={{ flagSizeButton: 23 }}
+                  theme={{
+                    flagSizeButton: 23,
+                    backgroundColor: Colors.white,
+                    onBackgroundTextColor: Colors.ink.DEFAULT,
+                    primaryColor: Colors.neutral.border,
+                    primaryColorVariant: Colors.neutral.gray,
+                    filterPlaceholderTextColor: Colors.neutral.hint,
+                  }}
+                  filterProps={{
+                    placeholderTextColor: Colors.neutral.hint,
+                  }}
                   countryCode={countryCode}
                   withFlag
                   withCallingCode
@@ -113,7 +123,7 @@ export default function SignIn() {
               disabled={loading || !hasEnoughDigits}
             >
               {loading ? (
-                <ActivityIndicator color="#ffffff" />
+                <ActivityIndicator color={Colors.white} />
               ) : (
                 <Text className="btn-primary-text">{strings.onboarding.signInButton}</Text>
               )}

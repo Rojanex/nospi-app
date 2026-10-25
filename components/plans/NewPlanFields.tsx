@@ -148,7 +148,7 @@ export function NewPlanFields({
                   styles.activityChip,
                   { width: CHIP_WIDTH },
                   {
-                    backgroundColor: selected ? meta.bg : Colors.white,
+                    backgroundColor: selected ? meta.surface : Colors.white,
                     borderColor: selected ? meta.accent : 'transparent',
                   },
                 ]}
@@ -174,7 +174,7 @@ export function NewPlanFields({
       <View className="rounded-[14px] bg-white">
         <View className="flex-row items-start gap-3 px-4 py-4">
           <IconSquare className="bg-surface-orangeLight">
-            <Ionicons name="pencil" size={18} color={Colors.activity.orange} />
+            <Ionicons name="pencil" size={18} color={Colors.tone.orange} />
           </IconSquare>
           <View className="flex-1">
             <View className="flex-row items-center justify-between">
@@ -183,7 +183,7 @@ export function NewPlanFields({
               </Text>
               {titleFocused && (
                 <Text
-                  className={`text-label ${title.length > TITLE_WARN_THRESHOLD ? 'text-activity-orange' : 'text-neutral-label'}`}
+                  className={`text-label ${title.length > TITLE_WARN_THRESHOLD ? 'text-tone-orange' : 'text-neutral-label'}`}
                 >
                   {title.length}/{NEW_PLAN_TITLE_MAX}
                 </Text>
@@ -206,7 +206,7 @@ export function NewPlanFields({
 
         <View className="flex-row items-start gap-3 px-4 py-4">
           <IconSquare className="bg-surface-orangeLight">
-            <Feather name="align-left" size={18} color={Colors.activity.orange} />
+            <Feather name="align-left" size={18} color={Colors.tone.orange} />
           </IconSquare>
           <View className="flex-1">
             <View className="flex-row items-center justify-between">
@@ -255,7 +255,7 @@ export function NewPlanFields({
           onPress={() => onOpenPicker('date')}
         >
           <IconSquare className="bg-surface-blueLight">
-            <Ionicons name="calendar-outline" size={18} color={Colors.activity.blue} />
+            <Ionicons name="calendar-outline" size={18} color={Colors.tone.blue} />
           </IconSquare>
           <View className="flex-1">
             <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">
@@ -284,7 +284,7 @@ export function NewPlanFields({
           onPress={() => onOpenPicker('time')}
         >
           <IconSquare className="bg-surface-blueLight">
-            <Ionicons name="time-outline" size={18} color={Colors.activity.blue} />
+            <Ionicons name="time-outline" size={18} color={Colors.tone.blue} />
           </IconSquare>
           <View className="flex-1">
             <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">
@@ -309,7 +309,7 @@ export function NewPlanFields({
       {location.isPublic === false && (
         <Text
           className="mt-2 px-4 py-1.5 text-caption font-semibold"
-          style={{ color: Colors.activity.amber }}
+          style={{ color: Colors.tone.amber }}
         >
           {strings.newPlan.locationPrivateWarning}
         </Text>
@@ -324,7 +324,7 @@ export function NewPlanFields({
         <View className="flex-row items-center justify-between">
           <View className="flex-1 flex-row items-center gap-3">
             <IconSquare className="bg-surface-greenLight">
-              <Ionicons name="people-outline" size={18} color={Colors.activity.green} />
+              <Ionicons name="people-outline" size={18} color={Colors.tone.green} />
             </IconSquare>
             <View className="flex-1">
               <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   visibilityOptionSelected: {
-    borderColor: Colors.activity.orangeDark,
+    borderColor: Colors.tone.orangeDark,
     backgroundColor: Colors.surface.orangeLight,
   },
   visibilityOptionDefault: {
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   visibilityTitleSelected: {
-    color: Colors.activity.orangeDark,
+    color: Colors.tone.orangeDark,
   },
   visibilityTitleDefault: {
     color: Colors.ink.DEFAULT,

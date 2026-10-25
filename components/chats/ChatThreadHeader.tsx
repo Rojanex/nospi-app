@@ -20,8 +20,8 @@ export function ChatThreadHeader({ item, onBack, onPressMembers }: ChatThreadHea
   const insets = useSafeAreaInsets()
   const meta = ACTIVITY_META[item.activityType]
   const expired = isPlanExpired(item.status)
-  const headerBg = expired ? Colors.neutral.gray : meta.bg
-  const circleBg = expired ? Colors.neutral.tinted : meta.circle
+  const headerBg = expired ? Colors.neutral.gray : meta.surface
+  const circleBg = expired ? Colors.neutral.tinted : meta.surfaceStrong
 
   useEffect(() => {
     void SystemUI.setBackgroundColorAsync(headerBg)
@@ -93,7 +93,7 @@ export function ChatThreadHeader({ item, onBack, onPressMembers }: ChatThreadHea
             style={{
               flexShrink: 0,
               borderRadius: 999,
-              backgroundColor: Colors.activity.orangeDark,
+              backgroundColor: Colors.tone.orangeDark,
               paddingHorizontal: 10,
               paddingVertical: 4,
             }}

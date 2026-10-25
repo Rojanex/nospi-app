@@ -1,3 +1,4 @@
+import { Colors } from '@/assets/constants/Colors'
 import { ActivePicker, NewPlanFields } from '@/components/plans/NewPlanFields'
 import { strings } from '@/constants/strings'
 import { createPlan } from '@/lib/plans/createPlan'
@@ -181,7 +182,7 @@ export function NewPlanSheet({
           style={{ opacity: isSubmitDisabled ? 0.4 : 1 }}
         >
           {submitting ? (
-            <ActivityIndicator color="#ffffff" />
+            <ActivityIndicator color={Colors.white} />
           ) : (
             <Text className="text-lead font-bold text-white">
               {strings.newPlan.addButton}

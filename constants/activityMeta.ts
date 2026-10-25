@@ -1,26 +1,32 @@
+import { Colors } from '@/assets/constants/Colors'
 import type { PlanActivityType } from '@/types'
 
 export type ActivityMeta = {
   emoji: string
   label: string
+  /** Text, icons, borders */
   accent: string
-  bg: string
-  circle: string
+  /** Card / chip background */
+  surface: string
+  /** Icon circle on top of `surface` */
+  surfaceStrong: string
 }
 
 /** Alias of PlanActivityType for activity-meta call sites */
 export type ActivityType = PlanActivityType
 
+const A = Colors.activity
+
 export const ACTIVITY_META: Record<PlanActivityType, ActivityMeta> = {
-  social:     { emoji: '🥥', label: 'social',     accent: '#0F6E56', bg: '#E1F5EE', circle: '#CADFDA' },
-  playa:      { emoji: '🏖️', label: 'playa',      accent: '#E8642A', bg: '#FFF0E8', circle: '#FADDD0' },
-  rumba:      { emoji: '🎵', label: 'rumba',       accent: '#993556', bg: '#FBEAF0', circle: '#E9D3DA' },
-  deporte:    { emoji: '⚽', label: 'deporte',    accent: '#185FA5', bg: '#E6F1FB', circle: '#CCDCEB' },
-  comida:     { emoji: '🍽️', label: 'comida',     accent: '#BA7517', bg: '#FAEEDA', circle: '#F0E1CC' },
-  cultura:    { emoji: '🎭', label: 'cultura',    accent: '#534AB7', bg: '#EEEDFE', circle: '#D9D7EF' },
-  naturaleza: { emoji: '🌿', label: 'naturaleza', accent: '#3B6D11', bg: '#EAF3DE', circle: '#D4DFCB' },
-  chill:      { emoji: '🛋️', label: 'chill',      accent: '#8E44AD', bg: '#F5ECF9', circle: '#E4D4EC' },
-  otro:       { emoji: '✨', label: 'otro',        accent: '#5F5E5A', bg: '#F1EFE8', circle: '#DCDCDB' },
+  social:     { emoji: '🥥', label: 'social',     ...A.social },
+  playa:      { emoji: '🏖️', label: 'playa',      ...A.playa },
+  rumba:      { emoji: '🎵', label: 'rumba',      ...A.rumba },
+  deporte:    { emoji: '⚽', label: 'deporte',    ...A.deporte },
+  comida:     { emoji: '🍽️', label: 'comida',     ...A.comida },
+  cultura:    { emoji: '🎭', label: 'cultura',    ...A.cultura },
+  naturaleza: { emoji: '🌿', label: 'naturaleza', ...A.naturaleza },
+  chill:      { emoji: '🛋️', label: 'chill',      ...A.chill },
+  otro:       { emoji: '✨', label: 'otro',       ...A.otro },
 }
 
 const DEFAULT_META: ActivityMeta = ACTIVITY_META.otro

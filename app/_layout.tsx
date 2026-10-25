@@ -1,3 +1,4 @@
+import { Colors } from '@/assets/constants/Colors'
 import 'react-native-gesture-handler'
 import SplashAnimation from '@/components/SplashAnimation'
 import {
@@ -13,11 +14,14 @@ import {
 } from '@/lib/profiles/onboarding'
 import { supabase } from '@/lib/supabase'
 import { Session } from '@supabase/supabase-js'
+import { StatusBar } from 'expo-status-bar'
 import { Stack } from 'expo-router'
-import { useEffect, useState } from 'react'
-import { ActivityIndicator, View } from 'react-native'
+import { type ReactNode, useEffect, useState } from 'react'
+import { ActivityIndicator, Appearance, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import './globals.css'
+
+Appearance.setColorScheme('light')
 
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null)
@@ -80,20 +84,17 @@ export default function RootLayout() {
     }
   }, [])
 
+  let content: ReactNode
   if (showSplash) {
-    return <SplashAnimation onFinish={() => setShowSplash(false)} />
-  }
-
-  if (loading) {
-    return (
+    content = <SplashAnimation onFinish={() => setShowSplash(false)} />
+  } else if (loading) {
+    content = (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="Colors.primary.100" />
+        <ActivityIndicator size="large" color={Colors.primary[100]} />
       </View>
     )
-  }
-
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+  } else {
+    content = (
       <Stack>
         {/* Locked until display_name exists — no feed flash after OTP */}
         <Stack.Protected guard={!!session && allowApp}>
@@ -119,6 +120,14 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         </Stack.Protected>
       </Stack>
+    )
+  }
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* Light-only app: dark status bar content everywhere (switch to "auto" with dark mode, NOS-75) */}
+      <StatusBar style={showSplash ? 'light': 'dark'} />
+      {content}
     </GestureHandlerRootView>
   )
 }

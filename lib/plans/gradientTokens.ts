@@ -13,10 +13,10 @@ export type PlanGradientTokens = {
 
 function buildTokens(meta: ActivityMeta): PlanGradientTokens {
   return {
-    panelGradient: `linear-gradient(45deg, ${Colors.white} 0%, ${meta.bg} 100%)`,
+    panelGradient: `linear-gradient(45deg, ${Colors.white} 0%, ${meta.surface} 100%)`,
     panelBorder: `${meta.accent}1A`,
     accentColor: meta.accent,
-    hostBubbleBg: meta.bg,
+    hostBubbleBg: meta.surface,
     hostBubbleBorder: `${meta.accent}4D`,
   }
 }

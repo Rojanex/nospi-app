@@ -289,7 +289,7 @@ export function ParticipantsSheet({
                                 : participant.name}
                             </Text>
                             {participant.role === 'host' ? (
-                              <View className="shrink-0 rounded-full bg-activity-orangeDark px-2.5 py-1">
+                              <View className="shrink-0 rounded-full bg-tone-orangeDark px-2.5 py-1">
                                 <Text className="text-label font-bold text-white">
                                   {strings.losMios.hostBadge}
                                 </Text>

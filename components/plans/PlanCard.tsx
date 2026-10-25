@@ -53,7 +53,7 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
           ? strings.plansFeed.spotsInfo(plan.extra_attendees, plan.spots_left)
           : strings.plansFeed.spotsLeft(plan.spots_left)
 
-  const statusColor = plan.spots_left <= 2 ? Colors.activity.orange : Colors.black[400]
+  const statusColor = plan.spots_left <= 2 ? Colors.tone.orange : Colors.black[400]
 
   const joined = plan.user_joined
 
@@ -181,7 +181,7 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
               <View className="flex-row items-start gap-2.5">
                 <View
                   className="h-11 w-11 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: meta.bg }}
+                  style={{ backgroundColor: meta.surface }}
                 >
                   <Text className="text-[22px]">{meta.emoji}</Text>
                 </View>

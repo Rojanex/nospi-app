@@ -143,7 +143,7 @@ export default function Name() {
               disabled={isDisabled}
             >
               {loading ? (
-                <ActivityIndicator color="#ffffff" />
+                <ActivityIndicator color={Colors.white} />
               ) : (
                 <Text className="btn-primary-text">{strings.onboarding.nameButton}</Text>
               )}
