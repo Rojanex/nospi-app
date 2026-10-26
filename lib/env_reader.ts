@@ -74,6 +74,19 @@ export const FOUNDER_TYPEFORM_URL = readEnvString(
   'https://form.typeform.com/to/PLACEHOLDER',
 )
 
+// Legal pages linked from the signup consent checkbox and the accept-terms screen.
+// Placeholders until the pages are published on nospi.club (NOS-18: website legal pages).
+export const TERMS_URL = readEnvString(
+  'EXPO_PUBLIC_TERMS_URL',
+  process.env.EXPO_PUBLIC_TERMS_URL,
+  'https://nospi.club/terminos',
+)
+export const PRIVACY_URL = readEnvString(
+  'EXPO_PUBLIC_PRIVACY_URL',
+  process.env.EXPO_PUBLIC_PRIVACY_URL,
+  'https://nospi.club/privacidad',
+)
+
 // Chat performance
 export const CHAT_LIST_CACHE_TTL_MS = readEnvInt(
   'EXPO_PUBLIC_CHAT_LIST_CACHE_TTL_MS',

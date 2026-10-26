@@ -69,6 +69,21 @@ export const strings = {
     nameButtonLoading: 'Guardando...',
     nameError: 'Algo salió mal.',
 
+    // consent checkbox (sign-in + accept-terms screens)
+    consentPrefix: 'Acepto los ',
+    consentTermsLink: 'Términos y Condiciones',
+    consentMiddle: ' y la ',
+    consentPrivacyLink: 'Política de Privacidad',
+    consentSuffix: ', y autorizo el tratamiento de mis datos personales.',
+
+    // accept-terms screen (existing users / new terms version)
+    acceptTermsTitle: 'Un último\npaso',
+    acceptTermsSubtitle:
+      'Para seguir creando planes necesitamos que aceptes nuestros términos y cómo cuidamos tus datos.',
+    acceptTermsButton: 'Continuar',
+    acceptTermsLogout: 'Cerrar sesión',
+    acceptTermsError: 'No pudimos guardar tu aceptación. Intenta de nuevo.',
+
 
     // dni input screen
     dniTitle: 'Ingresa tu\ninfo',
@@ -106,7 +121,7 @@ export const strings = {
     filterToday: DATE_TODAY,
     filterNearby: 'Cerca',
     filterWeekend: 'Este finde',
-    nearbyLocationRequired: 'activa tu ubicación para ver parches cerca',
+    nearbyLocationRequired: 'activa tu ubicación para que hay cerca',
     joinCta: 'voy',
     emptyFeed: 'parece que no hay planes para ti, pero... y si los creas tú?',
     emptyFeedToday: 'si no hay nada hoy, juntemonos :)',
@@ -204,7 +219,7 @@ export const strings = {
     emptyMessages: 'Aún no hay mensajes',
     emptyArchived: 'Todavía no has archivado ningún parche',
     notFoundChat: 'Chat no encontrado',
-    loadError: 'No pudimos cargar tus parches. Intenta de nuevo.',
+    loadError: 'No pudimos cargar tus planes. Intenta de nuevo.',
     newMessagesBadge: (n: number) =>
       n === 1 ? '1 mensaje nuevo' : `${n} mensajes nuevos`,
   },

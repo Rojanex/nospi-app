@@ -18,6 +18,8 @@ import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import CountryPicker, { CountryCode } from 'react-native-country-picker-modal'
 import { SIGN_IN_PHONE_MIN_DIGITS } from '@/lib/env_reader'
+import { ConsentCheckbox } from '@/components/ui/ConsentCheckbox'
+import { markTermsAcceptedPending } from '@/lib/profiles/onboarding'
 
 export default function SignIn() {
   const [countryCode, setCountryCode] = useState<CountryCode>('CO')
@@ -26,8 +28,10 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false)
   const [resetKey, setResetKey] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const router = useRouter()
   const hasEnoughDigits = phoneNumber.length >= SIGN_IN_PHONE_MIN_DIGITS
+  const canSubmit = hasEnoughDigits && termsAccepted
 
   useFocusEffect(
     useCallback(() => {
@@ -39,6 +43,7 @@ export default function SignIn() {
   )
 
   const handleSendOTP = async () => {
+    if (!termsAccepted) return
     if (!hasEnoughDigits) {
       setError(strings.onboarding.signInPhoneTooShort)
       return
@@ -56,6 +61,8 @@ export default function SignIn() {
       return
     }
 
+    // Saved to the profile by the root layout once the OTP signs the user in.
+    markTermsAcceptedPending()
     setLoading(false)
     router.push({ pathname: '/(auth)/otp-verify', params: { phone: fullPhone } })
   }
@@ -78,7 +85,7 @@ export default function SignIn() {
 
             <Text className="auth-subtitle mb-6">{strings.onboarding.signInSubtitle}</Text>
 
-            <View className="z-[999] mb-10 flex-row gap-4">
+            <View className="z-[999] mb-6 flex-row gap-4">
               <TouchableOpacity className="z-[999] h-14 flex-row items-center overflow-visible rounded-2xl bg-white px-4">
                 <CountryPicker
                   theme={{
@@ -116,11 +123,15 @@ export default function SignIn() {
               />
             </View>
 
+            <View className="mb-8">
+              <ConsentCheckbox checked={termsAccepted} onChange={setTermsAccepted} />
+            </View>
+
             <TouchableOpacity
-              key={resetKey}
-              className={`btn-primary mb-4 ${!hasEnoughDigits || loading ? 'btn-primary--disabled' : ''}`}
+              key={`${resetKey}-${canSubmit && !loading}`}
+              className={`btn-primary mb-4 ${!canSubmit || loading ? 'btn-primary--disabled' : ''}`}
               onPress={handleSendOTP}
-              disabled={loading || !hasEnoughDigits}
+              disabled={loading || !canSubmit}
             >
               {loading ? (
                 <ActivityIndicator color={Colors.white} />

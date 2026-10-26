@@ -9,8 +9,11 @@ import {
 } from '@/lib/chats/api'
 import { VERIFICATION_ENABLED } from '@/lib/env_reader'
 import {
-  profileNeedsOnboarding,
+  acceptCurrentTerms,
+  consumePendingTermsAcceptance,
+  fetchProfileAccess,
   subscribeAppUnlocked,
+  subscribeTermsAccepted,
 } from '@/lib/profiles/onboarding'
 import { supabase } from '@/lib/supabase'
 import { Session } from '@supabase/supabase-js'
@@ -26,11 +29,16 @@ Appearance.setColorScheme('light')
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null)
   const [allowApp, setAllowApp] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [loading, setLoading] = useState(true)
   const [showSplash, setShowSplash] = useState(true)
 
   useEffect(() => {
     return subscribeAppUnlocked(() => setAllowApp(true))
+  }, [])
+
+  useEffect(() => {
+    return subscribeTermsAccepted(() => setTermsAccepted(true))
   }, [])
 
   useEffect(() => {
@@ -45,6 +53,7 @@ export default function RootLayout() {
         clearMessagesCache()
         setSession(null)
         setAllowApp(false)
+        setTermsAccepted(false)
         setLoading(false)
         return
       }
@@ -65,11 +74,20 @@ export default function RootLayout() {
         }
       }
 
-      // Know allowApp before session is set so tabs never mount for new users.
-      const needsOnboarding = await profileNeedsOnboarding(next.user.id)
+      // Know allowApp/termsAccepted before session is set so tabs never mount for new users.
+      const access = await fetchProfileAccess(next.user.id)
+      let needsTerms = access.needsTerms
+
+      const pendingConsent = event === 'SIGNED_IN' && consumePendingTermsAcceptance()
+      if (needsTerms && pendingConsent) {
+        const { error } = await acceptCurrentTerms(next.user.id)
+        if (error) console.error('[RootLayout] save pending terms acceptance', error)
+        else needsTerms = false
+      }
       if (!mounted) return
 
-      setAllowApp(!needsOnboarding)
+      setAllowApp(!access.needsName)
+      setTermsAccepted(!needsTerms)
       setSession(next)
       setLoading(false)
     }
@@ -96,8 +114,8 @@ export default function RootLayout() {
   } else {
     content = (
       <Stack>
-        {/* Locked until display_name exists — no feed flash after OTP */}
-        <Stack.Protected guard={!!session && allowApp}>
+        {/* Locked until display_name exists and current terms are accepted — no feed flash after OTP */}
+        <Stack.Protected guard={!!session && allowApp && termsAccepted}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen
             name="chats/[id]"
@@ -110,8 +128,10 @@ export default function RootLayout() {
           <Stack.Screen name="chats/archived" options={{ headerShown: false }} />
         </Stack.Protected>
 
-        {/* Without identity verification, onboarding ends at the name step: closing this
-            guard once the app unlocks redirects straight into (tabs). */}
+        <Stack.Protected guard={!!session && allowApp && !termsAccepted}>
+          <Stack.Screen name="accept-terms" options={{ headerShown: false, gestureEnabled: false }} />
+        </Stack.Protected>
+
         <Stack.Protected guard={!!session && (VERIFICATION_ENABLED || !allowApp)}>
           <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
         </Stack.Protected>
