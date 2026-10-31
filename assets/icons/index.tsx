@@ -1,10 +1,12 @@
 import { Colors } from '@/assets/constants/Colors';
 import React from "react";
+import { HatCowboySide } from './HatCowboySide';
 import { Home } from './Home';
 import { PlanesList } from './PlanesList';
 import { PlusCircle } from './PlusCircle';
 import { Profile } from './Profile';
 
+export { HatCowboySide } from './HatCowboySide';
 export { Home } from './Home';
 export { PlanesList } from './PlanesList';
 export { PlusCircle } from './PlusCircle';
@@ -21,7 +23,8 @@ export type IconName =
     | 'home'
     | 'profile'
     | 'plusCircle'
-    | 'planesList';
+    | 'planesList'
+    | 'hatCowboySide';
 
 
 export const IconMap: Record<IconName, React.ComponentType<IconProps>> = {
@@ -29,6 +32,7 @@ export const IconMap: Record<IconName, React.ComponentType<IconProps>> = {
     profile: Profile,
     plusCircle: PlusCircle,
     planesList: PlanesList,
+    hatCowboySide: HatCowboySide,
 } as const;
 
 

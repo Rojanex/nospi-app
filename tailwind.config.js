@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const { Colors } = require('./assets/constants/Colors.ts')
+
 module.exports = {
     content: [
         "./app/**/*.{js,jsx,ts,tsx}",
@@ -8,53 +10,17 @@ module.exports = {
     presets: [require("nativewind/preset")],
     theme: {
         extend: {
-            colors: {
-                primary: {
-                    100: "#F2AD78",
-                    200: "#F6EEEC",
-                    300: "#FBF7F6",
-                },
-                accent: {
-                    100: "#FBFBFD",
-                },
-                black: {
-                    DEFAULT: "#000000",
-                    100: "#373026",
-                    200: "#666876",
-                    300: "#8C8E98",
-                    400: "#888780",
-                },
-                ink: "#1C1B19",
-                white: "#FFFFFF",
-                neutral: {
-                    hint: "#B4B2A9",
-                    gray: '#EDEBE5',
-                    label: '#A09890',
-                    body: '#6B6560',
-                    divider: '#F0EBE5',
-                    border: '#E6E0D8',
-                },
-                surface: {
-                    sheet: '#F2EDE8',
-                    orangeLight: '#FEF3EA',
-                    greenLight: '#E8F4EE',
-                    blueLight: '#E6F1FB',
-                },
-                activity: {
-                    orange: '#E8642A',
-                    orangeDark: '#D4650E',
-                    green: '#2D8B5A',
-                    blue: '#185FA5',
-                },
-                form: {
-                    error: "#D94F4F",
-                },
-                danger: "#F75555",
-                buttons: {
-                    orange: '#ED862F',
-                    brown: '#373026',
-                },
-            }
+            // Keep in sync with constants/typography.ts
+            fontSize: {
+                micro: ["11px", { lineHeight: "14px" }],
+                label: ["12px", { lineHeight: "16px" }],
+                caption: ["13px", { lineHeight: "18px" }],
+                body: ["15px", { lineHeight: "21px" }],
+                lead: ["17px", { lineHeight: "23px" }],
+                title: ["19px", { lineHeight: "25px" }],
+            },
+            // Colors come from assets/constants/Colors.ts (single source of truth)
+            colors: Colors,
         },
     },
     plugins: [],

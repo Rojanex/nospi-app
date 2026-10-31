@@ -1,4 +1,43 @@
+import { SystemPayload } from '@/types'
+
+const DATE_TODAY = 'Hoy'
+const DATE_WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const
+const DATE_WEEKDAYS_LONG = [
+  'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado',
+] as const
+const DATE_MONTHS = [
+  'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+  'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
+] as const
+
 export const strings = {
+  dates: {
+    today: DATE_TODAY,
+    weekdays: DATE_WEEKDAYS,
+    weekdaysLong: DATE_WEEKDAYS_LONG,
+    months: DATE_MONTHS,
+    am: 'am',
+    pm: 'pm',
+    postedJustNow: 'hace 1 min',
+    postedMinutes: (n: number) => `hace ${n} min`,
+    postedHoursOne: 'hace 1 h',
+    postedHours: (n: number) => `hace ${n} h`,
+    postedDaysOne: 'hace 1 d',
+    postedDays: (n: number) => `hace ${n} d`,
+    planDateTime: (day: string, date: number, month: string, time: string) =>
+      `${day} ${date} ${month} · ${time}`,
+    sheetDate: (weekday: string, day: number, month: string) =>
+      `${weekday} ${day} ${month}`,
+    clockTime: (hour: number, minutePart: string, period: string) =>
+      `${hour}${minutePart} ${period}`,
+  },
+
+  common: {
+    hostFallback: 'Host',
+    userFallback: 'Usuario',
+    someoneFallback: 'Alguien',
+  },
+
   onboarding: {
     //welcome screen
     welcomeTitle: '¿Y si nos pillamos\nhoy?',
@@ -30,10 +69,27 @@ export const strings = {
     nameButtonLoading: 'Guardando...',
     nameError: 'Algo salió mal.',
 
+    // consent checkbox (sign-in + accept-terms screens)
+    consentPrefix: 'Acepto los ',
+    consentTermsLink: 'Términos y Condiciones',
+    consentMiddle: ' y la ',
+    consentPrivacyLink: 'Política de Privacidad',
+    consentSuffix: ', y autorizo el tratamiento de mis datos personales.',
+
+    // accept-terms screen (existing users / new terms version)
+    acceptTermsTitle: 'Un último\npaso',
+    acceptTermsSubtitle:
+      'Para seguir creando planes necesitamos que aceptes nuestros términos y cómo cuidamos tus datos.',
+    acceptTermsButton: 'Continuar',
+    acceptTermsLogout: 'Cerrar sesión',
+    acceptTermsError: 'No pudimos guardar tu aceptación. Intenta de nuevo.',
+
 
     // dni input screen
-    dniTitle: 'Ingresa tu documento',
+    dniTitle: 'Ingresa tu\ninfo',
     dniSubtitle: 'Funciona con cédula colombiana o cualquier documento internacional.',
+    dniCityTitle: '¿desde dónde parchas?',
+    dniCityPlaceholder: 'Ingresa tu ciudad',
     dniPlaceholder: 'Número de documento',
     dniContinue: 'Continuar',
     dniSkip: 'Hacer esto despues',
@@ -62,26 +118,45 @@ export const strings = {
 
     planCount: (n: number) => `${n} planes`,
     filterAll: 'Todos',
-    filterToday: 'Hoy',
+    filterToday: DATE_TODAY,
     filterNearby: 'Cerca',
-    filterFree: 'Gratis',
-    joinCta: 'me apunto →',
-    joinedCta: '¡ya voy! ✓',
-    fullCta: 'lleno',
+    filterWeekend: 'Este finde',
+    nearbyLocationRequired: 'activa tu ubicación para que hay cerca',
+    joinCta: 'voy',
     emptyFeed: 'parece que no hay planes para ti, pero... y si los creas tú?',
+    emptyFeedToday: 'si no hay nada hoy, juntemonos :)',
+    emptyFeedWeekend: 'Tu señal para armar lo que sea',
     endOfFeed: 'Tus gustos son de nicho, mejor busca a los tuyos',
-    soloSpots: (spots: number) => `¡solo ${spots} cupos!`,
-    spotsInfo: (going: number, spots: number) => `${going} van · ${spots} cupos`,
-    hostLocal: 'local verificada',
-    hostTurista: 'turista',
+    endOfFeedAll: 'Llegaste al fin del scroll infinito wow...',
+    soloSpots: (spots: number) =>
+      spots === 1 ? '¡solo 1 cupo!' : `¡solo ${spots} cupos!`,
+    spotsInfo: (going: number, spots: number) =>
+      `${going} van · ${spots === 1 ? '1 cupo' : `${spots} cupos`}`,
+    spotsLeft: (spots: number) =>
+      spots === 1 ? '1 cupo' : `${spots} cupos`,
+    spotsFull: 'Ya estamos todos!',
+    hostLocal: 'local',
+    hostVisitor: 'explorer',
     hostPrefix: 'por',
+    hostCreatedByPrefix: 'creado por',
+    planDetailMore: 'Ver detalles',
+    planDetailClose: 'Cerrar',
+    visibilityOpenBadge: 'abierto a todos',
+    visibilityLocalBadge: 'solo locales',
+    descriptionTitle: 'DESCRIPCIÓN',
+    descriptionEmpty: 'Sin descripción todavía — el host no agregó detalles.',
+    likeA11y: (n: number) => (n === 1 ? 'Me gusta, 1 persona' : `Me gusta, ${n} personas`),
+    chatPreviewTitle: 'CHAT ACTIVO',
+    chatPreviewSeeAll: 'ver todo',
+    chatPreviewEmpty: 'aún nadie ha escrito — sé el primero',
+    chatPreviewMore: (n: number) => (n === 1 ? '+1 mensaje' : `+${n} mensajes`),
   },
   newPlan: {
-    sheetTitle: 'Arma tu parche',
     activityTypeSection: '¿qué tipo de plan es?',
     planSection: 'el plan',
     whereWhenSection: '¿dónde y cuándo?',
     spotsVisibilitySection: 'cupos y visibilidad',
+    spotsSection: 'cupos',
     titleLabel: 'TÍTULO',
     descriptionLabel: 'DESCRIPCIÓN (OPCIONAL)',
     locationLabel: 'LUGAR',
@@ -103,13 +178,81 @@ export const strings = {
     visibilityOpenSubtitle: 'cualquier usuario',
     visibilityLocalTitle: 'solo locales',
     visibilityLocalSubtitle: 'únicamente locales verificados',
-    ctaButton: 'Agregar plan',
+    addButton: 'Agregar parche',
+    ctaButtonLoading: 'Agregando...',
     ctaHint: 'tu plan aparece en el feed de una vez',
     pickerDone: 'Listo',
+    createErrorAuth: 'Inicia sesión para crear un plan.',
+    createErrorGeneric: 'No pudimos crear el plan. Intenta de nuevo.',
+    createErrorLimit: 'Ya alcanzaste el límite de planes esta semana.',
+    createErrorValidation: 'Revisa los datos del plan e intenta de nuevo.',
+  },
+
+  tabs: {
+    plans: 'Planes',
+    newPlan: 'Nuevo plan',
+    chats: 'Los míos',
+    profile: 'Perfil',
   },
 
   losMios: {
-    losMiosTitle: 'Los míos',
-    losMiosSubtitle: 'Tus planes y parches',
+    title: 'Los míos',
+    activeCount: (n: number) => `${n} parches activos`,
+    activeSection: 'Activos',
+    completedSection: 'Finalizados',
+    archivedSection: 'Archivados',
+    archivedFooter: (n: number) => `Ver archivados (${n})`,
+    hostBadge: 'HOSTING',
+    archiveAction: 'Archivar',
+    unarchiveAction: 'Desarchivar',
+    leaveAction: 'Salirse',
+    secondLeaveAction: 'Salir',
+    removeMemberAction: 'Sacar del parche',
+    removeMemberConfirmTitle: (name: string) => `¿Sacar a ${name} del parche?`,
+    leaveConfirmTitle: '¿Seguro que quieres salir del parche?',
+    deletePlanAction: 'Eliminar parche',
+    deletePlanConfirmTitle: '¿Seguro que quieres eliminar este parche?',
+    threadSubtitle: (memberCount: number, timeLabel: string) =>
+      `${memberCount} personas · ${timeLabel}`,
+    messagePlaceholder: 'Escribe un mensaje...',
+    readOnlyBanner: 'Este parche ya pasó · solo lectura',
+    emptyMessages: 'Aún no hay mensajes',
+    emptyArchived: 'Todavía no has archivado ningún parche',
+    notFoundChat: 'Chat no encontrado',
+    loadError: 'No pudimos cargar tus planes. Intenta de nuevo.',
+    newMessagesBadge: (n: number) =>
+      n === 1 ? '1 mensaje nuevo' : `${n} mensajes nuevos`,
+  },
+  systemMessages: {
+    planCreated: 'Se armo el parche',
+    host_transferred: ({ name }: SystemPayload) =>
+      `${name ?? strings.common.someoneFallback} ahora es host`,
+    joinedPlanSystem: ({ name }: SystemPayload) => `${name} se unió al plan`,
+    leftPlanSystem: ({ name }: SystemPayload) => `${name} salió del plan`,
+    removedMemberSystem: ({ name }: SystemPayload) => `${name} fue removido del plan`,
+  },
+
+  profile: {
+    title: 'Mi perfil',
+    founderPill: 'Founder',
+    verificationExplorer: 'Explorer · sin verificar',
+    verificationVisitor: 'Visitante verificado',
+    verificationLocal: 'Local verificado',
+    statsCreated: 'parches creados',
+    statsAttended: 'asistidos',
+    onboardingBannerBody:
+      'Verifica tu identidad para desbloquear planes solo para locales y salir como local verificado.',
+    onboardingBannerCta: 'Verificar identidad',
+    founderCta: 'Sé parte del programa fundador',
+    recentPlansTitle: 'Tus últimos parches',
+    seeAll: 'ver todos',
+    emptyPlans: 'Aún no te has apuntado a nada :(',
+    emptyPlansCta: 'Encuentra tu primer parche',
+    likedPlansTitle: 'Planes que te gustan',
+    loadError: 'No pudimos cargar tu perfil. Intenta de nuevo.',
+    publicTitle: 'Perfil',
+    publicLoadError: 'No pudimos cargar este perfil. Intenta de nuevo.',
+    activityFingerprintLabel: 'se le ve en...',
+    retry: 'Intentar de nuevo',
   },
 }

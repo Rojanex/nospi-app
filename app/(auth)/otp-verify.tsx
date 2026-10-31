@@ -85,7 +85,7 @@ export default function OtpVerify() {
     setLoading(true)
     setError(null)
 
-    const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
+    const { error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
 
     if (error) {
       setError(error.message)
@@ -93,15 +93,7 @@ export default function OtpVerify() {
       return
     }
 
-    setLoading(false)
-    if (!error && data.user) {
-      const isNewUser = data.user.created_at === data.user.last_sign_in_at
-      if (isNewUser) {
-        router.replace('/(onboarding)/name')
-      } else {
-        router.replace('/')
-      }
-    }
+    // Keep loading until root layout resolves display_name and navigates.
   }
 
   const renderBox = (digit: string, i: number) => (
@@ -155,13 +147,13 @@ export default function OtpVerify() {
             {otp.slice(OTP_FIRST_HALF, OTP_LENGTH).map((digit, i) => renderBox(digit, i + OTP_FIRST_HALF))}
           </View>
 
-          <Text className="mb-4 text-center text-[13px] text-neutral-hint">
+          <Text className="mb-4 text-center text-body text-neutral-hint">
             {strings.onboarding.verifyExplanation}
           </Text>
 
           <View className="mb-5 items-center gap-2">
             {secondsLeft > 0 ? (
-              <Text className="text-sm text-black-400">
+              <Text className="text-body text-black-400">
                 {strings.onboarding.verifyResendIn} {formatCountdown(secondsLeft)}
               </Text>
             ) : (
@@ -173,7 +165,7 @@ export default function OtpVerify() {
                 {resendLoading ? (
                   <ActivityIndicator color={Colors.buttons.orange} size="small" />
                 ) : (
-                  <Text className="text-[15px] font-semibold text-buttons-orange">
+                  <Text className="text-lead font-semibold text-buttons-orange">
                     {strings.onboarding.verifyResendCode}
                   </Text>
                 )}
@@ -187,7 +179,7 @@ export default function OtpVerify() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={Colors.white} />
             ) : (
               <Text className="btn-primary-text">{strings.onboarding.verifyButton}</Text>
             )}
