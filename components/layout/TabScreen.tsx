@@ -14,11 +14,7 @@ export function TabScreen({ header, children, contentInsetTop = true }: TabScree
 
   return (
     <View className="screen-root">
-      {header != null ? (
-        <View style={{ paddingTop: insets.top + 5 }}>
-          {header}
-        </View>
-      ) : null}
+      {header != null ? header : null}
       <View
         className="tab-body"
         style={

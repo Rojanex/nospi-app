@@ -1,3 +1,7 @@
+import type { PlanStatus } from '@/constants/planStatus'
+
+export type { PlanStatus }
+
 export type UserRole = 'explorer' | 'visitor' | 'local'
 
 export type Profile = {
@@ -21,6 +25,45 @@ export interface ApiResponse<T> {
   error: string | null
 }
 
+export type PlanActivityType =
+  | 'social' | 'playa' | 'rumba' | 'deporte'
+  | 'comida' | 'cultura' | 'naturaleza' | 'chill' | 'otro'
+
+export type PlanVisibility = 'open' | 'locals'
+
+export type NewPlanLocation = {
+  name: string
+  placeId: string
+  lat: number | null
+  lng: number | null
+  isPublic: boolean | null
+}
+
+export type NewPlanFormValues = {
+  activityType: PlanActivityType | null
+  title: string
+  description: string
+  location: NewPlanLocation
+  date: Date | null
+  time: Date | null
+  maxSpots: number
+  visibility: PlanVisibility
+}
+
+export type PlanInsertRow = {
+  created_by: string
+  title: string
+  activity_type: PlanActivityType
+  description: string | null
+  location_name: string
+  location_place_id: string
+  location_lat: number
+  location_lng: number
+  date_time: string
+  max_spots: number
+  visibility: PlanVisibility
+}
+
 export interface PlanRow {
   id: string
   created_at: string
@@ -34,13 +77,14 @@ export interface PlanRow {
   location_lng: number
   date_time: string
   max_spots: number
-  status: string
-  visibility: string
+  status: PlanStatus
+  visibility: PlanVisibility
   completed_at: string | null
   plan_members: {
     user_id: string
     profiles: { display_name: string | null; avatar_url: string | null } | null
   }[]
+  like_count?: number | null
   host: { display_name: string | null; avatar_url: string | null; role: string } | null
 }
 
@@ -52,11 +96,77 @@ export interface Plan {
   date_time: string
   spots_left: number
   extra_attendees: number
-  attendees: { initials: string; avatar_url: string | null; user_id: string }[]
+  attendees: { initials: string; avatar_url: string | null; user_id: string; name: string }[]
+  host_id: string
   host_name: string
   host_initials: string
   host_avatar_url: string | null
   host_type: 'local' | 'turista'
   posted_ago: string
   user_joined: boolean
+  like_count: number
+  /** As of this fetch; `null` when the liked state couldn't be loaded. */
+  user_liked: boolean | null
+  visibility: PlanVisibility
+  description: string | null
+}
+
+export type PlanMessagePreview = {
+  id: string
+  content: string
+  createdAt: string
+  /** null for system messages */
+  userId: string | null
+  senderName: string
+  avatarUrl: string | null
+}
+
+export type PlanMetaRow = {
+  id: string
+  title: string
+  activity_type: string
+  status: 'active' | 'expired' | 'completed'
+  previewText: string
+  timeLabel: string
+}
+
+export type ChatListItem = {
+  id: string
+  activityType: PlanActivityType
+  title: string
+  previewText: string
+  timeLabel: string
+  /** ISO timestamp of latest message; used for list ordering */
+  lastMessageAt?: string | null
+  memberCount: number
+  isHost: boolean
+  status: PlanStatus
+  archivedAt?: string | null
+}
+
+export type SystemPayload = Record<string, string | number | undefined>
+
+export type ChatMessage = {
+  id: string
+  type: 'user' | 'system'
+  content: string
+  createdAt: string
+  timeLabel: string
+  isOwn?: boolean
+  sender?: {
+    name: string
+    initials: string
+    bg: string
+    text: string
+  }
+}
+
+export type Participant = {
+  id: string
+  name: string
+  initials: string
+  avatarBg: string
+  avatarText: string
+  role: 'host' | 'member'
+  isSelf: boolean
 }

@@ -1,83 +1,109 @@
 import { TabScreen } from '@/components/layout/TabScreen'
 import { PlanCard } from '@/components/plans/PlanCard'
 import { PlanCardSkeleton } from '@/components/plans/PlanCardSkeleton'
-import { PlansHeader } from '@/components/plans/PlansHeader'
+import {
+  PlanDetailModal,
+  PlanDetailModalHandle,
+} from '@/components/plans/PlanDetailModal'
+import { FeedFilter, PlansHeader } from '@/components/plans/PlansHeader'
 import { PlansHeaderSkeleton } from '@/components/plans/PlansHeaderSkeleton'
 import { strings } from '@/constants/strings'
-import { mapRowToPlan } from '@/lib/plans/mapRowToPlan'
-import { supabase } from '@/lib/supabase'
-import { Plan, PlanRow } from '@/types'
-import React, { useCallback, useEffect, useState } from 'react'
+import { fetchChatList, getChatListCache, prefetchMessages } from '@/lib/chats/api'
+import { fetchNextJoinedPlan, fetchPlansPage, NearMeParams } from '@/lib/plans/api'
+import { getFreshDeviceCoords } from '@/lib/plans/deviceLocation'
+import { joinPlan, markPlanJoined } from '@/lib/plans/lifecycle'
+import { subscribePlansChanged } from '@/lib/plans/plansEvents'
+import { Plan } from '@/types'
+import { useRouter } from 'expo-router'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  FlatList,
   ListRenderItemInfo,
   RefreshControl,
+  StyleSheet,
   Text,
   View,
 } from 'react-native'
-const PAGE_SIZE = 20
+import Animated, {
+  runOnUI,
+  scrollTo,
+  useAnimatedRef,
+} from 'react-native-reanimated'
 
 export default function IndexScreen() {
+  const router = useRouter()
+  const listRef = useAnimatedRef<Animated.FlatList<Plan | string>>()
+  const aboveFeedHeightRef = useRef(0)
+  const peekRef = useRef<PlanDetailModalHandle>(null)
+  const joiningIdsRef = useRef(new Set<string>())
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(0)
-  const [activeFilter, setActiveFilter] = useState(strings.plansFeed.filterAll)
+  const [searchInput, setSearchInput] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [activeDateFilter, setActiveDateFilter] = useState<Exclude<FeedFilter, 'cerca'>>(null)
+  const [nearMe, setNearMe] = useState<NearMeParams | null>(null)
+  const [locationHint, setLocationHint] = useState<string | null>(null)
   const [nextPlan, setNextPlan] = useState<Plan | null>(null)
-
-  async function fetchPlansPage(pageNum: number) {
-    const { data, error } = await supabase
-      .from('plans')
-      .select('*, plan_members(user_id, profiles(display_name, avatar_url)), host:profiles!created_by(display_name, avatar_url, role)')
-      .order('date_time', { ascending: true })
-      .range(pageNum * PAGE_SIZE, pageNum * PAGE_SIZE + PAGE_SIZE - 1)
-
-    if (error) {
-      console.error(error)
-      return { rows: [], more: false }
-    }
-
-    const rows = (data as PlanRow[]) ?? []
-    const more = rows.length === PAGE_SIZE
-    return { rows, more }
-  }
-
-  const fetchInitialData = useCallback(async () => {
-    const currentUserId = (await supabase.auth.getUser()).data.user?.id ?? ''
-
-    const { data: comingPlan, error: comingPlanError } = await supabase
-      .from('plans')
-      .select('*, plan_members!inner(user_id, profiles(display_name, avatar_url)), host:profiles!created_by(display_name, avatar_url, role)')
-      .eq('plan_members.user_id', currentUserId)
-      .gt('date_time', new Date().toISOString())
-      .order('date_time', { ascending: true })
-      .limit(1)
-
-    if (comingPlanError) {
-      console.error(comingPlanError)
-      setNextPlan(null)
-    } else if (comingPlan?.[0]) {
-      const row = comingPlan[0] as PlanRow
-      setNextPlan(mapRowToPlan(row, currentUserId, row.host ?? undefined))
-    } else {
-      setNextPlan(null)
-    }
-
-    const { rows, more } = await fetchPlansPage(0)
-    setPlans(
-      rows.map(row =>
-        mapRowToPlan(row, currentUserId, row.host ?? undefined)
-      )
-    )
-    setPage(0)
-    setHasMore(more)
-  }, [])
+  const [peekPlan, setPeekPlan] = useState<Plan | null>(null)
+  const feedRequestIdRef = useRef(0)
+  const hasLoadedFeedRef = useRef(false)
+  const [isFiltering, setIsFiltering] = useState(false)
 
   useEffect(() => {
-    fetchInitialData().finally(() => setLoading(false))
+    const timeout = setTimeout(() => setSearchQuery(searchInput), 300)
+    return () => clearTimeout(timeout)
+  }, [searchInput])
+
+  const fetchInitialData = useCallback(async () => {
+    const requestId = ++feedRequestIdRef.current
+    setPage(0)
+    try {
+      const [coming, pageResult] = await Promise.all([
+        fetchNextJoinedPlan(),
+        fetchPlansPage(0, {
+          searchQuery: searchQuery || undefined,
+          dateFilter: activeDateFilter,
+          nearMe,
+        }),
+      ])
+      if (requestId !== feedRequestIdRef.current) return
+      setNextPlan(coming)
+      setPlans(pageResult.plans)
+      setHasMore(pageResult.more)
+    } catch (err) {
+      console.error('[plans feed] load', err)
+    }
+  }, [searchQuery, activeDateFilter, nearMe])
+
+  useEffect(() => {
+    const isFilterFetch = hasLoadedFeedRef.current
+    if (isFilterFetch) setIsFiltering(true)
+
+    let cancelled = false
+    fetchInitialData().finally(() => {
+      if (cancelled) return
+      hasLoadedFeedRef.current = true
+      setLoading(false)
+      setIsFiltering(false)
+    })
+    return () => {
+      cancelled = true
+    }
   }, [fetchInitialData])
+
+  useEffect(() => {
+    return subscribePlansChanged(() => {
+      void fetchInitialData()
+    })
+  }, [fetchInitialData])
+
+  useEffect(() => {
+    if (!getChatListCache()) void fetchChatList().catch(() => {})
+  }, [])
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true)
@@ -87,116 +113,256 @@ export default function IndexScreen() {
   }, [fetchInitialData])
 
   async function handleLoadMore() {
-    if (loadingMore || !hasMore || loading || refreshing) return
+    if (loadingMore || !hasMore || loading || refreshing || isFiltering) return
     setLoadingMore(true)
 
-    const currentUserId = (await supabase.auth.getUser()).data.user?.id ?? ''
-    const nextPage = page + 1
-    const { rows, more } = await fetchPlansPage(nextPage)
-
-    const newPlans = rows.map(row =>
-      mapRowToPlan(row, currentUserId, row.host ?? undefined)
-    )
-
-    setPlans(prev => [...prev, ...newPlans])
-    setPage(nextPage)
-    setHasMore(more)
-    setLoadingMore(false)
+    const requestId = feedRequestIdRef.current
+    try {
+      const nextPage = page + 1
+      const { plans: newPlans, more } = await fetchPlansPage(nextPage, {
+        searchQuery: searchQuery || undefined,
+        dateFilter: activeDateFilter,
+        nearMe,
+      })
+      if (requestId !== feedRequestIdRef.current) return
+      setPlans(prev => [...prev, ...newPlans])
+      setPage(nextPage)
+      setHasMore(more)
+    } catch (err) {
+      console.error('[plans feed] load more', err)
+    } finally {
+      if (requestId === feedRequestIdRef.current) setLoadingMore(false)
+    }
   }
 
-  function handleJoin(id: string) {
-    setPlans(prev =>
-      prev.map(p => p.id === id ? { ...p, user_joined: !p.user_joined } : p)
-    )
-  }
+  const handleOpenChat = useCallback((id: string) => {
+    const cached = getChatListCache()?.find(item => item.id === id) ?? null
+    if (cached) prefetchMessages(id)
+    router.push({
+      pathname: '/chats/[id]',
+      params: cached ? { id, chat: JSON.stringify(cached) } : { id },
+    })
+  }, [router])
 
-  const filteredPlans = activeFilter === strings.plansFeed.filterToday
-    ? plans.filter(p => p.date_time.toLowerCase().includes('hoy'))
+  const handleJoin = useCallback(async (id: string) => {
+    if (joiningIdsRef.current.has(id)) return
+
+    const current = plans.find(p => p.id === id) ?? (peekPlan?.id === id ? peekPlan : null)
+    if (current?.user_joined) {
+      handleOpenChat(id)
+      return
+    }
+
+    joiningIdsRef.current.add(id)
+    setPlans(prev => prev.map(p => (p.id === id ? markPlanJoined(p) : p)))
+    setPeekPlan(prev => (prev?.id === id ? markPlanJoined(prev) : prev))
+    if (nextPlan?.id === id) setNextPlan(markPlanJoined(nextPlan))
+
+    try {
+      await joinPlan(id)
+      void fetchChatList().catch(() => {})
+      handleOpenChat(id)
+    } catch (err) {
+      console.error('[plans feed] join', err)
+      setPlans(prev => prev.map(p => (p.id === id && current ? current : p)))
+      setPeekPlan(prev => (prev?.id === id ? current : prev))
+      if (nextPlan?.id === id) setNextPlan(current)
+    } finally {
+      joiningIdsRef.current.delete(id)
+    }
+  }, [handleOpenChat, nextPlan, peekPlan, plans])
+
+  const handleAboveFeedHeightChange = useCallback((height: number) => {
+    aboveFeedHeightRef.current = height
+  }, [])
+
+  const handleScrollToFeed = useCallback(() => {
+    const y = aboveFeedHeightRef.current
+    if (y <= 0) return
+
+    runOnUI(() => {
+      'worklet'
+      scrollTo(listRef, 0, y, true)
+    })()
+  }, [listRef])
+
+  const handlePeekStart = useCallback((plan: Plan) => {
+    setPeekPlan(plan)
+  }, [])
+
+  const handlePeekEnd = useCallback(() => {
+    if (peekRef.current) {
+      peekRef.current.dismiss()
+      return
+    }
+    // Long-press ended before the overlay mounted — drop it immediately.
+    setPeekPlan(null)
+  }, [])
+
+  const activeFilter: FeedFilter = nearMe ? 'cerca' : activeDateFilter
+
+  const handleFilterChange = useCallback(async (next: FeedFilter) => {
+    setLocationHint(null)
+
+    if (next === 'cerca') {
+      if (nearMe) {
+        setNearMe(null)
+        return
+      }
+      const coords = await getFreshDeviceCoords()
+      if (!coords) {
+        setLocationHint(strings.plansFeed.nearbyLocationRequired)
+        return
+      }
+      setActiveDateFilter(null)
+      setNearMe({ lat: coords.lat, lng: coords.lng })
+      return
+    }
+
+    setNearMe(null)
+    setActiveDateFilter(next)
+  }, [nearMe])
+
+  const showCardSkeletons = loading || isFiltering
+  const listData: readonly (Plan | string)[] = showCardSkeletons
+    ? ['sk-1', 'sk-2', 'sk-3', 'sk-4']
     : plans
 
-  const listData: readonly (Plan | string)[] = loading ? ['sk-1', 'sk-2', 'sk-3', 'sk-4'] : filteredPlans
+  const handleToggleSearch = useCallback(() => {
+    if (searchOpen) {
+      setSearchOpen(false)
+      setSearchInput('')
+      setSearchQuery('')
+      return
+    }
+    setSearchOpen(true)
+  }, [searchOpen])
 
-  const renderListHeader = useCallback(
-    () => (
-      <View>
-
-        {loading ? (
-          <PlansHeaderSkeleton />
-        ) : (
-          <PlansHeader
-            nextPlan={nextPlan}
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-          />
-        )}
-      </View>
-    ),
-    [loading, nextPlan, activeFilter]
+  const listHeader = loading ? (
+    <PlansHeaderSkeleton />
+  ) : (
+    <PlansHeader
+      nextPlan={nextPlan}
+      activeFilter={activeFilter}
+      onFilterChange={next => { void handleFilterChange(next) }}
+      locationHint={locationHint}
+      searchOpen={searchOpen}
+      searchText={searchInput}
+      onToggleSearch={handleToggleSearch}
+      onSearchTextChange={setSearchInput}
+      onOpenChat={handleOpenChat}
+      onScrollToFeed={handleScrollToFeed}
+      onAboveFeedHeightChange={handleAboveFeedHeightChange}
+    />
   )
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<Plan | string>) => {
       if (loading || typeof item === 'string') {
-        return <PlanCardSkeleton />
+        return <PlanCardSkeleton pulse={isFiltering} />
       }
-      return <PlanCard plan={item} onJoin={handleJoin} />
+      return (
+        <PlanCard
+          plan={item}
+          onJoin={handleJoin}
+          onPeekStart={handlePeekStart}
+          onPeekEnd={handlePeekEnd}
+        />
+      )
     },
-    [loading]
+    [loading, isFiltering, handleJoin, handlePeekStart, handlePeekEnd],
   )
 
   const keyExtractor = useCallback(
     (item: Plan | string) => (typeof item === 'string' ? item : item.id),
-    []
+    [],
   )
+
+  const emptyFeedMessage =
+    activeFilter === 'hoy'
+      ? strings.plansFeed.emptyFeedToday
+      : activeFilter === 'finde'
+        ? strings.plansFeed.emptyFeedWeekend
+        : strings.plansFeed.emptyFeed
+
+  const endOfFeedMessage =
+    activeFilter === null
+      ? strings.plansFeed.endOfFeedAll
+      : strings.plansFeed.endOfFeed
 
   const renderEmptyComponent = useCallback(() => (
     <View className="items-center px-6 py-12">
-      <Text className="text-[15px] font-semibold text-neutral-hint text-center">
-        {strings.plansFeed.emptyFeed}
+      <Text className="text-lead font-semibold text-neutral-hint text-center">
+        {emptyFeedMessage}
       </Text>
     </View>
-  ), [])
+  ), [emptyFeedMessage])
 
   const renderFooter = useCallback(() => {
+    if (isFiltering) return null
     if (loadingMore) {
       return <PlanCardSkeleton />
     }
     if (!hasMore && plans.length > 0) {
       return (
         <View className="items-center px-6 py-12">
-          <Text className="text-[15px] font-semibold text-neutral-hint text-center">
-            {strings.plansFeed.endOfFeed}
+          <Text className="text-lead font-semibold text-neutral-hint text-center">
+            {endOfFeedMessage}
           </Text>
         </View>
       )
     }
     return null
-  }, [loadingMore, hasMore, plans.length])
+  }, [isFiltering, loadingMore, hasMore, plans.length, endOfFeedMessage])
 
   return (
     <TabScreen>
-      <FlatList
-        data={listData}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        ListHeaderComponent={renderListHeader}
-        ListEmptyComponent={!loading && filteredPlans.length === 0 ? renderEmptyComponent : undefined}
-        ListFooterComponent={renderFooter}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        refreshControl={
-          !loading ? (
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-            />
-          ) : undefined
-        }
-        extraData={loading ? 'loading' : `${activeFilter}-${refreshing}`}
-        showsVerticalScrollIndicator={false}
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 100 }}
-      />
+      <View style={styles.feedRoot}>
+        <Animated.FlatList
+          ref={listRef}
+          data={listData}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          ListHeaderComponent={listHeader}
+          ListEmptyComponent={!loading && !isFiltering && plans.length === 0 ? renderEmptyComponent : undefined}
+          ListFooterComponent={renderFooter}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          refreshControl={
+            !loading ? (
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            ) : undefined
+          }
+          extraData={
+            loading
+              ? 'loading'
+              : `${searchQuery}-${activeDateFilter}-${nearMe ? `${nearMe.lat},${nearMe.lng}` : ''}-${searchOpen}-${refreshing}-${isFiltering}-${plans.filter(p => p.user_joined).map(p => p.id).join(',')}`
+          }
+          showsVerticalScrollIndicator={false}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        />
+        {peekPlan ? (
+          <PlanDetailModal
+            ref={peekRef}
+            visible
+            plan={peekPlan}
+            presentation="hosted"
+            interactive={false}
+            onClose={() => setPeekPlan(null)}
+            onJoin={handleJoin}
+          />
+        ) : null}
+      </View>
     </TabScreen>
   )
 }
+
+const styles = StyleSheet.create({
+  feedRoot: {
+    flex: 1,
+  },
+})

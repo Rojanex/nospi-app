@@ -1,4 +1,6 @@
 import { supabase } from '@/lib/supabase'
+import { VERIFICATION_ENABLED } from '@/lib/env_reader'
+import { unlockAppAfterDisplayName } from '@/lib/profiles/onboarding'
 import { strings } from '@/constants/strings'
 import { Colors } from '@/assets/constants/Colors'
 import { useRouter } from 'expo-router'
@@ -67,8 +69,9 @@ export default function Name() {
       return
     }
 
+    unlockAppAfterDisplayName()
     setLoading(false)
-    router.push('/(onboarding)/dni-verify')
+    if (VERIFICATION_ENABLED) router.push('/(onboarding)/dni-verify')
   }
 
   const isDisabled = name.trim().length < 2 || loading
@@ -124,7 +127,7 @@ export default function Name() {
 
             <TextInput
               style={{ marginBottom: 16 }}
-              className="h-14 w-full rounded-2xl bg-white text-[17px] px-5 text-black-100"
+              className="h-14 w-full rounded-2xl bg-white text-title px-5 text-black-100"
               placeholder={strings.onboarding.namePlaceholder}
               placeholderTextColor={Colors.neutral.hint}
               maxLength={30}
@@ -140,7 +143,7 @@ export default function Name() {
               disabled={isDisabled}
             >
               {loading ? (
-                <ActivityIndicator color="#ffffff" />
+                <ActivityIndicator color={Colors.white} />
               ) : (
                 <Text className="btn-primary-text">{strings.onboarding.nameButton}</Text>
               )}

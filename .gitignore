@@ -37,4 +37,7 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# editor (local session state)
+.vscode/changelists.json
+
 app-example

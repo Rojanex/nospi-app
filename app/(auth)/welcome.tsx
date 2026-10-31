@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router'
 import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { strings } from '@/constants/strings'
+import { FontSize } from '@/constants/typography'
 import { Colors } from '@/assets/constants/Colors'
 
 export default function Welcome() {
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     color: Colors.black[100],
-    textShadowColor: 'rgba(255,255,255,0.9)',
+    textShadowColor: Colors.overlay.glowStrong,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 6,
   },
@@ -71,13 +72,13 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     color: Colors.black[100],
-    textShadowColor: 'rgba(255,255,255,0.6)',
+    textShadowColor: Colors.overlay.glowSoft,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 12,
   },
   label: {
     color: Colors.buttons.orange,
-    fontSize: 12,
+    fontSize: FontSize.caption,
     fontWeight: '700',
     letterSpacing: 2,
     textTransform: 'uppercase',
