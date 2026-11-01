@@ -75,7 +75,7 @@ export const FOUNDER_TYPEFORM_URL = readEnvString(
 )
 
 // Legal pages linked from the signup consent checkbox and the accept-terms screen.
-// Placeholders until the pages are published on nospi.club (NOS-18: website legal pages).
+// Published on nospi.club (version 2026-10-30); source text lives in nospi-astro/src/legal/.
 export const TERMS_URL = readEnvString(
   'EXPO_PUBLIC_TERMS_URL',
   process.env.EXPO_PUBLIC_TERMS_URL,
