@@ -1,8 +1,12 @@
 import { Colors } from '@/assets/constants/Colors'
+import { ReportSheet } from '@/components/moderation/ReportSheet'
+import { PublicProfileSheet } from '@/components/profile/PublicProfileSheet'
+import { DropdownMenu } from '@/components/ui/DropdownMenu'
 import { PlanChatPanel } from '@/components/plans/PlanChatPreview'
 import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
 import { VERIFICATION_ENABLED } from '@/lib/env_reader'
+import { refreshAfterBlockChange, type ReportTarget } from '@/lib/moderation/api'
 import { getPlanGradientTokens } from '@/lib/plans/gradientTokens'
 import { usePlanModalMessagePreview } from '@/lib/plans/usePlanMessagePreview'
 import { avatarColorsForId } from '@/lib/utils/avatar'
@@ -39,9 +43,7 @@ type PlanDetailModalProps = {
   plan: Plan
   onClose: () => void
   onJoin: (id: string) => void
-  /** `modal` = RN Modal (sticky). `hosted` = absolute overlay in parent (peek). */
   presentation?: 'modal' | 'hosted'
-  /** When false, overlay ignores touches so the card can keep tracking the finger. */
   interactive?: boolean
 }
 
@@ -89,6 +91,10 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
           ]
 
     const [joined, setJoined] = useState(plan.user_joined)
+    const [menuOpen, setMenuOpen] = useState(false)
+    const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null)
+    const [profileUserId, setProfileUserId] = useState<string | null>(null)
+    const showMoreMenu = interactive && !plan.user_is_host
     const closingRef = useRef(false)
 
     const backdropOpacity = useSharedValue(0)
@@ -125,18 +131,43 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
     function dismiss() {
       if (closingRef.current) return
       closingRef.current = true
+      setMenuOpen(false)
       backdropOpacity.value = withTiming(0, { duration: EXIT_MS })
       cardOpacity.value = withTiming(0, { duration: EXIT_MS })
       cardScale.value = withTiming(
         0.94,
         { duration: EXIT_MS, easing: Easing.in(Easing.cubic) },
         finished => {
-          if (finished) scheduleOnRN(onClose)
+          if (finished) scheduleOnRN(handleClosed)
         },
       )
     }
 
     useImperativeHandle(ref, () => ({ dismiss }))
+
+    /**
+     * Blocking the host removes this plan's card from the feed, and the card owns these
+     * Modals. iOS freezes if they all close while the card unmounts, so close them in
+     * order: block sheet (closes itself) → host profile (user closes it) → this modal →
+     * only then refresh the feed.
+     */
+    const hostBlockChangedRef = useRef(false)
+
+    function handleHostBlockChange(_userId: string, _blocked: boolean) {
+      hostBlockChangedRef.current = true
+    }
+
+    function handleProfileDismissed() {
+      if (hostBlockChangedRef.current) dismiss()
+    }
+
+    function handleClosed() {
+      onClose()
+      if (!hostBlockChangedRef.current) return
+      hostBlockChangedRef.current = false
+      // Give the native Modal time to finish closing before the card unmounts.
+      setTimeout(refreshAfterBlockChange, 400)
+    }
 
     function handleJoinPress() {
       if (joined) return
@@ -177,13 +208,27 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
             </Pressable>
           ) : null}
 
+          {showMoreMenu ? (
+            <Pressable
+              onPress={() => setMenuOpen(open => !open)}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={strings.moderation.moreActions}
+              className="absolute right-12 top-3.5 z-10 h-8 w-8 items-center justify-center rounded-full"
+            >
+              <Ionicons name="ellipsis-horizontal" size={20} color={Colors.black[400]} />
+            </Pressable>
+          ) : null}
+
           <ScrollView
             bounces={false}
             scrollEnabled={interactive}
             showsVerticalScrollIndicator={false}
             contentContainerClassName="px-5 pb-5 pt-5"
           >
-            <View className={`mb-4 flex-row items-start gap-2.5 ${interactive ? 'pr-8' : ''}`}>
+            <View
+              className={`mb-4 flex-row items-start gap-2.5 ${showMoreMenu ? 'pr-16' : interactive ? 'pr-8' : ''}`}
+            >
               <View
                 className="h-11 w-11 items-center justify-center rounded-xl"
                 style={{ backgroundColor: meta.surface }}
@@ -312,7 +357,41 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
               </Pressable>
             ) : null}
           </ScrollView>
+
+          <DropdownMenu
+            open={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            positionClassName="right-3.5 top-12"
+            items={[
+              {
+                key: 'host',
+                label: strings.moderation.viewHostProfile,
+                icon: 'person-circle-outline',
+                onPress: () => setProfileUserId(plan.host_id),
+              },
+              {
+                key: 'report',
+                label: strings.moderation.reportPlan,
+                icon: 'flag-outline',
+                destructive: true,
+                onPress: () => setReportTarget({ type: 'plan', id: plan.id }),
+              },
+            ]}
+          />
         </Animated.View>
+
+        {interactive ? (
+          <>
+            <ReportSheet target={reportTarget} onClose={() => setReportTarget(null)} />
+            <PublicProfileSheet
+              userId={profileUserId}
+              onClose={() => setProfileUserId(null)}
+              onBlockChange={handleHostBlockChange}
+              onDismissed={handleProfileDismissed}
+              deferRefresh
+            />
+          </>
+        ) : null}
       </View>
     )
 

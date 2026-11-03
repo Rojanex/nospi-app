@@ -41,6 +41,7 @@ export function mapRowToPlan(
     host_type: hostProfile?.role === 'local' ? 'local' : 'turista',
     posted_ago: formatPostedAgo(row.created_at),
     user_joined: (row.plan_members ?? []).some(m => m.user_id === currentUserId),
+    user_is_host: row.created_by === currentUserId,
     like_count: row.like_count ?? 0,
     user_liked: likedPlanIds ? likedPlanIds.has(row.id) : null,
     visibility: row.visibility as PlanVisibility,

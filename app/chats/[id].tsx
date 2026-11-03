@@ -1,8 +1,14 @@
 import { Colors } from '@/assets/constants/Colors'
 import { ChatComposer } from '@/components/chats/ChatComposer'
+import {
+  MessageActionMenu,
+  type MessageAnchor,
+} from '@/components/chats/MessageActionMenu'
 import { ChatThreadHeader } from '@/components/chats/ChatThreadHeader'
 import { MessageBubble, isSameMessageGroup } from '@/components/chats/MessageBubble'
 import { ParticipantsSheet } from '@/components/chats/ParticipantsSheet'
+import { BlockSheet, type BlockSheetTarget } from '@/components/moderation/BlockSheet'
+import { ReportSheet } from '@/components/moderation/ReportSheet'
 import { TabScreen } from '@/components/layout/TabScreen'
 import { isPlanExpired } from '@/constants/planStatus'
 import { strings } from '@/constants/strings'
@@ -21,6 +27,7 @@ import {
   subscribeToThreadMessages,
   subscribeToThreadParticipants,
 } from '@/lib/chats/api'
+import type { ReportTarget } from '@/lib/moderation/api'
 import { deletePlan, leavePlan } from '@/lib/plans/lifecycle'
 import { notifyPlanDeleted } from '@/lib/plans/plansEvents'
 import { supabase } from '@/lib/supabase'
@@ -87,6 +94,14 @@ export default function ChatThread() {
   const [messagesLoading, setMessagesLoading] = useState(() => !initialCache)
   const [error, setError] = useState<string | null>(null)
   const [keyboardHeight, setKeyboardHeight] = useState(0)
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null)
+  const [blockTarget, setBlockTarget] = useState<BlockSheetTarget | null>(null)
+  /** Composer bottom padding held in place while a message is selected (keyboard was open). */
+  const [frozenBottomInset, setFrozenBottomInset] = useState<number | null>(null)
+  const [messageMenu, setMessageMenu] = useState<{
+    message: ChatMessage
+    anchor: MessageAnchor
+  } | null>(null)
 
   const pendingRef = useRef<PendingOptimistic[]>([])
   const pendingParticipantActionsRef = useRef(new Set<string>())
@@ -513,6 +528,59 @@ export default function ChatThread() {
     }
   }
 
+  function hideMessagesFrom(userId: string) {
+    if (!id) return
+    setMessages(current => {
+      const updated = current.filter(message => message.senderId !== userId)
+      setMessagesCache(id, updated)
+      return updated
+    })
+  }
+
+  function handleBlockChange(userId: string, blocked: boolean) {
+    if (blocked) {
+      hideMessagesFrom(userId)
+    } else {
+      void loadThread()
+    }
+  }
+
+  function handleMessageLongPress(message: ChatMessage, anchor: MessageAnchor) {
+    if (!message.senderId || message.isOwn || message.type !== 'user') return
+
+  
+    if (keyboardHeight > 0) setFrozenBottomInset(keyboardHeight)
+    setMessageMenu({ message, anchor })
+    Keyboard.dismiss()
+  }
+
+  function closeMessageMenu() {
+    setMessageMenu(null)
+    setFrozenBottomInset(null)
+  }
+
+  const menuMessage = messageMenu?.message ?? null
+  const menuSenderId = menuMessage?.senderId
+  const menuSenderName = menuMessage?.sender?.name ?? strings.common.userFallback
+  const messageMenuItems =
+    menuMessage && menuSenderId
+      ? [
+          {
+            key: 'report',
+            label: strings.moderation.reportMessage,
+            icon: 'flag-outline' as const,
+            onPress: () => setReportTarget({ type: 'message', id: menuMessage.id }),
+          },
+          {
+            key: 'block',
+            label: strings.moderation.blockUserAction(menuSenderName),
+            icon: 'ban-outline' as const,
+            onPress: () =>
+              setBlockTarget({ userId: menuSenderId, name: menuSenderName, block: true }),
+          },
+        ]
+      : []
+
   return (
     <TabScreen
       header={
@@ -555,6 +623,9 @@ export default function ChatThread() {
                     message={item}
                     isFirstInGroup={isFirstInGroup}
                     isLastInGroup={isLastInGroup}
+                    onLongPress={
+                      item.isOwn || item.type !== 'user' ? undefined : handleMessageLongPress
+                    }
                   />
                 )
               }}
@@ -617,7 +688,8 @@ export default function ChatThread() {
 
         <View
           style={{
-            paddingBottom: keyboardHeight > 0 ? keyboardHeight : insets.bottom,
+            paddingBottom:
+              frozenBottomInset ?? (keyboardHeight > 0 ? keyboardHeight : insets.bottom),
           }}
         >
           <ChatComposer
@@ -637,6 +709,22 @@ export default function ChatThread() {
         onRemoveMember={handleRemoveMember}
         onLeave={handleLeave}
         onDeletePlan={handleDeletePlan}
+        onBlockChange={handleBlockChange}
+      />
+
+      <MessageActionMenu
+        message={messageMenu?.message ?? null}
+        anchor={messageMenu?.anchor ?? null}
+        items={messageMenuItems}
+        onClose={closeMessageMenu}
+      />
+
+      <ReportSheet target={reportTarget} onClose={() => setReportTarget(null)} />
+
+      <BlockSheet
+        target={blockTarget}
+        onClose={() => setBlockTarget(null)}
+        onDone={handleBlockChange}
       />
     </TabScreen>
   )

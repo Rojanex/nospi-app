@@ -1,14 +1,11 @@
 import { Colors } from '@/assets/constants/Colors'
-import { ActivityFingerprint } from '@/components/profile/ActivityFingerprint'
-import { ProfileHeader } from '@/components/profile/ProfileHeader'
+import { PublicProfileView } from '@/components/profile/PublicProfileView'
 import { isPlanActive } from '@/constants/planStatus'
 import { strings } from '@/constants/strings'
-import { fetchPublicProfile, type PublicProfile } from '@/lib/profiles/api'
 import { ChatListItem, Participant } from '@/types'
 import { Ionicons } from '@expo/vector-icons'
 import React, { useEffect, useState } from 'react'
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
   Keyboard,
@@ -38,6 +35,7 @@ type ParticipantsSheetProps = {
   onRemoveMember: (id: string) => void
   onLeave: () => void
   onDeletePlan: () => void
+  onBlockChange?: (userId: string, blocked: boolean) => void
 }
 
 export function ParticipantsSheet({
@@ -48,12 +46,10 @@ export function ParticipantsSheet({
   onRemoveMember,
   onLeave,
   onDeletePlan,
+  onBlockChange,
 }: ParticipantsSheetProps) {
   const [viewMode, setViewMode] = useState<'list' | 'profile'>('list')
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-  const [publicProfile, setPublicProfile] = useState<PublicProfile | null>(null)
-  const [profileLoading, setProfileLoading] = useState(false)
-  const [profileError, setProfileError] = useState<string | null>(null)
   const [expandedRemoveId, setExpandedRemoveId] = useState<string | null>(null)
   const translateY = useSharedValue(SCREEN_HEIGHT)
   const overlayOpacity = useSharedValue(0)
@@ -86,35 +82,7 @@ export function ParticipantsSheet({
     overlayOpacity.value = withTiming(1, { duration: 240 })
   }, [visible, translateY, overlayOpacity])
 
-  useEffect(() => {
-    if (viewMode !== 'profile' || !selectedUserId) return
-
-    if (publicProfile?.id === selectedUserId) {
-      setProfileLoading(false)
-      setProfileError(null)
-      return
-    }
-
-    let cancelled = false
-    setProfileLoading(true)
-    setProfileError(null)
-
-    fetchPublicProfile(selectedUserId)
-      .then(data => {
-        if (!cancelled) setPublicProfile(data)
-      })
-      .catch(err => {
-        console.error('[participants-sheet] profile', err)
-        if (!cancelled) setProfileError(strings.profile.publicLoadError)
-      })
-      .finally(() => {
-        if (!cancelled) setProfileLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [viewMode, selectedUserId, publicProfile?.id])
+  const selectedParticipant = participants.find(p => p.id === selectedUserId) ?? null
 
   function closeSheet() {
     Keyboard.dismiss()
@@ -368,39 +336,19 @@ export function ParticipantsSheet({
                   </View>
                 </GestureDetector>
 
-                <Pressable
-                  onPress={goBackToList}
-                  className="mb-2 flex-row items-center gap-1 px-5"
-                  hitSlop={8}
-                >
-                  <Ionicons name="chevron-back" size={22} color={Colors.black[400]} />
-                </Pressable>
-
-                <ScrollView
-                  className="flex-grow-0"
-                  contentContainerClassName="px-5 pb-8"
-                  showsVerticalScrollIndicator={false}
-                  bounces={false}
-                >
-                  {profileLoading ? (
-                    <View className="items-center py-10">
-                      <ActivityIndicator size="large" color={Colors.buttons.orange} />
-                    </View>
-                  ) : profileError ? (
-                    <View className="items-center py-10">
-                      <Text className="text-center text-body text-ink-50">{profileError}</Text>
-                    </View>
-                  ) : publicProfile ? (
-                    <>
-                      <ProfileHeader
-                        profile={publicProfile}
-                        plansCreated={publicProfile.plansCreated}
-                        plansJoined={publicProfile.plansJoined}
-                      />
-                      <ActivityFingerprint fingerprint={publicProfile.fingerprint} />
-                    </>
-                  ) : null}
-                </ScrollView>
+                {selectedUserId ? (
+                  <PublicProfileView
+                    key={selectedUserId}
+                    userId={selectedUserId}
+                    showModerationActions={!!selectedParticipant && !selectedParticipant.isSelf}
+                    onBlockChange={onBlockChange}
+                    headerLeft={
+                      <Pressable onPress={goBackToList} hitSlop={8}>
+                        <Ionicons name="chevron-back" size={22} color={Colors.black[400]} />
+                      </Pressable>
+                    }
+                  />
+                ) : null}
                 </View>
               </GestureDetector>
             )}

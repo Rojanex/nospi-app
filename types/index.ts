@@ -104,6 +104,8 @@ export interface Plan {
   host_type: 'local' | 'turista'
   posted_ago: string
   user_joined: boolean
+  /** The current user created this plan. */
+  user_is_host: boolean
   like_count: number
   /** As of this fetch; `null` when the liked state couldn't be loaded. */
   user_liked: boolean | null
@@ -153,6 +155,7 @@ export type ChatMessage = {
   createdAt: string
   timeLabel: string
   isOwn?: boolean
+  senderId?: string
   sender?: {
     name: string
     initials: string

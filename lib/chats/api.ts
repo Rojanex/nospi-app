@@ -138,6 +138,7 @@ export function mapRealtimeMessageToChatMessage(
       createdAt: row.created_at,
       timeLabel: formatTimestampLabel(row.created_at),
       isOwn: true,
+      senderId: row.user_id!,
     }
   }
 
@@ -154,6 +155,7 @@ export function mapRealtimeMessageToChatMessage(
     createdAt: row.created_at,
     timeLabel: formatTimestampLabel(row.created_at),
     isOwn: false,
+    senderId: row.user_id!,
     sender: {
       name,
       initials: participant?.initials ?? initialsFromName(name),
@@ -507,6 +509,7 @@ function mapMessageRow(row: MessageRow, userId: string): ChatMessage {
     createdAt: row.created_at,
     timeLabel: formatTimestampLabel(row.created_at),
     isOwn: row.user_id === userId,
+    senderId: row.user_id!,
     sender:
       row.user_id === userId
         ? undefined
