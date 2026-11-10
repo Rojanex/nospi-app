@@ -87,6 +87,13 @@ export const PRIVACY_URL = readEnvString(
   'https://nospi.club/privacidad',
 )
 
+// Support inbox, linked from settings (name/phone changes, help).
+export const SUPPORT_EMAIL = readEnvString(
+  'EXPO_PUBLIC_SUPPORT_EMAIL',
+  process.env.EXPO_PUBLIC_SUPPORT_EMAIL,
+  'soporte@nospi.club',
+)
+
 // Chat performance
 export const CHAT_LIST_CACHE_TTL_MS = readEnvInt(
   'EXPO_PUBLIC_CHAT_LIST_CACHE_TTL_MS',

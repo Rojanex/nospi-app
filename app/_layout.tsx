@@ -8,6 +8,7 @@ import {
   setCachedUserId,
 } from '@/lib/chats/api'
 import { VERIFICATION_ENABLED } from '@/lib/env_reader'
+import { clearLikes } from '@/lib/plans/likeStore'
 import {
   acceptCurrentTerms,
   consumePendingTermsAcceptance,
@@ -51,6 +52,7 @@ export default function RootLayout() {
         clearUserIdCache()
         clearChatListCache()
         clearMessagesCache()
+        clearLikes()
         setSession(null)
         setAllowApp(false)
         setTermsAccepted(false)
@@ -126,6 +128,7 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen name="chats/archived" options={{ headerShown: false }} />
+          <Stack.Screen name="settings" options={{ headerShown: false }} />
         </Stack.Protected>
 
         <Stack.Protected guard={!!session && allowApp && !termsAccepted}>

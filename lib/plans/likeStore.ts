@@ -19,6 +19,12 @@ function emit() {
   listeners.forEach(listener => listener())
 }
 
+export function clearLikes() {
+  if (entries.size === 0) return
+  entries.clear()
+  emit()
+}
+
 /** Changes whenever any like changes; lets list views re-filter via useSyncExternalStore. */
 export function getLikesVersion(): number {
   return version
