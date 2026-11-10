@@ -164,6 +164,13 @@ export default function SettingsScreen() {
         <View className="px-5">
           <MailErrorBubble message={mailError} />
         </View>
+        <SettingsRow
+            icon="trash-outline"
+            label={strings.settings.deleteAccount}
+            tone="danger"
+            trailing="none"
+            onPress={() => router.push('/settings/delete-account' as never)}
+          />
 
         <SettingsSection>
           <SettingsRow
@@ -172,13 +179,7 @@ export default function SettingsScreen() {
             trailing="none"
             onPress={() => setLogoutVisible(true)}
           />
-          <SettingsRow
-            icon="trash-outline"
-            label={strings.settings.deleteAccount}
-            tone="danger"
-            trailing="none"
-            onPress={() => router.push('/settings/delete-account' as never)}
-          />
+          
         </SettingsSection>
       </ScrollView>
     )

@@ -63,7 +63,7 @@ export const strings = {
 
     // name screen
     nameTitle: '¿Cómo\nte llaman?',
-    nameSubtitle: 'Este es el nombre que verán los demás. Escríbelo bien: después no lo podrás cambiar.',
+    nameSubtitle: 'Usa el nombre con el que te conocen. Así te verán en los planes.',
     namePlaceholder: 'Tu nombre o apodo',
     nameButton: 'Continuar',
     nameButtonLoading: 'Guardando...',
