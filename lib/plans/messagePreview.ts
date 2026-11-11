@@ -1,5 +1,4 @@
 import { strings } from '@/constants/strings'
-import { resolveSystemContent, systemPayloadFromName } from '@/lib/chats/systemMessage'
 import { MESSAGES_CACHE_TTL_MS } from '@/lib/env_reader'
 import { supabase } from '@/lib/supabase'
 import { PlanMessagePreview } from '@/types'
@@ -10,6 +9,7 @@ type PlanMessagePreviewRow = {
   message_id: string
   content: string
   created_at: string
+  /** null = the author deleted their account. The RPC only returns type 'text', never system. */
   user_id: string | null
   display_name: string | null
   avatar_url: string | null
@@ -27,12 +27,13 @@ const inFlight: Record<PreviewRpc, Map<string, Promise<PlanMessagePreview[]>>> =
 }
 
 function mapRow(row: PlanMessagePreviewRow): PlanMessagePreview {
-  const senderName = row.display_name?.trim() || strings.common.userFallback
+  const senderName =
+    row.user_id === null
+      ? strings.common.deletedUser
+      : row.display_name?.trim() || strings.common.userFallback
   return {
     id: row.message_id,
-    content: row.user_id
-      ? row.content
-      : resolveSystemContent(row.content, systemPayloadFromName(row.display_name)),
+    content: row.content,
     createdAt: row.created_at,
     userId: row.user_id,
     senderName,

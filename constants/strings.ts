@@ -35,6 +35,7 @@ export const strings = {
   common: {
     hostFallback: 'Host',
     userFallback: 'Usuario',
+    deletedUser: 'Usuario eliminado',
     someoneFallback: 'Alguien',
   },
 

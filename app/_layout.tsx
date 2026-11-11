@@ -23,6 +23,12 @@ import { Stack } from 'expo-router'
 import { type ReactNode, useEffect, useState } from 'react'
 import { ActivityIndicator, Appearance, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { Image } from 'expo-image'
+import { cssInterop } from 'nativewind'
+
+// expo-image isn't a core RN component, so NativeWind ignores its className
+// (e.g. "h-24 w-24 rounded-full") unless it's mapped to style once here.
+cssInterop(Image, { className: 'style' })
 import './globals.css'
 
 Appearance.setColorScheme('light')

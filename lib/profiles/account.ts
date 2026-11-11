@@ -9,10 +9,11 @@ export async function signOut(): Promise<void> {
   }
 }
 
-/**
- * TODO(NOS-13): call the `delete-account` Edge Function, then signOut().
- * Until then the confirmation UI is complete but always shows the error.
- */
 export async function deleteAccount(): Promise<void> {
-  throw new Error('delete-account Edge Function not implemented yet (NOS-13)')
+  const { error } = await supabase.functions.invoke('delete-account', { method: 'POST' })
+  if (error) {
+    console.error('[deleteAccount]', error)
+    throw error
+  }
+  await supabase.auth.signOut({ scope: 'local' })
 }

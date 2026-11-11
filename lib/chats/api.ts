@@ -6,7 +6,11 @@ import {
   MESSAGES_CACHE_TTL_MS,
   MESSAGES_PAGE_SIZE,
 } from '@/lib/env_reader'
-import { avatarColorsForId, initialsFromName } from '@/lib/utils/avatar'
+import {
+  avatarColorsForId,
+  DELETED_USER_AVATAR_COLORS,
+  initialsFromName,
+} from '@/lib/utils/avatar'
 import { resolveSystemContent, systemPayloadFromName } from '@/lib/chats/systemMessage'
 import { notifyPlansChanged } from '@/lib/plans/plansEvents'
 import { supabase } from '@/lib/supabase'
@@ -72,6 +76,30 @@ function unwrapProfile(
   return Array.isArray(profiles) ? profiles[0] ?? null : profiles
 }
 
+/**
+ * NOS-13: when an account is deleted, the FK sets messages.user_id to null.
+ * System messages are the ones with type 'system'; a null user_id on any
+ * other type means "the author deleted their account".
+ * No senderId, so the long-press report/block menu doesn't open for it.
+ */
+function deletedUserMessage(row: { id: string; content: string; created_at: string }): ChatMessage {
+  const name = strings.common.deletedUser
+  return {
+    id: row.id,
+    type: 'user',
+    content: row.content,
+    createdAt: row.created_at,
+    timeLabel: formatTimestampLabel(row.created_at),
+    isOwn: false,
+    sender: {
+      name,
+      initials: initialsFromName(name),
+      bg: DELETED_USER_AVATAR_COLORS.bg,
+      text: DELETED_USER_AVATAR_COLORS.text,
+    },
+  }
+}
+
 function previewTextFromMessage(
   content: string,
   displayName?: string | null,
@@ -117,8 +145,7 @@ export function mapRealtimeMessageToChatMessage(
   currentUserId: string | null,
   participants: Participant[],
 ): ChatMessage {
-  const isSystem = row.user_id === null || row.type === 'system'
-  if (isSystem) {
+  if (row.type === 'system') {
     const name = participants.find(p => p.id === row.user_id)?.name
     return {
       id: row.id,
@@ -128,6 +155,8 @@ export function mapRealtimeMessageToChatMessage(
       timeLabel: formatTimestampLabel(row.created_at),
     }
   }
+
+  if (row.user_id === null) return deletedUserMessage(row)
 
   const isOwn = currentUserId != null && row.user_id === currentUserId
   if (isOwn) {
@@ -486,8 +515,7 @@ export type MessagesPage = {
 }
 
 function mapMessageRow(row: MessageRow, userId: string): ChatMessage {
-  const isSystem = row.user_id === null || row.type === 'system'
-  if (isSystem) {
+  if (row.type === 'system') {
     const name = unwrapProfile(row.profiles)?.display_name
     return {
       id: row.id,
@@ -498,9 +526,11 @@ function mapMessageRow(row: MessageRow, userId: string): ChatMessage {
     }
   }
 
+  if (row.user_id === null) return deletedUserMessage(row)
+
   const profile = unwrapProfile(row.profiles)
   const name = profile?.display_name?.trim() || strings.common.userFallback
-  const colors = avatarColorsForId(row.user_id!)
+  const colors = avatarColorsForId(row.user_id)
 
   return {
     id: row.id,
@@ -586,6 +616,7 @@ export async function fetchParticipants(planId: string): Promise<Participant[]> 
       initials: initialsFromName(name),
       avatarBg: colors.bg,
       avatarText: colors.text,
+      avatarUrl: profile?.avatar_url ?? null,
       role: row.role,
       isSelf: row.user_id === userId,
     }
@@ -625,6 +656,7 @@ export async function fetchParticipantProfile(
     initials: initialsFromName(name),
     avatarBg: colors.bg,
     avatarText: colors.text,
+    avatarUrl: profile?.avatar_url ?? null,
     role: row.role,
     isSelf: row.user_id === currentUserId,
   }
