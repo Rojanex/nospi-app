@@ -8,6 +8,7 @@ import {
   setCachedUserId,
 } from '@/lib/chats/api'
 import { VERIFICATION_ENABLED } from '@/lib/env_reader'
+import { clearLikes } from '@/lib/plans/likeStore'
 import {
   acceptCurrentTerms,
   consumePendingTermsAcceptance,
@@ -22,6 +23,12 @@ import { Stack } from 'expo-router'
 import { type ReactNode, useEffect, useState } from 'react'
 import { ActivityIndicator, Appearance, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { Image } from 'expo-image'
+import { cssInterop } from 'nativewind'
+
+// expo-image isn't a core RN component, so NativeWind ignores its className
+// (e.g. "h-24 w-24 rounded-full") unless it's mapped to style once here.
+cssInterop(Image, { className: 'style' })
 import './globals.css'
 
 Appearance.setColorScheme('light')
@@ -51,6 +58,7 @@ export default function RootLayout() {
         clearUserIdCache()
         clearChatListCache()
         clearMessagesCache()
+        clearLikes()
         setSession(null)
         setAllowApp(false)
         setTermsAccepted(false)
@@ -126,6 +134,7 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen name="chats/archived" options={{ headerShown: false }} />
+          <Stack.Screen name="settings" options={{ headerShown: false }} />
         </Stack.Protected>
 
         <Stack.Protected guard={!!session && allowApp && !termsAccepted}>

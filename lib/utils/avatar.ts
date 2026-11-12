@@ -25,6 +25,11 @@ export function paletteIndexForId(id: string): number {
   return hash
 }
 
+export const DELETED_USER_AVATAR_COLORS = {
+  bg: Colors.neutral.gray,
+  text: Colors.neutral.body,
+}
+
 export function avatarColorsForId(id: string) {
   return avatarColorsForIndex(paletteIndexForId(id))
 }

@@ -54,6 +54,14 @@
         {
           "locationWhenInUsePermission": "Nospi usa tu ubicación para mostrarte planes cerca de ti"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Nospi usa tus fotos para que elijas tu foto de perfil",
+          "cameraPermission": "Nospi usa la cámara para que tomes tu foto de perfil",
+          "microphonePermission": false
+        }
       ]
     ],
     "experiments": {

@@ -379,6 +379,7 @@ export default function ChatThread() {
             initials: initialsFromName(name),
             avatarBg: colors.bg,
             avatarText: colors.text,
+            avatarUrl: null,
             role: 'member',
             isSelf: row.user_id === currentUserIdRef.current,
           }

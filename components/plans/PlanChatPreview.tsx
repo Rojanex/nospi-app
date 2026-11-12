@@ -1,7 +1,11 @@
 import { Colors } from '@/assets/constants/Colors'
 import { strings } from '@/constants/strings'
 import { PlanGradientTokens } from '@/lib/plans/gradientTokens'
-import { avatarColorsForId, initialsFromName } from '@/lib/utils/avatar'
+import {
+  avatarColorsForId,
+  DELETED_USER_AVATAR_COLORS,
+  initialsFromName,
+} from '@/lib/utils/avatar'
 import { PlanMessagePreview } from '@/types'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
@@ -15,8 +19,8 @@ type BubbleProps = {
   compact: boolean
 }
 
-function SenderAvatar({ message, userId }: { message: PlanMessagePreview; userId: string }) {
-  const colors = avatarColorsForId(userId)
+function SenderAvatar({ message }: { message: PlanMessagePreview }) {
+  const colors = message.userId ? avatarColorsForId(message.userId) : DELETED_USER_AVATAR_COLORS
   return (
     <View
       className="z-10 -mb-1 h-6 w-6 items-center justify-center overflow-hidden rounded-full border-2 border-white"
@@ -41,21 +45,11 @@ function SenderAvatar({ message, userId }: { message: PlanMessagePreview; userId
 }
 
 function ChatPreviewBubble({ message, isHost, tokens, compact }: BubbleProps) {
-  if (message.userId === null) {
-    return (
-      <Text className="self-center text-caption italic text-black-400" numberOfLines={1}>
-        {message.content}
-      </Text>
-    )
-  }
-
-  const userId = message.userId
-
   return (
     <View
       className={`flex-row items-end ${isHost ? 'justify-end' : 'justify-start'}`}
     >
-      {isHost ? null : <SenderAvatar message={message} userId={userId} />}
+      {isHost ? null : <SenderAvatar message={message} />}
       <View
         className={`max-w-[80%] rounded-[14px] border px-3 py-1.5 ${isHost ? '-mr-2' : '-ml-2'}`}
         style={{
@@ -70,7 +64,7 @@ function ChatPreviewBubble({ message, isHost, tokens, compact }: BubbleProps) {
           {message.content}
         </Text>
       </View>
-      {isHost ? <SenderAvatar message={message} userId={userId} /> : null}
+      {isHost ? <SenderAvatar message={message} /> : null}
     </View>
   )
 }

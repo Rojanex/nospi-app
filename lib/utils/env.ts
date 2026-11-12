@@ -11,7 +11,6 @@ export function readEnvInt(name: string, raw: string | undefined, defaultValue: 
   const n = Number.parseInt(trimmed, 10)
 
   if (!Number.isFinite(n) || String(n) !== trimmed) {
-    console.warn(`[readEnvInt] ${name}="${raw}" is not a valid integer; using default ${defaultValue}`)
     return defaultValue
   }
 
@@ -25,13 +24,11 @@ export function readEnvBool(name: string, raw: string | undefined, defaultValue:
   if (normalized === 'true' || normalized === '1') return true
   if (normalized === 'false' || normalized === '0') return false
 
-  console.warn(`[readEnvBool] ${name}="${raw}" is not a valid boolean; using default ${defaultValue}`)
   return defaultValue
 }
 
 export function readEnvString(name: string, raw: string | undefined, defaultValue: string): string {
   if (raw === undefined || raw === '') {
-    console.warn(`[readEnvString] ${name} is not set; using default "${defaultValue}"`)
     return defaultValue
   }
   return raw.trim()

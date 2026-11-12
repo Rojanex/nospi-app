@@ -87,6 +87,13 @@ export const PRIVACY_URL = readEnvString(
   'https://nospi.club/privacidad',
 )
 
+// Support inbox, linked from settings (name/phone changes, help).
+export const SUPPORT_EMAIL = readEnvString(
+  'EXPO_PUBLIC_SUPPORT_EMAIL',
+  process.env.EXPO_PUBLIC_SUPPORT_EMAIL,
+  'soporte@nospi.club',
+)
+
 // Chat performance
 export const CHAT_LIST_CACHE_TTL_MS = readEnvInt(
   'EXPO_PUBLIC_CHAT_LIST_CACHE_TTL_MS',
@@ -102,4 +109,24 @@ export const MESSAGES_PAGE_SIZE = readEnvInt(
   'EXPO_PUBLIC_MESSAGES_PAGE_SIZE',
   process.env.EXPO_PUBLIC_MESSAGES_PAGE_SIZE,
   70,
+)
+
+// Profile photo (NOS-31). Resized on the phone before upload; the bucket rejects files over 1 MB,
+// so keep these well below that (512px at 80% is roughly 50–150 KB).
+// The bucket name must also match bucket + policies
+// and AVATARS_BUCKET in supabase/functions/delete-account/index.ts.
+export const AVATARS_BUCKET = readEnvString(
+  'EXPO_PUBLIC_AVATARS_BUCKET',
+  process.env.EXPO_PUBLIC_AVATARS_BUCKET,
+  'avatars',
+)
+export const AVATAR_SIZE_PX = readEnvInt(
+  'EXPO_PUBLIC_AVATAR_SIZE_PX',
+  process.env.EXPO_PUBLIC_AVATAR_SIZE_PX,
+  512,
+)
+export const AVATAR_JPEG_QUALITY_PERCENT = readEnvInt(
+  'EXPO_PUBLIC_AVATAR_JPEG_QUALITY_PERCENT',
+  process.env.EXPO_PUBLIC_AVATAR_JPEG_QUALITY_PERCENT,
+  80,
 )

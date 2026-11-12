@@ -117,7 +117,7 @@ export type PlanMessagePreview = {
   id: string
   content: string
   createdAt: string
-  /** null for system messages */
+  /** null when the author deleted their account (previews never include system messages) */
   userId: string | null
   senderName: string
   avatarUrl: string | null
@@ -170,6 +170,7 @@ export type Participant = {
   initials: string
   avatarBg: string
   avatarText: string
+  avatarUrl: string | null
   role: 'host' | 'member'
   isSelf: boolean
 }

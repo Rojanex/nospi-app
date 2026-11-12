@@ -4,6 +4,7 @@ import { isPlanActive } from '@/constants/planStatus'
 import { strings } from '@/constants/strings'
 import { ChatListItem, Participant } from '@/types'
 import { Ionicons } from '@expo/vector-icons'
+import { Image } from 'expo-image'
 import React, { useEffect, useState } from 'react'
 import {
   Alert,
@@ -235,17 +236,26 @@ export function ParticipantsSheet({
                           onPress={() => handleParticipantPress(participant)}
                           className="flex-row items-center gap-3 rounded-2xl px-2 py-2.5"
                         >
-                          <View
-                            className="h-10 w-10 items-center justify-center rounded-full"
-                            style={{ backgroundColor: participant.avatarBg }}
-                          >
-                            <Text
-                              className="text-body font-bold"
-                              style={{ color: participant.avatarText }}
+                          {participant.avatarUrl ? (
+                            <Image
+                              source={{ uri: participant.avatarUrl }}
+                              className="h-10 w-10 rounded-full"
+                              cachePolicy="memory-disk"
+                              contentFit="cover"
+                            />
+                          ) : (
+                            <View
+                              className="h-10 w-10 items-center justify-center rounded-full"
+                              style={{ backgroundColor: participant.avatarBg }}
                             >
-                              {participant.initials}
-                            </Text>
-                          </View>
+                              <Text
+                                className="text-body font-bold"
+                                style={{ color: participant.avatarText }}
+                              >
+                                {participant.initials}
+                              </Text>
+                            </View>
+                          )}
 
                           <View className="min-w-0 flex-1 flex-row items-center gap-2">
                             <Text

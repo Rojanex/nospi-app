@@ -152,6 +152,30 @@ export async function fetchPublicProfile(userId: string): Promise<PublicProfile>
   }
 }
 
+export type OwnBasics = {
+  display_name: string | null
+  avatar_url: string | null
+}
+
+/** Name and photo only (settings screen); fetchProfile also counts plans. */
+export async function fetchOwnBasics(userId: string): Promise<OwnBasics> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('display_name, avatar_url')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[fetchOwnBasics]', error)
+    throw error
+  }
+
+  return {
+    display_name: data?.display_name ?? null,
+    avatar_url: data?.avatar_url ?? null,
+  }
+}
+
 export async function fetchProfile(userId: string): Promise<ProfileWithStats> {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
