@@ -19,7 +19,7 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 // Injected by Supabase into every Edge Function. Never logged, never returned.
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-// Bucket + policies: Nospi/sql/NOS-31_avatars_bucket.sql
+// Must match AVATARS_BUCKET in lib/env_reader.ts and Nospi/sql/NOS-31_avatars_bucket.sql.
 const AVATARS_BUCKET = 'avatars'
 
 function json(status: number, body: Record<string, unknown>): Response {

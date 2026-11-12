@@ -1,20 +1,22 @@
 import { Colors } from '@/assets/constants/Colors'
 import { TabScreen } from '@/components/layout/TabScreen'
 import { LogoutSheet } from '@/components/settings/LogoutSheet'
+import { PhotoSheet, type PhotoAction } from '@/components/settings/PhotoSheet'
 import { MailErrorBubble } from '@/components/settings/MailErrorBubble'
 import { SettingsHeader } from '@/components/settings/SettingsHeader'
 import { SettingsRow } from '@/components/settings/SettingsRow'
 import { SettingsSection } from '@/components/settings/SettingsSection'
 import { strings } from '@/constants/strings'
 import { fetchOwnBasics, type OwnBasics } from '@/lib/profiles/api'
+import { pickAvatar, removeAvatar, uploadAvatar } from '@/lib/profiles/avatar'
 import { useSupportMail } from '@/lib/settings/support'
 import { supabase } from '@/lib/supabase'
 import { avatarColorsForId, initialsFromName } from '@/lib/utils/avatar'
 import { formatPhone } from '@/lib/utils/phone'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { ActivityIndicator, Linking, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
 type SettingsData = OwnBasics & {
   id: string
@@ -27,6 +29,10 @@ export default function SettingsScreen() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [logoutVisible, setLogoutVisible] = useState(false)
+  const [photoSheetVisible, setPhotoSheetVisible] = useState(false)
+  const [photoBusy, setPhotoBusy] = useState(false)
+  const [photoError, setPhotoError] = useState<'failed' | 'cameraDenied' | null>(null)
+  const pendingPhotoAction = useRef<PhotoAction | null>(null)
   const { openSupportMail, mailError } = useSupportMail()
 
   const load = useCallback(async () => {
@@ -53,6 +59,47 @@ export default function SettingsScreen() {
   function retry() {
     setLoading(true)
     load().finally(() => setLoading(false))
+  }
+
+  function handlePhotoAction(action: PhotoAction) {
+    pendingPhotoAction.current = action
+    setPhotoSheetVisible(false)
+  }
+
+  /** Runs after the sheet is fully closed (see PhotoSheet's onDismiss). */
+  function handlePhotoSheetDismissed() {
+    const action = pendingPhotoAction.current
+    pendingPhotoAction.current = null
+    if (action) void runPhotoAction(action)
+  }
+
+  async function runPhotoAction(action: PhotoAction) {
+    if (!data) return
+    setPhotoError(null)
+    try {
+      if (action === 'remove') {
+        setPhotoBusy(true)
+        await removeAvatar(data.id)
+        setData({ ...data, avatar_url: null })
+        return
+      }
+
+      const picked = await pickAvatar(action)
+      if (!picked) return // cancelled
+      if (picked.status === 'denied') {
+        setPhotoError('cameraDenied')
+        return
+      }
+
+      setPhotoBusy(true)
+      const url = await uploadAvatar(data.id, picked.uri)
+      setData({ ...data, avatar_url: url })
+    } catch (err) {
+      console.error('[settings] photo', err)
+      setPhotoError('failed')
+    } finally {
+      setPhotoBusy(false)
+    }
   }
 
   let body: React.ReactNode
@@ -86,27 +133,59 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View className="items-center pb-4 pt-2">
-          {data.avatar_url ? (
-            <Image
-              source={{ uri: data.avatar_url }}
-              className="h-24 w-24 rounded-full"
-              cachePolicy="memory-disk"
-              contentFit="cover"
-            />
-          ) : (
-            <View
-              className="h-24 w-24 items-center justify-center rounded-full"
-              style={{ backgroundColor: colors.bg }}
-            >
-              <Text className="text-2xl font-bold" style={{ color: colors.text }}>
-                {initialsFromName(name)}
+          <View className="h-24 w-24">
+            {data.avatar_url ? (
+              <Image
+                source={{ uri: data.avatar_url }}
+                className="h-24 w-24 rounded-full"
+                cachePolicy="memory-disk"
+                contentFit="cover"
+              />
+            ) : (
+              <View
+                className="h-24 w-24 items-center justify-center rounded-full"
+                style={{ backgroundColor: colors.bg }}
+              >
+                <Text className="text-2xl font-bold" style={{ color: colors.text }}>
+                  {initialsFromName(name)}
+                </Text>
+              </View>
+            )}
+            {photoBusy ? (
+              <View className="absolute inset-0 items-center justify-center rounded-full bg-black/40">
+                <ActivityIndicator color={Colors.white} />
+              </View>
+            ) : null}
+          </View>
+
+          <TouchableOpacity
+            onPress={() => setPhotoSheetVisible(true)}
+            disabled={photoBusy}
+            hitSlop={8}
+            accessibilityRole="button"
+          >
+            <Text className="mt-3 text-body font-semibold text-buttons-orange">
+              {data.avatar_url ? strings.settings.changePhoto : strings.settings.addPhoto}
+            </Text>
+          </TouchableOpacity>
+
+          {photoError === 'failed' ? (
+            <Text className="mt-2 text-center text-caption text-danger">
+              {strings.settings.photoError}
+            </Text>
+          ) : null}
+          {photoError === 'cameraDenied' ? (
+            <Text className="mt-2 text-center text-caption text-ink-50">
+              {strings.settings.cameraDenied}{' '}
+              <Text
+                className="font-semibold text-buttons-orange"
+                onPress={() => void Linking.openSettings()}
+                accessibilityRole="link"
+              >
+                {strings.settings.openPhoneSettings}
               </Text>
-            </View>
-          )}
-          {/* TODO(NOS-31): open the image picker and upload. */}
-          <Text className="mt-3 text-body font-semibold text-buttons-orange">
-            {strings.settings.changePhoto}
-          </Text>
+            </Text>
+          ) : null}
         </View>
 
         <SettingsSection
@@ -165,12 +244,12 @@ export default function SettingsScreen() {
           <MailErrorBubble message={mailError} />
         </View>
         <SettingsRow
-            icon="trash-outline"
-            label={strings.settings.deleteAccount}
-            tone="danger"
-            trailing="none"
-            onPress={() => router.push('/settings/delete-account' as never)}
-          />
+          icon="trash-outline"
+          label={strings.settings.deleteAccount}
+          tone="danger"
+          trailing="none"
+          onPress={() => router.push('/settings/delete-account' as never)}
+        />
 
         <SettingsSection>
           <SettingsRow
@@ -179,7 +258,6 @@ export default function SettingsScreen() {
             trailing="none"
             onPress={() => setLogoutVisible(true)}
           />
-          
         </SettingsSection>
       </ScrollView>
     )
@@ -190,6 +268,13 @@ export default function SettingsScreen() {
       <SettingsHeader title={strings.settings.title} />
       {body}
       <LogoutSheet visible={logoutVisible} onClose={() => setLogoutVisible(false)} />
+      <PhotoSheet
+        visible={photoSheetVisible}
+        hasPhoto={!!data?.avatar_url}
+        onClose={() => setPhotoSheetVisible(false)}
+        onChoose={handlePhotoAction}
+        onDismiss={handlePhotoSheetDismissed}
+      />
     </TabScreen>
   )
 }
