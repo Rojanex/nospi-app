@@ -41,3 +41,4 @@ yarn-error.*
 .vscode/changelists.json
 
 app-example
+supabase/sql/
