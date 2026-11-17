@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { Plan, PlanRow } from '@/types'
 
 const PLAN_SELECT =
-  '*, plan_members(user_id, profiles(display_name, avatar_url)), host:profiles!created_by(display_name, avatar_url, role)'
+  '*, plan_members(user_id, profiles(display_name, avatar_url)), host:profiles!created_by(display_name, avatar_url, is_founder)'
 
 const PAGE_SIZE = 20
 
@@ -165,7 +165,7 @@ export async function fetchNextJoinedPlan(): Promise<Plan | null> {
   const { data, error } = await supabase
     .from('plans')
     .select(
-      '*, plan_members!inner(user_id, profiles(display_name, avatar_url)), host:profiles!created_by(display_name, avatar_url, role)',
+      '*, plan_members!inner(user_id, profiles(display_name, avatar_url)), host:profiles!created_by(display_name, avatar_url, is_founder)',
     )
     .eq('plan_members.user_id', userId)
     .gt('date_time', new Date().toISOString())

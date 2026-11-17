@@ -3,13 +3,12 @@ import { TabScreen } from '@/components/layout/TabScreen'
 import { PlanDetailModal } from '@/components/plans/PlanDetailModal'
 import { FounderCta } from '@/components/profile/FounderCta'
 import { LikedPlansSection } from '@/components/profile/LikedPlansSection'
-import { OnboardingBanner } from '@/components/profile/OnboardingBanner'
 import { ProfileHeader } from '@/components/profile/ProfileHeader'
 import { ProfileScreenHeader } from '@/components/profile/ProfileScreenHeader'
 import { RecentPlansSection } from '@/components/profile/RecentPlansSection'
 import { strings } from '@/constants/strings'
 import { fetchChatList, getChatListCache, prefetchMessages } from '@/lib/chats/api'
-import { FOUNDER_TYPEFORM_URL, VERIFICATION_ENABLED } from '@/lib/env_reader'
+import { FOUNDER_TYPEFORM_URL } from '@/lib/env_reader'
 import {
   fetchProfile,
   fetchRecentJoinedPlans,
@@ -20,9 +19,9 @@ import { fetchLikedPlans } from '@/lib/plans/api'
 import { joinPlan, markPlanJoined } from '@/lib/plans/lifecycle'
 import { subscribePlansChanged } from '@/lib/plans/plansEvents'
 import { supabase } from '@/lib/supabase'
-import type { Plan, Profile } from '@/types'
+import type { Plan } from '@/types'
 import { useFocusEffect, useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Linking,
@@ -32,39 +31,16 @@ import {
   View,
 } from 'react-native'
 
-function toProfileViewModel(data: ProfileWithStats): Profile {
-  return {
-    id: data.id,
-    phone: null,
-    display_name: data.display_name,
-    avatar_url: data.avatar_url,
-    role: data.role,
-    plans_created_this_week: data.plansCreated,
-    plans_joined_this_week: data.plansJoined,
-    reputation_score: 0,
-    home_city: data.home_city,
-    is_founder: data.is_founder,
-    onboarding_completed: data.onboarding_completed,
-    created_at: '',
-    updated_at: '',
-  }
-}
-
 export default function ProfileScreen() {
   const router = useRouter()
   const hasLoadedRef = useRef(false)
-  const [profileData, setProfileData] = useState<ProfileWithStats | null>(null)
+  const [profile, setProfile] = useState<ProfileWithStats | null>(null)
   const [recentPlans, setRecentPlans] = useState<ProfileRecentPlan[]>([])
   const [likedPlans, setLikedPlans] = useState<Plan[]>([])
   const [detailPlan, setDetailPlan] = useState<Plan | null>(null)
   const [detailVisible, setDetailVisible] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const profile = useMemo(
-    () => (profileData ? toProfileViewModel(profileData) : null),
-    [profileData],
-  )
 
   const loadProfile = useCallback(async (background = false) => {
     if (!background) setError(null)
@@ -85,7 +61,7 @@ export default function ProfileScreen() {
         fetchLikedPlans().catch(() => null),
       ])
 
-      setProfileData(nextProfile)
+      setProfile(nextProfile)
       setRecentPlans(nextPlans)
       if (nextLikedPlans) setLikedPlans(nextLikedPlans)
       hasLoadedRef.current = true
@@ -116,10 +92,6 @@ export default function ProfileScreen() {
 
   function handleSettingsPress() {
     router.push('/settings' as never)
-  }
-
-  function handleOnboardingPress() {
-    router.push('/(onboarding)/dni-verify' as never)
   }
 
   function handleFounderPress() {
@@ -221,13 +193,9 @@ export default function ProfileScreen() {
 
         <ProfileHeader
           profile={profile}
-          plansCreated={profile.plans_created_this_week} //Todo - this should be this week's plans created
-          plansJoined={profile.plans_joined_this_week}
+          plansCreated={profile.plansCreated}
+          plansJoined={profile.plansJoined}
         />
-
-        {VERIFICATION_ENABLED && !profile.onboarding_completed ? (
-          <OnboardingBanner onPress={handleOnboardingPress} />
-        ) : null}
 
         {!profile.is_founder ? (
           <FounderCta onPress={handleFounderPress} />

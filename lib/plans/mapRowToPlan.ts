@@ -4,13 +4,13 @@ import {
   formatPostedAgo,
 } from '@/lib/plans/formatDateTime'
 import { initialsFromName } from '@/lib/utils/avatar'
-import { Plan, PlanRow, PlanVisibility } from '@/types'
+import { Plan, PlanRow } from '@/types'
 
 
 export function mapRowToPlan(
   row: PlanRow,
   currentUserId: string,
-  hostProfile?: { display_name: string | null; avatar_url: string | null; role: string },
+  hostProfile?: PlanRow['host'],
   likedPlanIds?: ReadonlySet<string> | null,
 ): Plan {
   const memberCount = row.plan_members?.length ?? 0
@@ -38,13 +38,12 @@ export function mapRowToPlan(
     host_name: hostName,
     host_initials: initialsFromName(hostName),
     host_avatar_url: hostProfile?.avatar_url ?? null,
-    host_type: hostProfile?.role === 'local' ? 'local' : 'turista',
+    host_is_founder: hostProfile?.is_founder ?? false,
     posted_ago: formatPostedAgo(row.created_at),
     user_joined: (row.plan_members ?? []).some(m => m.user_id === currentUserId),
     user_is_host: row.created_by === currentUserId,
     like_count: row.like_count ?? 0,
     user_liked: likedPlanIds ? likedPlanIds.has(row.id) : null,
-    visibility: row.visibility as PlanVisibility,
     description: row.description,
   }
 }

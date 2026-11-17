@@ -3,7 +3,7 @@ import { PlanChatPanel } from '@/components/plans/PlanChatPreview'
 import { PlanDetailModal } from '@/components/plans/PlanDetailModal'
 import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
-import { VERIFICATION_ENABLED } from '@/lib/env_reader'
+import { FounderMark } from '@/components/profile/FounderMark'
 import { getPlanGradientTokens } from '@/lib/plans/gradientTokens'
 import { usePlanCardMessagePreview } from '@/lib/plans/usePlanMessagePreview'
 import { usePlanLike } from '@/lib/plans/usePlanLike'
@@ -69,11 +69,6 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
           },
         ]
   const overflowCount = Math.max(0, plan.extra_attendees - avatarPeople.length)
-  const hostDotColor = !VERIFICATION_ENABLED
-    ? Colors.neutral.hint
-    : plan.host_type === 'local'
-      ? Colors.buttons.orange
-      : Colors.primary[100]
 
   const cardPressStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: pressY.value }, { scale: pressScale.value }],
@@ -309,16 +304,11 @@ export function PlanCard({ plan, onJoin, onPeekStart, onPeekEnd }: Props) {
                   </View>
                 )}
               </View>
-              <View
-                className="h-1.5 w-1.5 rounded-full"
-                style={{ backgroundColor: hostDotColor }}
-              />
-              <Text className="flex-1 text-caption text-black-400">
+              <Text className="shrink text-caption text-black-400" numberOfLines={1}>
                 {strings.plansFeed.hostPrefix} {plan.host_name}
-                {VERIFICATION_ENABLED
-                  ? ` · ${plan.host_type === 'local' ? strings.plansFeed.hostLocal : strings.plansFeed.hostVisitor}`
-                  : null}
               </Text>
+              {plan.host_is_founder ? <FounderMark size="sm" /> : null}
+              <View className="flex-1" />
               <Text className="text-caption text-neutral-hint">{plan.posted_ago}</Text>
             </View>
           </View>

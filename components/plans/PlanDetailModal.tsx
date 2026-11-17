@@ -1,11 +1,11 @@
 import { Colors } from '@/assets/constants/Colors'
 import { ReportSheet } from '@/components/moderation/ReportSheet'
+import { FounderMark } from '@/components/profile/FounderMark'
 import { PublicProfileSheet } from '@/components/profile/PublicProfileSheet'
 import { DropdownMenu } from '@/components/ui/DropdownMenu'
 import { PlanChatPanel } from '@/components/plans/PlanChatPreview'
 import { getActivityMeta } from '@/constants/activityMeta'
 import { strings } from '@/constants/strings'
-import { VERIFICATION_ENABLED } from '@/lib/env_reader'
 import { refreshAfterBlockChange, type ReportTarget } from '@/lib/moderation/api'
 import { getPlanGradientTokens } from '@/lib/plans/gradientTokens'
 import { usePlanModalMessagePreview } from '@/lib/plans/usePlanMessagePreview'
@@ -77,7 +77,6 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
     const statusColor = plan.spots_left <= 2 ? Colors.tone.orange : Colors.black[400]
 
     const description = plan.description?.trim()
-    const isLocalsOnly = plan.visibility === 'locals'
     const people =
       plan.attendees.length > 0
         ? plan.attendees
@@ -256,28 +255,6 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
               {statusLine}
             </Text>
 
-            {VERIFICATION_ENABLED ? (
-              <View
-                className="mt-4 self-start rounded-full px-2.5 py-1"
-                style={{
-                  backgroundColor: isLocalsOnly
-                    ? Colors.surface.orangeLight
-                    : Colors.surface.greenLight,
-                }}
-              >
-                <Text
-                  className="text-caption font-bold"
-                  style={{
-                    color: isLocalsOnly ? Colors.tone.amber : Colors.tone.green,
-                  }}
-                >
-                  {isLocalsOnly
-                    ? strings.plansFeed.visibilityLocalBadge
-                    : strings.plansFeed.visibilityOpenBadge}
-                </Text>
-              </View>
-            ) : null}
-
             <View className="mt-4 rounded-[14px] bg-neutral-softTint px-3.5 py-3">
               <Text className="mb-1 text-label font-bold tracking-wide text-neutral-label">
                 {strings.plansFeed.descriptionTitle}
@@ -329,12 +306,12 @@ export const PlanDetailModal = forwardRef<PlanDetailModalHandle, PlanDetailModal
               })}
             </View>
 
-            <Text className="mt-3 text-caption text-black-400" numberOfLines={1}>
-              {strings.plansFeed.hostCreatedByPrefix} {plan.host_name}
-              {VERIFICATION_ENABLED
-                ? ` · ${plan.host_type === 'local' ? strings.plansFeed.hostLocal : strings.plansFeed.hostVisitor}`
-                : null}
-            </Text>
+            <View className="mt-3 flex-row items-center gap-1.5">
+              <Text className="shrink text-caption text-black-400" numberOfLines={1}>
+                {strings.plansFeed.hostCreatedByPrefix} {plan.host_name}
+              </Text>
+              {plan.host_is_founder ? <FounderMark size="sm" /> : null}
+            </View>
 
             {interactive ? (
               <Pressable

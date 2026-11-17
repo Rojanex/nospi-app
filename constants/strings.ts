@@ -84,31 +84,6 @@ export const strings = {
     acceptTermsButton: 'Continuar',
     acceptTermsLogout: 'Cerrar sesión',
     acceptTermsError: 'No pudimos guardar tu aceptación. Intenta de nuevo.',
-
-
-    // dni input screen
-    dniTitle: 'Ingresa tu\ninfo',
-    dniSubtitle: 'Funciona con cédula colombiana o cualquier documento internacional.',
-    dniCityTitle: '¿desde dónde parchas?',
-    dniCityPlaceholder: 'Ingresa tu ciudad',
-    dniPlaceholder: 'Número de documento',
-    dniContinue: 'Continuar',
-    dniSkip: 'Hacer esto despues',
-      // dni type selector
-    dniTypeColombian: 'Cédula colombiana (CC)',
-    dniTypeInternational: 'Documento internacional',
-    dniPillCC: 'Cédula (CC)',
-    dniPillInternational: 'Documento extranjero',
-      // dni errors
-    dniErrorAlreadyRegistered: 'Este documento ya está registrado',
-
-    // liveness screen  
-    livenessTitle: 'Una selfie\nrápida',
-    livenessSubtitle: 'Solo para confirmar que eres tú. No guardamos tu foto.',
-    livenessButton: 'Tomar selfie',
-    livenessSkip: 'Hacer esto después',
-
-
   },
   plansFeed: {
     nextPlanLabel: 'PRÓXIMO PARCHE:',
@@ -136,14 +111,10 @@ export const strings = {
     spotsLeft: (spots: number) =>
       spots === 1 ? '1 cupo' : `${spots} cupos`,
     spotsFull: 'Ya estamos todos!',
-    hostLocal: 'local',
-    hostVisitor: 'explorer',
     hostPrefix: 'por',
     hostCreatedByPrefix: 'creado por',
     planDetailMore: 'Ver detalles',
     planDetailClose: 'Cerrar',
-    visibilityOpenBadge: 'abierto a todos',
-    visibilityLocalBadge: 'solo locales',
     descriptionTitle: 'DESCRIPCIÓN',
     descriptionEmpty: 'Sin descripción todavía — el host no agregó detalles.',
     likeA11y: (n: number) => (n === 1 ? 'Me gusta, 1 persona' : `Me gusta, ${n} personas`),
@@ -156,7 +127,6 @@ export const strings = {
     activityTypeSection: '¿qué tipo de plan es?',
     planSection: 'el plan',
     whereWhenSection: '¿dónde y cuándo?',
-    spotsVisibilitySection: 'cupos y visibilidad',
     spotsSection: 'cupos',
     titleLabel: 'TÍTULO',
     descriptionLabel: 'DESCRIPCIÓN (OPCIONAL)',
@@ -164,7 +134,6 @@ export const strings = {
     dateLabel: 'FECHA',
     timeLabel: 'HORA',
     spotsLabel: 'CUPOS',
-    visibilityLabel: '¿QUIÉN PUEDE UNIRSE?',
     titlePlaceholder: '¿cuál es el plan?',
     descriptionPlaceholder: 'agrega detalles del plan...',
     locationPlaceholder: 'busca un sitio...',
@@ -175,10 +144,6 @@ export const strings = {
     spotsCount: (n: number) => `${n} personas`,
     spotsSubtitleYouPlusOne: 'tú + 1 persona',
     spotsSubtitleYouPlusOthers: (n: number) => `tú + ${n} personas`,
-    visibilityOpenTitle: 'abierto',
-    visibilityOpenSubtitle: 'cualquier usuario',
-    visibilityLocalTitle: 'solo locales',
-    visibilityLocalSubtitle: 'únicamente locales verificados',
     addButton: 'Agregar parche',
     ctaButtonLoading: 'Agregando...',
     ctaHint: 'tu plan aparece en el feed de una vez',
@@ -236,14 +201,9 @@ export const strings = {
   profile: {
     title: 'Mi perfil',
     founderPill: 'Founder',
-    verificationExplorer: 'Explorer · sin verificar',
-    verificationVisitor: 'Visitante verificado',
-    verificationLocal: 'Local verificado',
+    instagramOpen: (handle: string) => `Abrir @${handle} en Instagram`,
     statsCreated: 'parches creados',
     statsAttended: 'asistidos',
-    onboardingBannerBody:
-      'Verifica tu identidad para desbloquear planes solo para locales y salir como local verificado.',
-    onboardingBannerCta: 'Verificar identidad',
     founderCta: 'Sé parte del programa fundador',
     recentPlansTitle: 'Tus últimos parches',
     seeAll: 'ver todos',
@@ -319,6 +279,16 @@ export const strings = {
     sectionAccount: 'Tu cuenta',
     nameLabel: 'Nombre',
     phoneLabel: 'Teléfono',
+    instagramLabel: 'Instagram',
+    instagramEmpty: 'Agregar',
+    instagramSheetTitle: 'Tu Instagram',
+    instagramSheetBody:
+      'Es opcional. Cualquier persona que vea tu perfil podrá verlo y abrirlo.',
+    instagramPlaceholder: 'tu.usuario',
+    instagramInvalid: 'Solo letras, números, puntos y guion bajo, hasta 30 caracteres.',
+    instagramSave: 'Guardar',
+    instagramRemove: 'Quitar de mi perfil',
+    instagramError: 'No pudimos guardar tu Instagram. Intenta de nuevo.',
     /** Appended to support emails so we know the app version and platform. */
     supportFooter: (version: string, platform: string) => `Nospi ${version} · ${platform}`,
     loadError: 'No pudimos cargar tu perfil. Intenta de nuevo.',

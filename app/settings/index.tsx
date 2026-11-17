@@ -1,5 +1,6 @@
 import { Colors } from '@/assets/constants/Colors'
 import { TabScreen } from '@/components/layout/TabScreen'
+import { InstagramSheet } from '@/components/settings/InstagramSheet'
 import { LogoutSheet } from '@/components/settings/LogoutSheet'
 import { PhotoSheet, type PhotoAction } from '@/components/settings/PhotoSheet'
 import { MailErrorBubble } from '@/components/settings/MailErrorBubble'
@@ -29,6 +30,7 @@ export default function SettingsScreen() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [logoutVisible, setLogoutVisible] = useState(false)
+  const [instagramVisible, setInstagramVisible] = useState(false)
   const [photoSheetVisible, setPhotoSheetVisible] = useState(false)
   const [photoBusy, setPhotoBusy] = useState(false)
   const [photoError, setPhotoError] = useState<'failed' | 'cameraDenied' | null>(null)
@@ -216,6 +218,16 @@ export default function SettingsScreen() {
             value={data.phone}
             trailing="lock"
           />
+          <SettingsRow
+            icon="logo-instagram"
+            label={strings.settings.instagramLabel}
+            value={
+              data.instagram_handle
+                ? `@${data.instagram_handle}`
+                : strings.settings.instagramEmpty
+            }
+            onPress={() => setInstagramVisible(true)}
+          />
         </SettingsSection>
 
         <SettingsSection title={strings.settings.sectionPrivacy}>
@@ -268,6 +280,15 @@ export default function SettingsScreen() {
       <SettingsHeader title={strings.settings.title} />
       {body}
       <LogoutSheet visible={logoutVisible} onClose={() => setLogoutVisible(false)} />
+      {data ? (
+        <InstagramSheet
+          visible={instagramVisible}
+          userId={data.id}
+          currentHandle={data.instagram_handle}
+          onClose={() => setInstagramVisible(false)}
+          onSaved={handle => setData(prev => (prev ? { ...prev, instagram_handle: handle } : prev))}
+        />
+      ) : null}
       <PhotoSheet
         visible={photoSheetVisible}
         hasPhoto={!!data?.avatar_url}
