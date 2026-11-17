@@ -1,9 +1,7 @@
 import { supabase } from '@/lib/supabase'
-import { VERIFICATION_ENABLED } from '@/lib/env_reader'
 import { unlockAppAfterDisplayName } from '@/lib/profiles/onboarding'
 import { strings } from '@/constants/strings'
 import { Colors } from '@/assets/constants/Colors'
-import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import {
   ActivityIndicator,
@@ -25,7 +23,6 @@ export default function Name() {
   const [keyboardVisible, setKeyboardVisible] = useState(false)
   const progress = useSharedValue(0)
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
 
   useEffect(() => {
     const show = Keyboard.addListener('keyboardDidShow', () => {
@@ -71,7 +68,6 @@ export default function Name() {
 
     unlockAppAfterDisplayName()
     setLoading(false)
-    if (VERIFICATION_ENABLED) router.push('/(onboarding)/dni-verify')
   }
 
   const isDisabled = name.trim().length < 2 || loading

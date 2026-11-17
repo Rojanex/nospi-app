@@ -5,7 +5,7 @@
  * Every value must be read as `process.env.EXPO_PUBLIC_X` (never `process.env[name]`),
  * otherwise it is empty in release builds. Parsing lives in `@/lib/utils/env`.
  */
-import { readEnvBool, readEnvInt, readEnvString } from '@/lib/utils/env'
+import { readEnvInt, readEnvString } from '@/lib/utils/env'
 
 export const SUPABASE_URL = readEnvString(
   'EXPO_PUBLIC_SUPABASE_URL',
@@ -59,20 +59,21 @@ export const GOOGLE_PLACES_KEY = readEnvString(
   '',
 )
 
-// Identity verification (document + selfie/liveness). When off, phone OTP is the only check:
-// onboarding ends after the name step and local/explorer labels and "solo locales" are hidden.
-export const VERIFICATION_ENABLED = readEnvBool(
-  'EXPO_PUBLIC_VERIFICATION_ENABLED',
-  process.env.EXPO_PUBLIC_VERIFICATION_ENABLED,
-  false,
-)
-
 // Profile
 export const FOUNDER_TYPEFORM_URL = readEnvString(
   'EXPO_PUBLIC_FOUNDER_TYPEFORM_URL',
   process.env.EXPO_PUBLIC_FOUNDER_TYPEFORM_URL,
   'https://form.typeform.com/to/PLACEHOLDER',
 )
+
+// Instagram on profiles (NOS-92). The handle is typed by the user and not verified.
+// INSTAGRAM_HANDLE_MAX must match the profiles_instagram_handle_check constraint in the database.
+export const INSTAGRAM_PROFILE_BASE_URL = readEnvString(
+  'EXPO_PUBLIC_INSTAGRAM_PROFILE_BASE_URL',
+  process.env.EXPO_PUBLIC_INSTAGRAM_PROFILE_BASE_URL,
+  'https://instagram.com/',
+)
+export const INSTAGRAM_HANDLE_MAX = 30
 
 // Legal pages linked from the signup consent checkbox and the accept-terms screen.
 // Published on nospi.club (version 2026-10-30); source text lives in nospi-astro/src/legal/.

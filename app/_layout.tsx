@@ -7,7 +7,6 @@ import {
   clearUserIdCache,
   setCachedUserId,
 } from '@/lib/chats/api'
-import { VERIFICATION_ENABLED } from '@/lib/env_reader'
 import { clearLikes } from '@/lib/plans/likeStore'
 import {
   acceptCurrentTerms,
@@ -141,7 +140,7 @@ export default function RootLayout() {
           <Stack.Screen name="accept-terms" options={{ headerShown: false, gestureEnabled: false }} />
         </Stack.Protected>
 
-        <Stack.Protected guard={!!session && (VERIFICATION_ENABLED || !allowApp)}>
+        <Stack.Protected guard={!!session && !allowApp}>
           <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
         </Stack.Protected>
 

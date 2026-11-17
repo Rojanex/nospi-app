@@ -2,20 +2,16 @@ import type { PlanStatus } from '@/constants/planStatus'
 
 export type { PlanStatus }
 
-export type UserRole = 'explorer' | 'visitor' | 'local'
-
+/** Row of public.profiles. Every column is safe for other users to read. */
 export type Profile = {
   id: string
-  phone: string | null
   display_name: string | null
   avatar_url: string | null
-  role: UserRole
-  plans_created_this_week: number
-  plans_joined_this_week: number
-  reputation_score: number
-  home_city: string | null
   is_founder: boolean
-  onboarding_completed: boolean
+  /** Optional, typed by the user and not verified. Stored without "@", lowercase. */
+  instagram_handle: string | null
+  terms_version: string | null
+  terms_accepted_at: string | null
   created_at: string
   updated_at: string
 }
@@ -28,8 +24,6 @@ export interface ApiResponse<T> {
 export type PlanActivityType =
   | 'social' | 'playa' | 'rumba' | 'deporte'
   | 'comida' | 'cultura' | 'naturaleza' | 'chill' | 'otro'
-
-export type PlanVisibility = 'open' | 'locals'
 
 export type NewPlanLocation = {
   name: string
@@ -47,7 +41,6 @@ export type NewPlanFormValues = {
   date: Date | null
   time: Date | null
   maxSpots: number
-  visibility: PlanVisibility
 }
 
 export type PlanInsertRow = {
@@ -61,7 +54,6 @@ export type PlanInsertRow = {
   location_lng: number
   date_time: string
   max_spots: number
-  visibility: PlanVisibility
 }
 
 export interface PlanRow {
@@ -78,14 +70,13 @@ export interface PlanRow {
   date_time: string
   max_spots: number
   status: PlanStatus
-  visibility: PlanVisibility
   completed_at: string | null
   plan_members: {
     user_id: string
     profiles: { display_name: string | null; avatar_url: string | null } | null
   }[]
   like_count?: number | null
-  host: { display_name: string | null; avatar_url: string | null; role: string } | null
+  host: { display_name: string | null; avatar_url: string | null; is_founder: boolean } | null
 }
 
 export interface Plan {
@@ -101,7 +92,7 @@ export interface Plan {
   host_name: string
   host_initials: string
   host_avatar_url: string | null
-  host_type: 'local' | 'turista'
+  host_is_founder: boolean
   posted_ago: string
   user_joined: boolean
   /** The current user created this plan. */
@@ -109,7 +100,6 @@ export interface Plan {
   like_count: number
   /** As of this fetch; `null` when the liked state couldn't be loaded. */
   user_liked: boolean | null
-  visibility: PlanVisibility
   description: string | null
 }
 

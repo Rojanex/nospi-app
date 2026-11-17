@@ -245,15 +245,11 @@ New user detection: `user.created_at === user.last_sign_in_at` at OTP verificati
 ```
 name.tsx
   → profiles.update({ display_name })
-  → dni-verify.tsx
-      → SHA256(dni) → profiles.update({ dni_hash, dni_type, dni_verified })
-      → (CC only) triggerRNECVerification()   ← TODO: edge function
-      → selfie.tsx
-          → liveness SDK                       ← TODO: not wired
-          → /(tabs)/
+  → /(tabs)/
 ```
 
-DNI and selfie both offer a skip link to `/(tabs)/`.
+Phone OTP is the only identity check for launch. Identity verification (document + liveness)
+was removed in NOS-66 and comes back after launch.
 
 ---
 
@@ -262,8 +258,7 @@ DNI and selfie both offer a skip link to `/(tabs)/`.
 | Screen | Status |
 |--------|--------|
 | Welcome / Sign-in / OTP | Done |
-| Name / DNI verify | Done |
-| Selfie / Liveness | Stub — UI done, SDK not wired |
+| Name | Done |
 | Plans feed | Done (live Supabase) |
 | New plan sheet | Done |
 | Los míos + thread + archived | Done (live Supabase; no realtime yet) |

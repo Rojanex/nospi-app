@@ -1,6 +1,6 @@
 import { asActivityType } from '@/lib/chats/api'
 import { supabase } from '@/lib/supabase'
-import type { PlanActivityType, UserRole } from '@/types'
+import type { PlanActivityType } from '@/types'
 
 export type ActivityFingerprintItem = {
   activity_type: PlanActivityType
@@ -11,9 +11,8 @@ export type PublicProfile = {
   id: string
   display_name: string | null
   avatar_url: string | null
-  home_city: string | null
-  role: UserRole
   is_founder: boolean
+  instagram_handle: string | null
   plansCreated: number
   plansJoined: number
   fingerprint: ActivityFingerprintItem[]
@@ -23,10 +22,8 @@ export type ProfileWithStats = {
   id: string
   display_name: string | null
   avatar_url: string | null
-  home_city: string | null
-  role: UserRole
   is_founder: boolean
-  onboarding_completed: boolean
+  instagram_handle: string | null
   plansCreated: number
   plansJoined: number
 }
@@ -42,11 +39,11 @@ type ProfileRow = {
   id: string
   display_name: string | null
   avatar_url: string | null
-  home_city: string | null
-  role: string
   is_founder: boolean
-  onboarding_completed: boolean
+  instagram_handle: string | null
 }
+
+const PROFILE_SELECT = 'id, display_name, avatar_url, is_founder, instagram_handle'
 
 type RecentPlanEmbed = {
   id: string
@@ -59,11 +56,6 @@ type RecentPlanEmbed = {
 type RecentMembershipRow = {
   joined_at: string
   plans: RecentPlanEmbed | RecentPlanEmbed[] | null
-}
-
-function asUserRole(value: string): UserRole {
-  if (value === 'visitor' || value === 'local') return value
-  return 'explorer'
 }
 
 function unwrapPlan(plans: RecentMembershipRow['plans']): RecentPlanEmbed | null {
@@ -112,7 +104,7 @@ function parsePublicProfileStats(raw: unknown): {
 export async function fetchPublicProfile(userId: string): Promise<PublicProfile> {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, display_name, avatar_url, home_city, role, is_founder')
+    .select(PROFILE_SELECT)
     .eq('id', userId)
     .maybeSingle()
 
@@ -125,7 +117,7 @@ export async function fetchPublicProfile(userId: string): Promise<PublicProfile>
     throw new Error('Profile not found')
   }
 
-  const row = profile as Omit<ProfileRow, 'onboarding_completed'>
+  const row = profile as ProfileRow
 
   const { data: stats, error: statsError } = await supabase.rpc(
     'get_public_profile_stats',
@@ -143,9 +135,8 @@ export async function fetchPublicProfile(userId: string): Promise<PublicProfile>
     id: row.id,
     display_name: row.display_name,
     avatar_url: row.avatar_url,
-    home_city: row.home_city,
-    role: asUserRole(row.role),
     is_founder: row.is_founder,
+    instagram_handle: row.instagram_handle,
     plansCreated: parsed.plansCreated,
     plansJoined: parsed.plansJoined,
     fingerprint: parsed.fingerprint,
@@ -155,13 +146,14 @@ export async function fetchPublicProfile(userId: string): Promise<PublicProfile>
 export type OwnBasics = {
   display_name: string | null
   avatar_url: string | null
+  instagram_handle: string | null
 }
 
-/** Name and photo only (settings screen); fetchProfile also counts plans. */
+/** Name, photo and Instagram only (settings screen); fetchProfile also counts plans. */
 export async function fetchOwnBasics(userId: string): Promise<OwnBasics> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('display_name, avatar_url')
+    .select('display_name, avatar_url, instagram_handle')
     .eq('id', userId)
     .maybeSingle()
 
@@ -173,15 +165,14 @@ export async function fetchOwnBasics(userId: string): Promise<OwnBasics> {
   return {
     display_name: data?.display_name ?? null,
     avatar_url: data?.avatar_url ?? null,
+    instagram_handle: data?.instagram_handle ?? null,
   }
 }
 
 export async function fetchProfile(userId: string): Promise<ProfileWithStats> {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select(
-      'id, display_name, avatar_url, home_city, role, is_founder, onboarding_completed',
-    )
+    .select(PROFILE_SELECT)
     .eq('id', userId)
     .maybeSingle()
 
@@ -221,10 +212,8 @@ export async function fetchProfile(userId: string): Promise<ProfileWithStats> {
     id: row.id,
     display_name: row.display_name,
     avatar_url: row.avatar_url,
-    home_city: row.home_city,
-    role: asUserRole(row.role),
     is_founder: row.is_founder,
-    onboarding_completed: row.onboarding_completed,
+    instagram_handle: row.instagram_handle,
     plansCreated: createdResult.count ?? 0,
     plansJoined: joinedResult.count ?? 0,
   }

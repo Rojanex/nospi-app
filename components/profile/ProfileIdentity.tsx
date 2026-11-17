@@ -1,24 +1,19 @@
 import { Colors } from '@/assets/constants/Colors'
-import { HatCowboySide } from '@/assets/icons'
+import { FounderMark } from '@/components/profile/FounderMark'
 import { strings } from '@/constants/strings'
-import {
-  verificationBadgeForRole,
-  verificationLabelForRole,
-} from '@/lib/profiles/verification'
+import { instagramProfileUrl } from '@/lib/profiles/instagram'
 import { avatarColorsForId, initialsFromName } from '@/lib/utils/avatar'
-import type { UserRole } from '@/types'
 import { Ionicons } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import React from 'react'
-import { Text, View } from 'react-native'
+import { Linking, Pressable, Text, View } from 'react-native'
 
 export type ProfileIdentityData = {
   id: string
   display_name: string | null
   avatar_url: string | null
-  home_city: string | null
-  role: UserRole
   is_founder: boolean
+  instagram_handle: string | null
 }
 
 type ProfileIdentityProps = {
@@ -29,8 +24,14 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
   const name = profile.display_name?.trim() || strings.common.userFallback
   const initials = initialsFromName(name)
   const colors = avatarColorsForId(profile.id)
-  const badge = verificationBadgeForRole(profile.role)
-  const statusLabel = verificationLabelForRole(profile.role)
+  const instagram = profile.instagram_handle
+
+  function openInstagram() {
+    if (!instagram) return
+    Linking.openURL(instagramProfileUrl(instagram)).catch(err => {
+      console.error('[profile] open instagram', err)
+    })
+  }
 
   return (
     <View className="mb-6 items-center">
@@ -53,32 +54,45 @@ export function ProfileIdentity({ profile }: ProfileIdentityProps) {
           </View>
         )}
 
-        {badge ? (
-          <View
-            className="absolute bottom-0 right-0 h-7 w-7 items-center justify-center rounded-full border-2 border-primary-300"
-            style={{ backgroundColor: badge.bg }}
-          >
-            {badge.kind === 'cowboy' ? (
-              <HatCowboySide size={12} color={Colors.white} />
-            ) : (
-              <Ionicons name="checkmark" size={14} color={Colors.white} />
-            )}
-          </View>
+        {profile.is_founder ? (
+          <FounderMark size="md" className="absolute bottom-0 right-0 border-2 border-primary-300" />
         ) : null}
       </View>
 
       <Text className="mb-1 text-xl font-bold text-ink">{name}</Text>
 
-      {statusLabel ? (
-        <Text className="mb-2 text-body font-medium text-black-400">{statusLabel}</Text>
-      ) : null}
+      {/* Founder pill | Instagram logo, on one compact row. Either one can be missing. */}
+      {profile.is_founder || instagram ? (
+        <View className="mt-1 flex-row items-center gap-2.5">
+          {profile.is_founder ? (
+            <View
+              className="rounded-full px-3 py-1"
+              style={{ backgroundColor: Colors.surface.orangeLight }}
+            >
+              <Text
+                className="text-caption font-bold tracking-[0.3px]"
+                style={{ color: Colors.tone.orangeDark }}
+              >
+                {strings.profile.founderPill}
+              </Text>
+            </View>
+          ) : null}
 
-      {/* home_city is hidden for launch (not used for anything yet, NOS-12). */}
-      {profile.is_founder ? (
-        <View className="rounded-full bg-black-100 px-3 py-1">
-          <Text className="text-caption font-bold tracking-[0.5px] text-white">
-            {strings.profile.founderPill}
-          </Text>
+          {profile.is_founder && instagram ? (
+            <View className="h-4 w-px" style={{ backgroundColor: Colors.neutral.border }} />
+          ) : null}
+
+          {instagram ? (
+            <Pressable
+              onPress={openInstagram}
+              hitSlop={10}
+              accessibilityRole="link"
+              accessibilityLabel={strings.profile.instagramOpen(instagram)}
+              className="active:opacity-60"
+            >
+              <Ionicons name="logo-instagram" size={20} color={Colors.ink.DEFAULT} />
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
     </View>

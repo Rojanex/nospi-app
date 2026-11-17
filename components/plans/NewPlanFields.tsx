@@ -8,11 +8,10 @@ import {
   NEW_PLAN_DESCRIPTION_MAX,
   NEW_PLAN_MAX_SPOTS,
   NEW_PLAN_TITLE_MAX,
-  VERIFICATION_ENABLED,
 } from '@/lib/env_reader'
 import { ParsedPlace } from '@/lib/plans/formatPlace'
 import { formatSheetDate, formatSheetTime } from '@/lib/plans/formatDateTime'
-import { NewPlanFormValues, PlanVisibility } from '@/types'
+import { NewPlanFormValues } from '@/types'
 import { Feather, Ionicons } from '@expo/vector-icons'
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import React, { RefObject } from 'react'
@@ -79,6 +78,15 @@ function InlinePickerPanel({
 }) {
   return (
     <View className="px-3.5 pb-3" style={{ backgroundColor: Colors.white }}>
+      <Pressable
+        onPress={onConfirm}
+        hitSlop={8}
+        className="mt-2 self-end rounded-full border border-neutral-border px-7 py-2.5"
+      >
+        <Text className="text-body font-bold text-neutral-label">
+          {strings.newPlan.pickerDone}
+        </Text>
+      </Pressable>
       <DateTimePicker
         value={value}
         mode={mode}
@@ -93,14 +101,6 @@ function InlinePickerPanel({
             }
           : {})}
       />
-      <Pressable
-        onPress={onConfirm}
-        className="mt-2 self-end rounded-full border border-neutral-border px-7 py-2.5"
-      >
-        <Text className="text-body font-bold text-neutral-label">
-          {strings.newPlan.pickerDone}
-        </Text>
-      </Pressable>
     </View>
   )
 }
@@ -125,7 +125,7 @@ export function NewPlanFields({
   onConfirmPicker,
   onDismissPickerForOtherInput,
 }: NewPlanFieldsProps) {
-  const { activityType, title, description, location, date, time, maxSpots, visibility } = form
+  const { activityType, title, description, location, date, time, maxSpots } = form
 
   return (
     <>
@@ -316,9 +316,7 @@ export function NewPlanFields({
       )}
 
       <Text className="mb-2.5 mt-6 text-label font-bold uppercase tracking-[0.7px] text-neutral-label">
-        {VERIFICATION_ENABLED
-          ? strings.newPlan.spotsVisibilitySection
-          : strings.newPlan.spotsSection}
+        {strings.newPlan.spotsSection}
       </Text>
       <View className="rounded-[14px] bg-white px-4 py-4">
         <View className="flex-row items-center justify-between">
@@ -367,61 +365,6 @@ export function NewPlanFields({
           </View>
         </View>
       </View>
-
-      {VERIFICATION_ENABLED ? (
-        <View className="mt-2 rounded-[14px] bg-white px-4 py-4">
-          <Text className="mb-2.5 text-label font-bold tracking-wide text-neutral-label">
-            {strings.newPlan.visibilityLabel}
-          </Text>
-          <View className="flex-row gap-2">
-            {(
-              [
-                {
-                  key: 'open' as const,
-                  title: strings.newPlan.visibilityOpenTitle,
-                  subtitle: strings.newPlan.visibilityOpenSubtitle,
-                },
-                {
-                  key: 'locals' as const,
-                  title: strings.newPlan.visibilityLocalTitle,
-                  subtitle: strings.newPlan.visibilityLocalSubtitle,
-                },
-              ] as const
-            ).map((option) => {
-              const selected = visibility === option.key
-              return (
-                <Pressable
-                  key={option.key}
-                  onPress={() => {
-                    Keyboard.dismiss()
-                    onPatchForm({ visibility: option.key as PlanVisibility })
-                  }}
-                  style={[
-                    styles.visibilityOption,
-                    selected
-                      ? styles.visibilityOptionSelected
-                      : styles.visibilityOptionDefault,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.visibilityTitle,
-                      selected
-                        ? styles.visibilityTitleSelected
-                        : styles.visibilityTitleDefault,
-                    ]}
-                  >
-                    {option.title}
-                  </Text>
-                  <Text style={styles.visibilitySubtitle}>
-                    {option.subtitle}
-                  </Text>
-                </Pressable>
-              )
-            })}
-          </View>
-        </View>
-      ) : null}
     </>
   )
 }
@@ -449,36 +392,5 @@ const styles = StyleSheet.create({
   activityChipLabel: {
     fontSize: FontSize.label,
     fontWeight: '700',
-  },
-  visibilityOption: {
-    flex: 1,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-  visibilityOptionSelected: {
-    borderColor: Colors.tone.orangeDark,
-    backgroundColor: Colors.surface.orangeLight,
-  },
-  visibilityOptionDefault: {
-    borderColor: Colors.neutral.border,
-    backgroundColor: Colors.white,
-  },
-  visibilityTitle: {
-    fontSize: FontSize.body,
-    fontWeight: '700',
-  },
-  visibilityTitleSelected: {
-    color: Colors.tone.orangeDark,
-  },
-  visibilityTitleDefault: {
-    color: Colors.ink.DEFAULT,
-  },
-  visibilitySubtitle: {
-    fontSize: FontSize.caption,
-    lineHeight: LineHeight.caption,
-    color: Colors.black[400],
-    marginTop: 3,
   },
 })
